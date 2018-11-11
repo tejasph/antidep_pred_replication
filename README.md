@@ -1,2 +1,2 @@
 # trd-project
-CPSC 532M project involving prediction of anti-depressant response
+CPSC 532M Project involving prediction of treatment resistant depression
