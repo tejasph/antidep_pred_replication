@@ -7,16 +7,11 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances_argmin
 from sklearn.feature_selection import chi2
+from sklearn.linear_model import ElasticNetCV
+from sklearn.cluster import FeatureAgglomeration
+from sklearn.metrics import roc_curve, auc
 from astropy.stats import bootstrap as astro_bootstrap
-
-'''
-#Xgboost with top 25 features
-dtrain = xgb.DMatrix(X_train_topFeature, label=y_train)
-param = {'eval_metric': 'error'}
-dtest = xgb.DMatrix(X_test[:,topFeatures], label=y_test)
-evallist = [(dtest, 'eval'), (dtrain, 'train')]
-bst = xgb.train(param, dtrain, 10, evallist)
-'''
+import matplotlib.pyplot as plt
 
 ##Helper Functions -
 
@@ -79,7 +74,7 @@ def subsample(X,t=30) :
 #print("Here's an example of using subsample, it has shape: " + str(subsample(X,0,10).shape))
     
 def featureSelectionChi(X,y,n,k):
-    """ Function to select features
+    """ ChiSquareMethod to select features
     Arguments:
         X: Training set
         y: Training label
@@ -94,5 +89,53 @@ def featureSelectionChi(X,y,n,k):
     #selecting top n feature
     seed = np.argsort(-F)
     topFeatures = features[seed[:n]]
+    #print(topFeatures)
     return topFeatures
+
+def featureSelectionELAS(X,y,n):
+    """ Elastic net method to select features
+    Arguments:
+        X: Training set
+        y: Training label
+        n: Top n features
+    """
+    # Use cross validation to selection best elasticnet model first
+    cv_model = ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, .995, 1], eps=0.001, n_alphas=100, fit_intercept=True, 
+                        normalize=True, precompute='auto', max_iter=300, tol=0.0001, cv=5, 
+                        copy_X=True, verbose=0, n_jobs=-1, positive=False, random_state=None, selection='cyclic')
+    cv_model.fit(X, y)
     
+    # Select best features according to absolute value of coefficients
+    features = np.argsort(-np.abs(cv_model.coef_))
+    #print(features[:n])
+    return features[:n]
+
+def featureSelectionAgglo(X,k):
+    """ Feature aggolomeraion to select features
+    Arguments
+        X: The first column of X are labels
+        k: Number of clusters of features
+    """
+    agglo = FeatureAgglomeration(n_clusters=k)
+    agglo.fit(X)
+    labelCluster = agglo.labels_[0]
+    features = np.where(agglo.labels_==labelCluster)[0][1:]-1
+    n = features.size
+    return features, n
+
+def drawROC(y_true,y_score):
+    """ Function to draw ROC curve
+    Arguments:
+        y_true: True label
+        y_score: Probability for positive label
+    """
+    fpr, tpr, thresholds = roc_curve(y_true,y_score)
+    plt.title("ROC curve")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.plot(fpr, tpr)
+    print("AUC:", auc(fpr, tpr))
+    
+"""
+TO DO: function to draw ROC
+"""
