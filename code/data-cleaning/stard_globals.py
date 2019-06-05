@@ -324,3 +324,4 @@ VALUE_CONVERSION_MAP = {
 COL_NAMES_ONE_HOT_ENCODE = set(['trtmt_Level 1_0.1', 'trtmt_Level 1_2', 'gender', 'resid', 'rtown', 'marital', 'bulimia',
                                 'ax_cocaine', 'alcoh', 'amphet', 'cannibis' , 'opioid', 'empl', 'volun', 'leave',
                                 'publica', 'medicaid', 'privins'])
+

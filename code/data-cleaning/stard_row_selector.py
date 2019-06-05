@@ -80,10 +80,10 @@ def select_rows(input_dir_path, verbose=False, extra=False):
             # Split into 2 separate files
             if scale_name == "side_effects01":
                 # This scale has the values in the level column as floats.
-                criteria_1_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 1)]
+                criteria_1_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 3)]
                 criteria_2_df = scale_df[(scale_df["level"] == 1) & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
-            else:
-                criteria_1_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["week"] < 1)]
+            elif scale_name == "ccv01":
+                criteria_1_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["week"] == 2)]
                 criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
 
             output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0"
@@ -101,8 +101,8 @@ def select_rows(input_dir_path, verbose=False, extra=False):
             criteria_1_df = scale_df[scale_df["level"] == "Enrollment"]
             criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 7)]
 
-            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "enroll"
-            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "w0"
+            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_enroll"
+            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w0"
 
             criteria_1_df = drop_empty_columns(criteria_1_df)
             criteria_2_df = drop_empty_columns(criteria_2_df)
@@ -160,7 +160,7 @@ def select_rows(input_dir_path, verbose=False, extra=False):
                 scale_df = scale_df[scale_df["level"] == "Enrollment"]
             elif scale_name == "idsc01":
                 scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
-                scale_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 8)]
+                scale_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 15) & (scale_df["time_point"] == 1)]
             output_file_name = ROW_SELECTION_PREFIX + scale_name
             scale_df = drop_empty_columns(scale_df)
             scale_df.to_csv(output_row_selected_dir_path + output_file_name + CSV_SUFFIX)
