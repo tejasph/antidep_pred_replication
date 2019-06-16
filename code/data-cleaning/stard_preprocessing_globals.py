@@ -2,40 +2,74 @@ import numpy as np
 
 ignr = np.nan
 
-# Values in "level", "week", "days_baseline" are ordered in terms of optimal preference, as
-# they should be used to filter rows of subjects based on this.
-# Preference for:
-#   smaller days_baseline values
-#   larger week values
-#   earlier level values
+ORIGINAL_SCALE_NAMES = {
+    "dm01": {
+    },
+    "ccv01": {
+    },
+    "crs01": {
+    },
+    "hrsd01": {
+    },
+    "idsc01": {
+    },
+    "mhx01": {
+    },
+    "pdsq01": {
+    },
+    "phx01": {
+    },
+    "qids01": {
+    },
+    "qlesq01": {
+    },
+    "sfhs01": {
+    },
+    "side_effects01": {
+    },
+    "side": {
+
+    },
+    "ucq01": {
+    },
+    "wpai01": {
+    },
+    "wsas01": {
+    }
+}
+
+# Columns to keep for each scale
 SCALES = {
-    "rs__dm01_enroll": {
+    "dm01_enroll": {
         "whitelist": ['resid', 'rtown', 'resy', 'resm', 'marital', 'spous', 'relat', 'frend', 'thous',
                       'educat', 'student', 'empl', 'volun', 'leave', 'publica', 'medicaid', 'privins',
-                      'mkedc', 'enjoy', 'famim']
+                      'mkedc', 'enjoy', 'famim'],
+        "one_hot_encode": ['resid', 'rtown', 'marital', 'empl', 'volun', 'leave', 'publica', 'medicaid', 'privins']
     },
-    "rs__dm01_w0": {
+    "dm01_w0": {
         "whitelist": ['inc_curr', 'mempl', 'assist', 'massist', 'unempl', 'munempl', 'otherinc', 'minc_other',
                       'totincom'],
     },
-    "rs__ccv01_w0": {
+    "ccv01_w0": {
         "whitelist": ['medication1_dosage', 'suicd', 'remsn', 'raise', 'effct', 'cncn', 'prtcl', 'stmed', 'trtmt'],
+        "one_hot_encode": ['trtmt']
     },
-    "rs__ccv01_w2": {
+    "ccv01_w2": {
         "whitelist": ['medication1_dosage', 'suicd', 'remsn', 'raise', 'effct', 'cncn', 'prtcl', 'stmed', 'trtmt'],
+        "one_hot_encode": ['trtmt']
     },
-    "rs__crs01": {
+    "crs01": {
         "whitelist": ['heart', 'vsclr', 'hema', 'eyes', 'ugi', 'lgi', 'renal', 'genur', 'mskl', 'neuro', 'psych',
                       'respiratory', 'liverd', 'endod'],
     },
-    "rs__hrsd01 ": {
+    "hrsd01": {
         "whitelist": ['hsoin', 'hmnin', 'hemin', 'hmdsd', 'hpanx', 'hinsg', 'happt', 'hwl', 'hsanx', 'hhypc', 'hvwsf',
                       'hsuic', 'hintr', 'hengy', 'hslow', 'hagit', 'hsex', 'hdtot_r'],
     },
-    "rs__mhx01": {
+    "mhx01": {
         "whitelist": ['psmed'],
     },
-    "rs__pdsq1": {
+    "pdsq01": {
         "whitelist": ['evy2w', 'joy2w', 'int2w', 'lap2w', 'gap2w', 'lsl2w', 'msl2w', 'jmp2w', 'trd2w', 'glt2w', 'neg2w',
                       'flr2w', 'cnt2w', 'dcn2w', 'psv2w', 'wsh2w', 'btr2w', 'tht2w', 'ser2w', 'spf2w', 'sad2y', 'apt2y',
                       'slp2y', 'trd2y', 'cd2y', 'low2y', 'hpl2y', 'trexp', 'trwit', 'tetht', 'teups', 'temem', 'tedis',
@@ -50,60 +84,63 @@ SCALES = {
                       'wydly', 'wyrst', 'wyslp', 'wytsn', 'wycnt', 'wysnp', 'wycrl', 'phstm', 'phach', 'phsck', 'phpr',
                       'phcse', 'wiser', 'wistp', 'wiill', 'wintr', 'widr'],
     },
-    "rs__phx01": {
+    "phx01": {
         "whitelist": ['dage', 'epino', 'episode_date', 'ai_none', 'alcoh', 'amphet', 'cannibis', 'opioid', 'pd_ag',
                       'pd_noag', 'specphob', 'soc_phob', 'ocd_phx', 'psd', 'gad_phx', 'axi_oth', 'aii_none', 'aii_def',
                       'aii_na', 'pd_border', 'pd_depend', 'pd_antis', 'pd_paran', 'pd_nos', 'axii_oth', 'dep', 'deppar',
                       'depsib', 'depchld', 'bip', 'bippar', 'bipsib', 'bipchld', 'alcohol', 'alcpar', 'alcsib',
                       'alcchld', 'drug_phx', 'drgpar', 'drgsib', 'drgchld', 'suic_phx', 'suicpar', 'suicsib',
                       'suicchld', 'wrsms', 'anorexia', 'bulimia', 'ax_cocaine'],
+        "one_hot_encode": ['alcoh', 'amphet', 'cannibis', 'opioid', 'ax_cocaine', 'bulimia']
     },
-    "rs__qlesq01": {
+    "qlesq01": {
         "whitelist": ['qlesq01', 'qlesq02', 'qlesq03', 'qlesq04', 'qlesq05', 'qlesq06', 'qlesq07', 'qlesq08', 'qlesq09',
                       'qlesq10', 'qlesq11', 'qlesq12', 'qlesq13', 'qlesq14', 'qlesq15', 'qlesq16', 'totqlesq'],
     },
-    "rs__sfhs01": {
+    "sfhs01": {
         "whitelist": ['sfhs01', 'sfhs02', 'sfhs03', 'sfhs04', 'sfhs05', 'sfhs06', 'sfhs07', 'sfhs08', 'sfhs09',
                       'sfhs10', 'sfhs11', 'sfhs12', 'pcs12', 'mcs12'],
     },
-    "rs__side_effects01": {
+    "side_effects01": {
         "whitelist": ['fisfq', 'fisin', 'grseb'],
     },
-    "rs__ucq01": {
+    "ucq01": {
         "whitelist": ['ucq010', 'ucq020', 'ucq030', 'ucq080', 'ucq091', 'ucq092', 'ucq100', 'ucq110', 'ucq120',
                       'ucq130', 'ucq140', 'ucq150', 'ucq160', 'ucq170', 'ucq040', 'ucq050', 'ucq060', 'ucq070'],
     },
-    "rs__wpai01": {
+    "wpai01": {
         "whitelist": ['wpai01', 'wpai02', 'wpai03', 'wpai04', 'wpai05', 'wpai06', 'wpai_totalhrs', 'wpai_pctmissed',
                       'wpai_pctworked', 'wpai_pctwrkimp', 'wpai_pctactimp', 'wpai_totwrkimp'],
     },
-    "rs_wsas01": {
+    "wsas01": {
         "whitelist": ['wsas01', 'wsas02', 'wsas03', 'wsas04', 'wsas05', 'totwsas', 'wsastot'],
     },
-    "rs__qids01_w0c": {
+    "qids01_w0c": {
         "whitelist": ['interview_age', 'gender', 'subjectkey', 'vsoin', 'vmnin', 'vemin', 'vhysm', 'vmdsd', 'vapdc',
                       'vapin', 'vwtdc', 'vwtin', 'vcntr', 'vvwsf', 'vsuic', 'vintr', 'vengy', 'vslow', 'vagit',
                       'qstot'],
+        "one_hot_encode": ['gender']
     },
-    "rs__qids01_w0sr": {
+    "qids01_w0sr": {
         "whitelist": ['vsoin', 'vmnin', 'vemin', 'vhysm', 'vmdsd', 'vapdc',
                       'vapin', 'vwtdc', 'vwtin', 'vcntr', 'vvwsf', 'vsuic', 'vintr', 'vengy', 'vslow', 'vagit',
                       'qstot'],
     },
-    "rs__qids01_w2c": {
+    "qids01_w2c": {
         "whitelist": ['vsoin', 'vmnin', 'vemin', 'vhysm', 'vmdsd', 'vapdc',
                       'vapin', 'vwtdc', 'vwtin', 'vcntr', 'vvwsf', 'vsuic', 'vintr', 'vengy', 'vslow', 'vagit',
                       'qstot'],
     },
-    "rs__qids01_w2sr": {
+    "qids01_w2sr": {
         "whitelist": ['vsoin', 'vmnin', 'vemin', 'vhysm', 'vmdsd', 'vapdc',
                       'vapin', 'vwtdc', 'vwtin', 'vcntr', 'vvwsf', 'vsuic', 'vintr', 'vengy', 'vslow', 'vagit',
                       'qstot'],
     },
-    "rs_idsc01": {
+    "idsc01": {
         "whitelist": ['isoin', 'imnin', 'iemin', 'ihysm', 'imdsd', 'ianx', 'ipanc', 'iirtb', 'irct', 'ivrtn', 'iwrse',
                       'ienv', 'iqty', 'iapdc', 'iapin', 'iwtdc', 'iwtin', 'icntr', 'ivwsf', 'ivwfr', 'isuic', 'iintr',
                       'iplsr', 'iengy', 'isex', 'islow', 'iagit', 'ismtc', 'isymp', 'igas', 'iintp', 'ildn'],
+        "one_hot_encode": ['iwrse']
     },
 }
 
@@ -120,39 +157,30 @@ variable string still need to be determined.
 VALUE_CONVERSION_MAP = {
     "demo_-7": {
         "col_names": {'medicaid', 'privins', 'mkedc', 'enjoy', 'famim', 'volun', 'leave'},
-        "values": {-7: ignr}
-    },
-    "publica": {
-        "col_names": {'publica'},
-        "values": {-7: ignr, 3: ignr}
-    },
-    "empl": {
-        "col_names": {'empl'},
-        "values": {15: ignr, 9: ignr, -7: ignr}
+        "conversion_map": {-7: ignr}
     },
     "student": {
         "col_names": {'student'},
-        "values": {2: 0.5}
+        "conversion_map": {2: 0.5}
     },
     "educat": {
         "col_names": {'student'},
-        "values": {999: ignr}
+        "conversion_map": {999: ignr}
     },
     "thous": {
         "col_names": {'thous'},
-        "values": {99: ignr}
+        "conversion_map": {99: ignr}
     },
     "medication1_dosage": {
         "col_names": {'medication1_dosage'},
-        "col_extenders": ['_Level 1_0.1', '_Level 1_2'],
-        "values": {0: ignr, 999: ignr}
+        "conversion_map": {0: ignr, 999: ignr}
     },
-    "crs01": {
+    "-9_to_nan": {
         "col_names": {'heart', 'vsclr', 'hema', 'eyes', 'ugi', 'lgi', 'renal', 'genur', 'mskl', 'neuro', 'psych',
                       'respiratory', 'liverd', 'endod', 'hsoin', 'hmnin', 'hemin', 'hmdsd', 'hpanx', 'hinsg', 'happt',
                       'hwl', 'hsanx', 'hhypc', 'hvwsf', 'hsuic', 'hintr', 'hengy', 'hslow', 'hagit', 'hsex', 'suic_phx',
                       'drug_phx', 'alcohol', 'bip', 'dep', 'dage'},
-        "values": {-9: ignr}
+        "conversion_map": {-9: ignr}
     },
     "blank_to_zero": {
         "col_names": {'sex_prs', 'gdiar', 'gcnst', 'gdmth', 'gnone', 'gnsea', 'gstro', 'htplp', 'htdzy', 'htchs', 'htnone',
@@ -166,31 +194,25 @@ VALUE_CONVERSION_MAP = {
                       'wpai_pctactimp', 'wpai_totwrkimp', 'ucq010', 'ucq020', 'ucq030', 'ucq080', 'ucq091', 'ucq092',
                       'ucq100', 'ucq110', 'ucq120', 'ucq130', 'ucq140', 'ucq150', 'ucq160', 'ucq170', 'ucq040',
                       'ucq050', 'ucq060', 'ucq070'},
-        "values": {"": 0}
-    },
-    "bulimia": {
-        "col_names": {'bulimia'},
-        "values": {0: np.nan, 1: np.nan, 2: "2/5", 5: "2/5"}
+        "conversion_map": {"": 0}
     },
     "zero_to_nan": {
         "col_names": {'ax_cocaine', 'alcoh', 'amphet', 'cannibis' , 'opioid'},
-        "values": {0: np.nan}
+        "conversion_map": {0: ignr}
     },
     "two_to_zero": {
         "col_names": {'wpai01', 'sfhs04', 'sfhs05', 'sfhs06', 'sfhs07', 'ucq010', 'ucq020', 'ucq080', 'ucq110',
                       'ucq120', 'ucq140', 'ucq160', 'ucq040', 'ucq060'},
-        "values": {2: 0}
+        "conversion_map": {2: 0}
     },
     "sex_prs": {
         "col_names": {'sex_prs'},
-        "values": {-7: 0, "": 0}
+        "conversion_map": {-7: 0, "": 0}
     },
     "qids01": {
         "col_names": {'vsoin', 'vmnin', 'vemin', 'vhysm', 'vmdsd', 'vapdc', 'vapin', 'vwtdc', 'vwtin', 'vcntr',
                       'vvwsf', 'vsuic', 'vintr', 'vengy', 'vslow', 'vagit'},
-        "col_extenders": ['_week0_Self Rating', '_week2_Self Rating', '_week0_Clinician',
-                          '_week2_Clinician'],
-        "values": {999: 0}
+        "conversion_map": {999: 0}
     },
     "minus": {
         6: {'sfhs12', 'sfhs11', 'sfhs10', 'sfhs09', 'sfhs01'}, # Subtract 6 minus value
@@ -207,5 +229,10 @@ COL_NAMES_ONE_HOT_ENCODE = {'trtmt', 'trtmt', 'gender', 'resid', 'rtown', 'marit
 
 
 ONE_HOT_ENCODE = {
-
+    'resid', 'rtown', 'marital', 'empl', 'volun', 'leave', 'publica', 'medicaid', 'privins',
+    'trtmt',
+    'gender',
+    'alcoh', 'amphet', 'cannibis', 'opioid',
+    'ax_cocaine',
+    'iwrse'
 }

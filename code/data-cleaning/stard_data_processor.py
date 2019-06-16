@@ -385,7 +385,7 @@ def convert_sfhs01_cols(df):
                     conversion_map[value] = key - value
                 elif key == 1:
                     conversion_map[value] = value - 1
-            df[col_name] = df[col_name].replace(to_replace=col_name)
+            df[col_name] = df[col_name].replace(to_replace=conversion_map)
     return df
 
 def convert_months_to_year(df, col_name):
