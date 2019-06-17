@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from collections import namedtuple
 
-import stard_globals as gls
 from utils import *
 from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP
 
@@ -12,11 +11,11 @@ from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONV
 This will take in multiple text files (representing psychiatric scales) and output multiple CSV files, at least for each scale read in.
 """
 
-
 ROW_SELECTION_PREFIX = "rs__"
-COLUMN_SELECTION_PREFIX = "rs__cs__"
-ONE_HOT_ENCODED_PREFIX = "rs__cs__ohe__"
-VALUES_CONVERTED_PREFIX = "rs__cs__ohe__vc__"
+COLUMN_SELECTION_PREFIX = ROW_SELECTION_PREFIX + "cs__"
+ONE_HOT_ENCODED_PREFIX = COLUMN_SELECTION_PREFIX + "ohe__"
+VALUES_CONVERTED_PREFIX = ONE_HOT_ENCODED_PREFIX + "vc__"
+AGGREGATED_ROWS_PREFIX = VALUES_CONVERTED_PREFIX + "ag__" # Final: "rs__cs__ohe__vc__ag__" which represents the order of the pipeline
 CSV_SUFFIX = ".csv"
 
 DIR_PROCESSED_DATA = "processed_data"
@@ -24,8 +23,9 @@ DIR_ROW_SELECTED = "row_selected_scales"
 DIR_COLUMN_SELECTED = "column_selected_scales"
 DIR_ONE_HOT_ENCODED = "one_hot_encoded_scales"
 DIR_VALUES_CONVERTED = "values_converted_scales"
+DIR_AGGREGATED_ROWS = "aggregated_rows_scales"
 
-def select_rows(input_dir_path, verbose=False, extra=False):
+def select_rows(input_dir_path):
     output_dir_path = input_dir_path + "/" + DIR_PROCESSED_DATA
     output_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
 
@@ -40,6 +40,9 @@ def select_rows(input_dir_path, verbose=False, extra=False):
         scale_name = filename.split(".")[0]
         if scale_name not in ORIGINAL_SCALE_NAMES:
             continue
+        #
+        # if scale_name != "qlesq01":
+        #     continue
 
         curr_scale_path = input_dir_path + "/" + filename
 
@@ -49,6 +52,8 @@ def select_rows(input_dir_path, verbose=False, extra=False):
 
         print("*************************************************************")
         print("Handling scale = ", scale_name)
+
+        selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
 
         if scale_name in ["ccv01"]:
             if scale_df["week"].isnull().values.any():
@@ -63,16 +68,18 @@ def select_rows(input_dir_path, verbose=False, extra=False):
             #     criteria_1_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 3)]
             #     criteria_2_df = scale_df[(scale_df["level"] == 1) & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
             if scale_name == "ccv01":
-                criteria_1_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["week"] == 2)]
+                # criteria_1_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["week"] == 2)]
                 criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
 
-            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0"
+            # output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0"
             output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w2"
 
-            criteria_1_df = drop_empty_columns(criteria_1_df)
+            # criteria_1_df = drop_empty_columns(criteria_1_df)
             criteria_2_df = drop_empty_columns(criteria_2_df)
+            # criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
+            criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
-            criteria_1_df.to_csv(output_row_selected_dir_path + output_file_name_1 + CSV_SUFFIX, index=False)
+            # criteria_1_df.to_csv(output_row_selected_dir_path + output_file_name_1 + CSV_SUFFIX, index=False)
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
         elif scale_name == "dm01":
@@ -86,10 +93,13 @@ def select_rows(input_dir_path, verbose=False, extra=False):
 
             criteria_1_df = drop_empty_columns(criteria_1_df)
             criteria_2_df = drop_empty_columns(criteria_2_df)
+            criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
+            criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
             criteria_1_df.to_csv(output_row_selected_dir_path + output_file_name_1 + CSV_SUFFIX, index=False)
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
+        # Handles creating the preliminary file. See end of this function to see how qids was split up.
         elif scale_name == "qids01":
             # Starts with 84,932 rows of which 39,380 are null for column "week"
             print("Number of qids week column are null before replacing with week values matching key (subjectkey, "
@@ -147,6 +157,7 @@ def select_rows(input_dir_path, verbose=False, extra=False):
 
             output_file_name = ROW_SELECTION_PREFIX + scale_name
             scale_df = drop_empty_columns(scale_df)
+            scale_df = select_subject_rows(scale_df, scale_name, selection_criteria)
             scale_df.to_csv(output_row_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
     # Handle preqids, after looping through the original scales
@@ -179,6 +190,12 @@ def select_rows(input_dir_path, verbose=False, extra=False):
         criteria_4_df = drop_empty_columns(criteria_4_df)
 
         scale_name = "qids01"
+        selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
+        criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
+        criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
+        criteria_3_df = select_subject_rows(criteria_3_df, scale_name, selection_criteria)
+        criteria_4_df = select_subject_rows(criteria_4_df, scale_name, selection_criteria)
+
         output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0c"
         output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w0sr"
         output_file_name_3 = ROW_SELECTION_PREFIX + scale_name + "_w2c"
@@ -189,11 +206,38 @@ def select_rows(input_dir_path, verbose=False, extra=False):
         criteria_3_df.to_csv(output_row_selected_dir_path + output_file_name_3 + CSV_SUFFIX, index=False)
         criteria_4_df.to_csv(output_row_selected_dir_path + output_file_name_4 + CSV_SUFFIX, index=False)
 
+def select_subject_rows(scale_df, scale_name, selection_criteria):
+    if selection_criteria == {}:
+        return scale_df
+
+    selector_col_name = selection_criteria["subjectkey_selector"]
+    preference = selection_criteria["preference"]
+    subject_group = scale_df.groupby(["subjectkey"])
+
+    for subjectkey, subject_rows_df in subject_group:
+        condition_val = np.nanmin(subject_rows_df[selector_col_name])
+        if preference == "larger":
+            condition_val = np.nanmax(subject_rows_df[selector_col_name])
+
+        if condition_val is np.nan:
+            print("NaN:", subjectkey, scale_name)
+
+        # There could be multiple matches
+        matches = scale_df[(scale_df["subjectkey"] == subjectkey) & (scale_df[selector_col_name] == condition_val)]
+        if len(matches) > 0:
+            # print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
+            scale_df = scale_df[(scale_df["subjectkey"] != subjectkey) | (scale_df.index == matches.index[0])]
+        else:
+            # print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
+            scale_df = scale_df[(scale_df["subjectkey"] != subjectkey)]
+
+    return scale_df
+
 """
 root_data_dir_path is the path to the root of the folder containing the original scales
 """
 
-def select_columns(root_data_dir_path, verbose=False, extra=False):
+def select_columns(root_data_dir_path):
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
     output_column_selected_dir_path = output_dir_path + "/" + DIR_COLUMN_SELECTED + "/"
@@ -234,7 +278,7 @@ def select_columns(root_data_dir_path, verbose=False, extra=False):
         scale_df.to_csv(output_column_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 
-def one_hot_encode_scales(root_data_dir_path, verbose=False, extra=False):
+def one_hot_encode_scales(root_data_dir_path):
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_column_selected_dir_path = output_dir_path + "/" + DIR_COLUMN_SELECTED + "/"
     output_one_hot_encoded_dir_path = output_dir_path + "/" + DIR_ONE_HOT_ENCODED + "/"
@@ -316,14 +360,17 @@ def one_hot_encode_scales(root_data_dir_path, verbose=False, extra=False):
         output_file_name = ONE_HOT_ENCODED_PREFIX + scale_name
         scale_df.to_csv(output_one_hot_encoded_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
-
-def convert_values(root_data_dir_path, verbose=False, extra=False):
+def convert_values(root_data_dir_path):
     # conversion
-    #
+    # change handling of blank to zero conversion, and handle it
+    # iterate through column names that require it, then iterate over all rows for each
+    # and check if row is empty for the scale. if it is, then leave it blank.
+    # if it is non-empty then convert this column's row value to 0.
 
     # aggregation
     # should be straight forward as there are unique columns between scales
     # however there are nonunique subjectkey rows for some scales, will need to decide which to use for those scales
+
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_one_hot_encoded_dir_path = output_dir_path + "/" + DIR_ONE_HOT_ENCODED + "/"
     output_values_converted_dir_path = output_dir_path + "/" + DIR_VALUES_CONVERTED + "/"
@@ -357,6 +404,9 @@ def convert_values(root_data_dir_path, verbose=False, extra=False):
                 elif col_name in dict["col_names"]:
                     scale_df[col_name] = scale_df[col_name].astype("object")
                     scale_df[col_name] = scale_df[col_name].replace(to_replace=dict["conversion_map"])
+                elif key == "blank_to_zero":
+                    if col_name in dict["col_names"]:
+                        scale_df = handle_replace_if_row_null(scale_df, col_name)
 
         if scale_name == "sfhs01":
             config = VALUE_CONVERSION_MAP["minus"]
@@ -376,6 +426,57 @@ def convert_values(root_data_dir_path, verbose=False, extra=False):
         output_file_name = VALUES_CONVERTED_PREFIX + scale_name
         scale_df.to_csv(output_values_converted_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
+def handle_replace_if_row_null(df, col_name):
+    for i, row in df.iterrows():
+        # If all column values are empty for this row, then leave it all null
+        if sum(row.isnull()) == len(row):
+            continue
+        # But if there are non-empty values, then convert the col_name value to 0
+        else:
+            df.set_value(i, col_name, 0)
+    return df
+
+def aggregate_rows(root_data_dir_path):
+    # aggregation
+    # should be straight forward as there are unique columns between scales
+    # however there are nonunique subjectkey rows for some scales, will need to decide which to use for those scales
+    # remenber to append the scale name
+
+    output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
+    output_values_converted_dir_path = output_dir_path + "/" + DIR_VALUES_CONVERTED + "/"
+    output_aggregated_rows_dir_path = output_dir_path + "/" + DIR_AGGREGATED_ROWS + "/"
+
+    input_dir_path = output_values_converted_dir_path
+
+    print("\n--------------------------------5. ROW AGGREGATION-----------------------------------\n")
+
+    aggregated_df = pd.DataFrame()
+
+    for filename in os.listdir(input_dir_path):
+        if not os.path.exists(output_dir_path):
+            os.mkdir(output_dir_path)
+        if not os.path.exists(output_aggregated_rows_dir_path):
+            os.mkdir(output_aggregated_rows_dir_path)
+
+        if "rs__cs__ohe__vc__" not in filename:
+            continue
+
+        scale_name = filename.split(".")[0].split("__")[-1]
+
+        print("*************************************************************")
+        print("Handling scale =", scale_name, ", filename =", filename)
+
+        # Read in the txt file
+        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+
+        main_keys = ['subjectkey', 'gender||F', 'gender||M', 'interview_age']
+        scale_df = scale_df.reindex(columns=(main_keys + list([a for a in scale_df.columns if a not in main_keys])))
+        scale_df.columns = [scale_name + "__" + str(col) for col in scale_df.columns]
+        aggregated_df = pd.merge(aggregated_df, scale_df, on="subjectkey")
+
+    output_file_name = AGGREGATED_ROWS_PREFIX + "stard_data_matrix"
+    aggregated_df.to_csv(output_aggregated_rows_dir_path + output_file_name + CSV_SUFFIX, index=False)
+
 
 def one_hot_encode(df, columns):
     # Convert categorical variables to indicator variables via one-hot encoding
@@ -390,18 +491,29 @@ if __name__ == "__main__":
     data_dir_path = sys.argv[1]
     option = sys.argv[2]
     is_valid = len(sys.argv) == 3 and os.path.isdir(data_dir_path)
+
     if is_valid and option in ["--row-select", "-rs"]:
         select_rows(data_dir_path)
+
     elif is_valid and option in ["--column-select", "-cs"]:
         select_columns(data_dir_path)
+
     elif is_valid and option in ["--one-hot-encode", "-ohe"]:
         one_hot_encode_scales(data_dir_path)
+
     elif is_valid and option in ["--value-convert", "-vc"]:
         convert_values(data_dir_path)
+
+    elif is_valid and option in ["--aggregate-rows", "-ag"]:
+        aggregate_rows(data_dir_path)
+
     elif is_valid and option in ["--run-all", "-a"]:
         select_rows(data_dir_path)
         select_columns(data_dir_path)
         one_hot_encode_scales(data_dir_path)
+        convert_values(data_dir_path)
+        aggregate_rows(data_dir_path)
+
     else:
         raise Exception("Enter valid arguments\n"
               "\t path: the path to a real directory\n"

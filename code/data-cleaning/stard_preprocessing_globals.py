@@ -4,37 +4,63 @@ ignr = np.nan
 
 ORIGINAL_SCALE_NAMES = {
     "dm01": {
+        "subjectkey_selector": "dm01_id",
+        "preference": "smaller"
     },
     "ccv01": {
+        "subjectkey_selector": "ccv01_id",
+        "preference": "larger"
     },
     "crs01": {
     },
     "hrsd01": {
     },
     "idsc01": {
+        "subjectkey_selector": "idsc01_id",
+        "preference": "smaller"
     },
     "mhx01": {
+        "subjectkey_selector": "mhx01_id",
+        "preference": "smaller"
     },
     "pdsq01": {
+        "subjectkey_selector": "pdsq01_id",
+        "preference": "smaller"
     },
     "phx01": {
+        "subjectkey_selector": "phx01_id",
+        "preference": "smaller"
     },
     "qids01": {
+        "subjectkey_selector": "days_baseline",
+        "preference": "smaller"
     },
     "qlesq01": {
+        "subjectkey_selector": "qlesq01",
+        "preference": "smaller"
     },
     "sfhs01": {
+        "subjectkey_selector": "sfhs01",
+        "preference": "smaller"
     },
     "side_effects01": {
+        "subjectkey_selector": "side_effects01_id",
+        "preference": "larger"
     },
     "side": {
 
     },
     "ucq01": {
+        "subjectkey_selector": "ucq01_id",
+        "preference": "smaller"
     },
     "wpai01": {
+        "subjectkey_selector": "wpai01",
+        "preference": "smaller"
     },
     "wsas01": {
+        "subjectkey_selector": "wsas01_id",
+        "preference": "smaller"
     }
 }
 
@@ -50,10 +76,10 @@ SCALES = {
         "whitelist": ['inc_curr', 'mempl', 'assist', 'massist', 'unempl', 'munempl', 'otherinc', 'minc_other',
                       'totincom'],
     },
-    "ccv01_w0": {
-        "whitelist": ['medication1_dosage', 'suicd', 'remsn', 'raise', 'effct', 'cncn', 'prtcl', 'stmed', 'trtmt'],
-        "one_hot_encode": ['trtmt']
-    },
+    # "ccv01_w0": {
+    #     "whitelist": ['medication1_dosage', 'suicd', 'remsn', 'raise', 'effct', 'cncn', 'prtcl', 'stmed', 'trtmt'],
+    #     "one_hot_encode": ['trtmt']
+    # },
     "ccv01_w2": {
         "whitelist": ['medication1_dosage', 'suicd', 'remsn', 'raise', 'effct', 'cncn', 'prtcl', 'stmed', 'trtmt'],
         "one_hot_encode": ['trtmt']
@@ -182,20 +208,20 @@ VALUE_CONVERSION_MAP = {
                       'drug_phx', 'alcohol', 'bip', 'dep', 'dage'},
         "conversion_map": {-9: ignr}
     },
-    "blank_to_zero": {
-        "col_names": {'sex_prs', 'gdiar', 'gcnst', 'gdmth', 'gnone', 'gnsea', 'gstro', 'htplp', 'htdzy', 'htchs', 'htnone',
-                      'heart_prs', 'skrsh', 'skpsp', 'skich', 'sknone', 'skdry', 'nvhed', 'nvtrm', 'nvcrd', 'nvnone',
-                      'nvdzy', 'nrvsy', 'eyvsn', 'earng', 'enone', 'eyear', 'urdif', 'urpn', 'urmns', 'urfrq', 'urnone',
-                      'genur_prs', 'sldif', 'slnone', 'slmch', 'sleep', 'sxls', 'sxorg', 'sxerc', 'sxnone', 'oaxty',
-                      'octrt', 'omal', 'orsls', 'oftge', 'odegy', 'onone', 'other_prs', 'skin_c', 'deppar', 'depsib',
-                      'depchld', 'bippar', 'bipsib', 'bipchld', 'alcpar', 'alcsib', 'alcchld', 'drgpar', 'drgsib',
-                      'drgchld', 'suicpar', 'suicsib', 'suicchld', 'fisfq', 'fisin', 'grseb', 'wpai02', 'wpai03',
-                      'wpai04', 'wpai05', 'wpai_totalhrs', 'wpai_pctmissed', 'wpai_pctworked', 'wpai_pctwrkimp',
-                      'wpai_pctactimp', 'wpai_totwrkimp', 'ucq010', 'ucq020', 'ucq030', 'ucq080', 'ucq091', 'ucq092',
-                      'ucq100', 'ucq110', 'ucq120', 'ucq130', 'ucq140', 'ucq150', 'ucq160', 'ucq170', 'ucq040',
-                      'ucq050', 'ucq060', 'ucq070'},
-        "conversion_map": {"": 0}
-    },
+    # "blank_to_zero": {
+    #     "col_names": {'sex_prs', 'gdiar', 'gcnst', 'gdmth', 'gnone', 'gnsea', 'gstro', 'htplp', 'htdzy', 'htchs', 'htnone',
+    #                   'heart_prs', 'skrsh', 'skpsp', 'skich', 'sknone', 'skdry', 'nvhed', 'nvtrm', 'nvcrd', 'nvnone',
+    #                   'nvdzy', 'nrvsy', 'eyvsn', 'earng', 'enone', 'eyear', 'urdif', 'urpn', 'urmns', 'urfrq', 'urnone',
+    #                   'genur_prs', 'sldif', 'slnone', 'slmch', 'sleep', 'sxls', 'sxorg', 'sxerc', 'sxnone', 'oaxty',
+    #                   'octrt', 'omal', 'orsls', 'oftge', 'odegy', 'onone', 'other_prs', 'skin_c', 'deppar', 'depsib',
+    #                   'depchld', 'bippar', 'bipsib', 'bipchld', 'alcpar', 'alcsib', 'alcchld', 'drgpar', 'drgsib',
+    #                   'drgchld', 'suicpar', 'suicsib', 'suicchld', 'fisfq', 'fisin', 'grseb', 'wpai02', 'wpai03',
+    #                   'wpai04', 'wpai05', 'wpai_totalhrs', 'wpai_pctmissed', 'wpai_pctworked', 'wpai_pctwrkimp',
+    #                   'wpai_pctactimp', 'wpai_totwrkimp', 'ucq010', 'ucq020', 'ucq030', 'ucq080', 'ucq091', 'ucq092',
+    #                   'ucq100', 'ucq110', 'ucq120', 'ucq130', 'ucq140', 'ucq150', 'ucq160', 'ucq170', 'ucq040',
+    #                   'ucq050', 'ucq060', 'ucq070'},
+    #     "conversion_map": {"": 0}
+    # },
     "zero_to_nan": {
         "col_names": {'ax_cocaine', 'alcoh', 'amphet', 'cannibis' , 'opioid'},
         "conversion_map": {0: ignr}

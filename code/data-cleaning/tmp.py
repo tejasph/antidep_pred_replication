@@ -26,17 +26,8 @@ def check(input_dir_path, verbose=False, extra=False):
     nonuniques = []
 
     for filename in os.listdir(input_dir_path):
-        # if not os.path.exists(output_dir_path):
-        #     os.mkdir(output_dir_path)
-        #     if not os.path.exists(output_row_selected_dir_path):
-        #         os.mkdir(output_row_selected_dir_path)
-
         if "rs__" not in filename:
             continue
-
-        # scale_name = filename.split("__")[1].split("_")[0]
-        # if scale_name not in ORIGINAL_SCALE_NAMES:
-        #     continue
 
         curr_scale_path = input_dir_path + "/" + filename
 
@@ -47,8 +38,10 @@ def check(input_dir_path, verbose=False, extra=False):
         scale_df = pd.read_csv(curr_scale_path, skiprows=[1])
 
         # Check if subjectkeys are unique
-        if scale_df.shape[0] == len(scale_df["subjectkey"].unique()):
+        if scale_df.shape[0] != len(scale_df["subjectkey"].unique()):
             nonuniques.append(filename)
+
+        print(scale_df['subjectkey'].value_counts()[:10])
 
     print("\nScales with nonunique subjectkeys:")
     print(nonuniques)
