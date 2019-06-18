@@ -74,8 +74,6 @@ def select_rows(input_dir_path):
             # output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0"
             output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w2"
 
-            # criteria_1_df = drop_empty_columns(criteria_1_df)
-            # criteria_2_df = drop_empty_columns(criteria_2_df)
             # criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
@@ -270,7 +268,6 @@ def select_columns(root_data_dir_path):
         output_file_name = COLUMN_SELECTION_PREFIX + scale_name
         scale_df.to_csv(output_column_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
-
 def one_hot_encode_scales(root_data_dir_path):
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_column_selected_dir_path = output_dir_path + "/" + DIR_COLUMN_SELECTED + "/"
@@ -355,16 +352,6 @@ def one_hot_encode_scales(root_data_dir_path):
         scale_df.to_csv(output_one_hot_encoded_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 def convert_values(root_data_dir_path):
-    # conversion
-    # change handling of blank to zero conversion, and handle it
-    # iterate through column names that require it, then iterate over all rows for each
-    # and check if row is empty for the scale. if it is, then leave it blank.
-    # if it is non-empty then convert this column's row value to 0.
-
-    # aggregation
-    # should be straight forward as there are unique columns between scales
-    # however there are nonunique subjectkey rows for some scales, will need to decide which to use for those scales
-
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_one_hot_encoded_dir_path = output_dir_path + "/" + DIR_ONE_HOT_ENCODED + "/"
     output_values_converted_dir_path = output_dir_path + "/" + DIR_VALUES_CONVERTED + "/"
@@ -420,6 +407,9 @@ def convert_values(root_data_dir_path):
         scale_df.to_csv(output_values_converted_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 def handle_replace_if_row_null(df, col_name):
+    """
+    Handles blank to zero conversion for rows which are null for a given scale. 
+    """
     for i, row in df.iterrows():
         # If all column values are empty for this row, then leave it all null
         if sum(row.isnull()) == len(row):
