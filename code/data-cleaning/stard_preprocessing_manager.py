@@ -34,13 +34,13 @@ def select_rows(input_dir_path):
     for filename in os.listdir(input_dir_path):
         if not os.path.exists(output_dir_path):
             os.mkdir(output_dir_path)
-            if not os.path.exists(output_row_selected_dir_path):
-                os.mkdir(output_row_selected_dir_path)
+        if not os.path.exists(output_row_selected_dir_path):
+            os.mkdir(output_row_selected_dir_path)
 
         scale_name = filename.split(".")[0]
         if scale_name not in ORIGINAL_SCALE_NAMES:
             continue
-        #
+
         # if scale_name != "qlesq01":
         #     continue
 
@@ -265,6 +265,8 @@ def select_columns(root_data_dir_path):
         # Read in the txt file + preliminary processing
         scale_df = pd.read_csv(curr_scale_path, skiprows=[1])
 
+        # TODO add dropcolumns here
+
         whitelist = SCALES[scale_name]["whitelist"]
 
         # Add subject key so that you know which subject it is
@@ -299,11 +301,9 @@ def one_hot_encode_scales(root_data_dir_path):
 
         scale_name = filename.split(".")[0].split("__")[-1]
 
-        # Skip scales that don't require one hot encoding
-        if "one_hot_encode" not in SCALES[scale_name]:
-            continue
-
-        cols_to_one_hot_encode = SCALES[scale_name]["one_hot_encode"]
+        cols_to_one_hot_encode = []
+        if "one_hot_encode" in SCALES[scale_name]:
+             cols_to_one_hot_encode = SCALES[scale_name]["one_hot_encode"]
 
         print("*************************************************************")
         print("Handling scale =", scale_name, ", filename =", filename)
@@ -350,12 +350,15 @@ def one_hot_encode_scales(root_data_dir_path):
             scale_df["bulimia||3"] = 0
             scale_df["bulimia||4"] = 0
 
-        elif scale_name in ["ccv01_w2", "ccv01_w0", "idsc01", "qids01_w0c"]:
+        elif scale_name in ["ccv01_w2", "idsc01", "qids01_w0c"]:
             # No special conversion steps prior to one-hot encoding
             pass
 
-        scale_df = one_hot_encode(scale_df, cols_to_one_hot_encode)
-        scale_df = scale_df.drop(columns=cols_to_one_hot_encode)
+        if cols_to_one_hot_encode is None or len(cols_to_one_hot_encode) == 0:
+            scale_df = scale_df
+        else:
+            scale_df = one_hot_encode(scale_df, cols_to_one_hot_encode)
+            scale_df = scale_df.drop(columns=cols_to_one_hot_encode)
 
         output_file_name = ONE_HOT_ENCODED_PREFIX + scale_name
         scale_df.to_csv(output_one_hot_encoded_dir_path + output_file_name + CSV_SUFFIX, index=False)
@@ -398,7 +401,6 @@ def convert_values(root_data_dir_path):
 
         for col_name in scale_df.columns.values:
             for key, dict in VALUE_CONVERSION_MAP.items():
-                # print("Checking [", key, "] conversion step")
                 if key == "minus":
                     continue
                 elif col_name in dict["col_names"]:
@@ -437,11 +439,6 @@ def handle_replace_if_row_null(df, col_name):
     return df
 
 def aggregate_rows(root_data_dir_path):
-    # aggregation
-    # should be straight forward as there are unique columns between scales
-    # however there are nonunique subjectkey rows for some scales, will need to decide which to use for those scales
-    # remenber to append the scale name
-
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_values_converted_dir_path = output_dir_path + "/" + DIR_VALUES_CONVERTED + "/"
     output_aggregated_rows_dir_path = output_dir_path + "/" + DIR_AGGREGATED_ROWS + "/"
@@ -450,8 +447,10 @@ def aggregate_rows(root_data_dir_path):
 
     print("\n--------------------------------5. ROW AGGREGATION-----------------------------------\n")
 
+    main_keys = ['subjectkey', 'gender||F', 'gender||M', 'interview_age']
     aggregated_df = pd.DataFrame()
 
+    i = 0
     for filename in os.listdir(input_dir_path):
         if not os.path.exists(output_dir_path):
             os.mkdir(output_dir_path)
@@ -469,12 +468,42 @@ def aggregate_rows(root_data_dir_path):
         # Read in the txt file
         scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
 
-        main_keys = ['subjectkey', 'gender||F', 'gender||M', 'interview_age']
-        scale_df = scale_df.reindex(columns=(main_keys + list([a for a in scale_df.columns if a not in main_keys])))
-        scale_df.columns = [scale_name + "__" + str(col) for col in scale_df.columns]
-        aggregated_df = pd.merge(aggregated_df, scale_df, on="subjectkey")
+        # Append scale name and version to the column name
+        # scale_df.columns = scale_name + "__" + scale_df.columns
+
+        cols = {}
+        for col_name in scale_df.columns.values:
+            if col_name in main_keys:
+                continue
+            else:
+                cols[col_name] = scale_name + "__" + str(col_name)
+
+        scale_df = scale_df.rename(columns = cols)
+
+        print(scale_df.subjectkey)
+
+        if i == 0:
+            aggregated_df = scale_df
+        else:
+            aggregated_df["subjectkey"] = aggregated_df["subjectkey"].astype(object)
+            scale_df["subjectkey"] = scale_df["subjectkey"].astype(object)
+
+
+            # The left df has to be the one with more rows, as joining the two will ensure all subjects are grabbed.
+            if aggregated_df.shape[0] >= scale_df.shape[0]:
+                left = aggregated_df
+                right = scale_df
+            else:
+                left = scale_df
+                right = aggregated_df
+
+            aggregated_df = left.merge(right, on="subjectkey", how="left")
+
+            # aggregated_df = aggregated_df.join(scale_df.set_index("subjectkey"), on="subjectkey")
+        i += 1
 
     output_file_name = AGGREGATED_ROWS_PREFIX + "stard_data_matrix"
+    aggregated_df = aggregated_df.reindex(columns=(main_keys + list([a for a in aggregated_df.columns if a not in main_keys])))
     aggregated_df.to_csv(output_aggregated_rows_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 
