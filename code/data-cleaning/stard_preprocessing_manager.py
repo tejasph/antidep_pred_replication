@@ -450,8 +450,7 @@ def aggregate_rows(root_data_dir_path):
     main_keys = ['subjectkey', 'gender||F', 'gender||M', 'interview_age']
     aggregated_df = pd.DataFrame()
 
-    i = 0
-    for filename in os.listdir(input_dir_path):
+    for i, filename in enumerate(os.listdir(input_dir_path)):
         if not os.path.exists(output_dir_path):
             os.mkdir(output_dir_path)
         if not os.path.exists(output_aggregated_rows_dir_path):
@@ -469,25 +468,19 @@ def aggregate_rows(root_data_dir_path):
         scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
 
         # Append scale name and version to the column name
-        # scale_df.columns = scale_name + "__" + scale_df.columns
-
         cols = {}
         for col_name in scale_df.columns.values:
             if col_name in main_keys:
                 continue
             else:
                 cols[col_name] = scale_name + "__" + str(col_name)
-
         scale_df = scale_df.rename(columns = cols)
-
-        print(scale_df.subjectkey)
 
         if i == 0:
             aggregated_df = scale_df
         else:
             aggregated_df["subjectkey"] = aggregated_df["subjectkey"].astype(object)
             scale_df["subjectkey"] = scale_df["subjectkey"].astype(object)
-
 
             # The left df has to be the one with more rows, as joining the two will ensure all subjects are grabbed.
             if aggregated_df.shape[0] >= scale_df.shape[0]:
@@ -498,9 +491,6 @@ def aggregate_rows(root_data_dir_path):
                 right = aggregated_df
 
             aggregated_df = left.merge(right, on="subjectkey", how="left")
-
-            # aggregated_df = aggregated_df.join(scale_df.set_index("subjectkey"), on="subjectkey")
-        i += 1
 
     output_file_name = AGGREGATED_ROWS_PREFIX + "stard_data_matrix"
     aggregated_df = aggregated_df.reindex(columns=(main_keys + list([a for a in aggregated_df.columns if a not in main_keys])))
