@@ -75,7 +75,7 @@ def select_rows(input_dir_path):
             output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w2"
 
             # criteria_1_df = drop_empty_columns(criteria_1_df)
-            criteria_2_df = drop_empty_columns(criteria_2_df)
+            # criteria_2_df = drop_empty_columns(criteria_2_df)
             # criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
@@ -91,8 +91,6 @@ def select_rows(input_dir_path):
             output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_enroll"
             output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w0"
 
-            criteria_1_df = drop_empty_columns(criteria_1_df)
-            criteria_2_df = drop_empty_columns(criteria_2_df)
             criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
@@ -136,7 +134,6 @@ def select_rows(input_dir_path):
                   .format(["vsoin", "vmnin", "vemin", "vhysm", "vmdsd"], scale_df.shape[0]))
 
             output_file_name = "pre" + ROW_SELECTION_PREFIX + "pre" + scale_name
-            scale_df = drop_empty_columns(scale_df)
             scale_df.to_csv(output_row_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
         else:
@@ -156,7 +153,6 @@ def select_rows(input_dir_path):
                 scale_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 3)]
 
             output_file_name = ROW_SELECTION_PREFIX + scale_name
-            scale_df = drop_empty_columns(scale_df)
             scale_df = select_subject_rows(scale_df, scale_name, selection_criteria)
             scale_df.to_csv(output_row_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
@@ -183,11 +179,6 @@ def select_rows(input_dir_path):
                                  & (2 <= scale_df["week"])
                                  & (scale_df["week"] < 3)
                                  & (scale_df["version_form"] == "Self Rating")]
-
-        criteria_1_df = drop_empty_columns(criteria_1_df)
-        criteria_2_df = drop_empty_columns(criteria_2_df)
-        criteria_3_df = drop_empty_columns(criteria_3_df)
-        criteria_4_df = drop_empty_columns(criteria_4_df)
 
         scale_name = "qids01"
         selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
@@ -236,7 +227,6 @@ def select_subject_rows(scale_df, scale_name, selection_criteria):
 """
 root_data_dir_path is the path to the root of the folder containing the original scales
 """
-
 def select_columns(root_data_dir_path):
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
@@ -265,7 +255,8 @@ def select_columns(root_data_dir_path):
         # Read in the txt file + preliminary processing
         scale_df = pd.read_csv(curr_scale_path, skiprows=[1])
 
-        # TODO add dropcolumns here
+        # Drop empty columns
+        scale_df = drop_empty_columns(scale_df)
 
         whitelist = SCALES[scale_name]["whitelist"]
 
