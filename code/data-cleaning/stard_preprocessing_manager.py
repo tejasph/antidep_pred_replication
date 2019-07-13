@@ -5,7 +5,7 @@ import numpy as np
 from collections import namedtuple
 
 from utils import *
-from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP
+from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP, VALUE_CONVERSION_MAP_IMPUTE
 
 """ 
 This will take in multiple text files (representing psychiatric scales) and output multiple CSV files, at least for each scale read in.
@@ -513,20 +513,99 @@ def impute(root_data_dir_path):
         print("Handling full data matrix =", scale_name, ", filename =", filename)
 
         # Read in the txt file
-        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+        agg_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
 
-        for col_name in scale_df.columns.values:
-            for key, dict in VALUE_CONVERSION_MAP.items():
-                # Performs imputation per column. Could try to optimize by providing a set of columns to be handled at once.
-                if col_name in dict["col_names"]:
-                    scale_df[col_name] = scale_df[col_name].astype("object")
-                    scale_df[col_name] = scale_df[col_name].replace(to_replace=dict["conversion_map"])
+        # Handle replace with mean or median
+        agg_df = replace_with_median(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_median"]["col_names"]))
+        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_mode"]["col_names"]))
 
-        final_data_matrix = scale_df
+        # Handle direct value conversions (NaN to a specific number)
+        blank_to_zero_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_zero"]
+        blank_to_one_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_one"]
+        blank_to_twenty_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_twenty"]
+        agg_df = replace(agg_df, list(blank_to_zero_config["col_names"]), blank_to_zero_config["conversion_map"])
+        agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
+        agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
+
+        # Handle imputation based on cross-column conditions
+        for i, row in agg_df.iterrows():
+            if 'ucq01__ucq010' in row:
+                val = 1
+                if row['ucq01__ucq010'] == 0:
+                    val = 0
+                agg_df.set_value(i, 'ucq01__ucq020', val)
+                agg_df.set_value(i, 'ucq01__ucq030', val)
+            if 'wpai01__wpai01' in row:
+                if row['wpai01__wpai01'] == 1:
+                    agg_df.set_value(i, 'dm01_w0__inc_curr', 1)
+                    agg_df.set_value(i, 'dm01_w0__mempl', 2000)
+                    agg_df.set_value(i, 'dm01_enroll__empl||1.0', 0)
+                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 1)
+                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 0)
+                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 1)
+
+                elif row['wpai01__wpai01'] == 0 or np.isnan(row['wpai01__wpai01']):
+                    agg_df.set_value(i, 'dm01_w0__inc_curr', 0)
+                    agg_df.set_value(i, 'dm01_w0__mempl', 0)
+                    agg_df.set_value(i, 'dm01_enroll__empl||1.0', 1)
+                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
+
+                else:
+                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
+                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)
+                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
+            if 'wsas01__totwsas' in row:
+                col_names = ['wsas01__wsas01', 'wsas01__wsas03', 'wsas01__wsas04', 'wsas01__wsas05']
+                agg_df.set_value(i, 'wsas01__totwsas', np.sum(row[col_names]))
+            if 'hrsd01__hdtot_r' in row:
+                col_names = ['hrsd01__hsoin',
+                             'hrsd01__hmnin',
+                             'hrsd01__hemin',
+                             'hrsd01__hmdsd',
+                             'hrsd01__hinsg',
+                             'hrsd01__happt',
+                             'hrsd01__hwl',
+                             'hrsd01__hsanx',
+                             'hrsd01__hhypc',
+                             'hrsd01__hvwsf',
+                             'hrsd01__hsuic',
+                             'hrsd01__hintr',
+                             'hrsd01__hengy',
+                             'hrsd01__hslow',
+                             'hrsd01__hagit',
+                             'hrsd01__hsex',
+                             'hrsd01__hdtot_r']
+                agg_df.set_value(i, 'hrsd01__hdtot_r', np.sum(row[col_names]))
+
+        # Handle gender and age
+        # Read in crs01 and retrieve the missing values
+        
+        # Add new features
+
+        # Drop columns
+        # wsas01__wsastot
+
+        # Loop through each row, and replace specific columns by the combination of other columns.
+        final_data_matrix = agg_df
 
     output_file_name = IMPUTED_PREFIX + "stard_data_matrix"
     final_data_matrix.to_csv(output_imputed_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
+def replace_with_median(df, col_names):
+    if set(col_names).issubset(df.columns):
+        df[col_names] = df[col_names].apply(lambda col: col.fillna(col.median()), axis=0)
+    return df
+
+def replace_with_mode(df, col_names):
+    if set(col_names).issubset(df.columns):
+        df[col_names] = df[col_names].apply(lambda col: col.fillna(col.mode()), axis=0)
+    return df
+
+def replace(df, col_names, conversion_map):
+    if set(col_names).issubset(df.columns):
+        df[col_names] = df[col_names].replace(to_replace=conversion_map)
+        print("Replaced", conversion_map)
+    return df
 
 def one_hot_encode(df, columns):
     # Convert categorical variables to indicator variables via one-hot encoding
