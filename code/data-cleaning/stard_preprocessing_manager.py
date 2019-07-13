@@ -16,6 +16,7 @@ COLUMN_SELECTION_PREFIX = ROW_SELECTION_PREFIX + "cs__"
 ONE_HOT_ENCODED_PREFIX = COLUMN_SELECTION_PREFIX + "ohe__"
 VALUES_CONVERTED_PREFIX = ONE_HOT_ENCODED_PREFIX + "vc__"
 AGGREGATED_ROWS_PREFIX = VALUES_CONVERTED_PREFIX + "ag__" # Final: "rs__cs__ohe__vc__ag__" which represents the order of the pipeline
+IMPUTED_PREFIX = AGGREGATED_ROWS_PREFIX + "i__"
 CSV_SUFFIX = ".csv"
 
 DIR_PROCESSED_DATA = "processed_data"
@@ -24,6 +25,7 @@ DIR_COLUMN_SELECTED = "column_selected_scales"
 DIR_ONE_HOT_ENCODED = "one_hot_encoded_scales"
 DIR_VALUES_CONVERTED = "values_converted_scales"
 DIR_AGGREGATED_ROWS = "aggregated_rows_scales"
+DIR_IMPUTED = "imputed_scales"
 
 def select_rows(input_dir_path):
     output_dir_path = input_dir_path + "/" + DIR_PROCESSED_DATA
@@ -352,6 +354,13 @@ def one_hot_encode_scales(root_data_dir_path):
         scale_df.to_csv(output_one_hot_encoded_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 def convert_values(root_data_dir_path):
+    """
+    Handles converting values for different variables per scale. This is similar to the imputation step, in that certain
+    values are being derived, however the difference is that this step handles it solely on the scale-level. For (1) generic
+    value conversion that is common across all scales, or (2) value conversion/imputation is dependent on values of features
+    between different scales, then this will be handled in step #6, imputation. 
+    """
+
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_one_hot_encoded_dir_path = output_dir_path + "/" + DIR_ONE_HOT_ENCODED + "/"
     output_values_converted_dir_path = output_dir_path + "/" + DIR_VALUES_CONVERTED + "/"
@@ -477,6 +486,47 @@ def aggregate_rows(root_data_dir_path):
     aggregated_df = aggregated_df.reindex(columns=(main_keys + list([a for a in aggregated_df.columns if a not in main_keys])))
     aggregated_df.to_csv(output_aggregated_rows_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
+def impute(root_data_dir_path):
+    output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
+    output_aggregated_rows_dir_path = output_dir_path + "/" + DIR_AGGREGATED_ROWS + "/"
+    output_imputed_dir_path = output_dir_path + "/" + DIR_IMPUTED + "/"
+
+    # The input directory path will be that from the previous step (#5), row aggregation.
+    input_dir_path = output_aggregated_rows_dir_path
+
+    print("\n--------------------------------6. IMPUTATION-----------------------------------\n")
+
+    final_data_matrix = pd.DataFrame()
+
+    for i, filename in enumerate(os.listdir(input_dir_path)):
+        if not os.path.exists(output_dir_path):
+            os.mkdir(output_dir_path)
+        if not os.path.exists(output_imputed_dir_path):
+            os.mkdir(output_imputed_dir_path)
+
+        if "rs__cs__ohe__vc__ag__" not in filename:
+            continue
+
+        scale_name = filename.split(".")[0].split("__")[-1]
+
+        print("*************************************************************")
+        print("Handling full data matrix =", scale_name, ", filename =", filename)
+
+        # Read in the txt file
+        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+
+        for col_name in scale_df.columns.values:
+            for key, dict in VALUE_CONVERSION_MAP.items():
+                # Performs imputation per column. Could try to optimize by providing a set of columns to be handled at once.
+                if col_name in dict["col_names"]:
+                    scale_df[col_name] = scale_df[col_name].astype("object")
+                    scale_df[col_name] = scale_df[col_name].replace(to_replace=dict["conversion_map"])
+
+        final_data_matrix = scale_df
+
+    output_file_name = IMPUTED_PREFIX + "stard_data_matrix"
+    final_data_matrix.to_csv(output_imputed_dir_path + output_file_name + CSV_SUFFIX, index=False)
+
 
 def one_hot_encode(df, columns):
     # Convert categorical variables to indicator variables via one-hot encoding
@@ -507,12 +557,16 @@ if __name__ == "__main__":
     elif is_valid and option in ["--aggregate-rows", "-ag"]:
         aggregate_rows(data_dir_path)
 
+    elif is_valid and option in ["--impute", "-im"]:
+        impute(data_dir_path)
+
     elif is_valid and option in ["--run-all", "-a"]:
         select_rows(data_dir_path)
         select_columns(data_dir_path)
         one_hot_encode_scales(data_dir_path)
         convert_values(data_dir_path)
         aggregate_rows(data_dir_path)
+        impute(data_dir_path)
 
     else:
         raise Exception("Enter valid arguments\n"

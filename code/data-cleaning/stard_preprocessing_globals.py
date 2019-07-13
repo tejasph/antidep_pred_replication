@@ -262,3 +262,18 @@ ONE_HOT_ENCODE = {
     'ax_cocaine',
     'iwrse'
 }
+
+VALUE_CONVERSION_MAP_IMPUTE = {
+    "blank_to_zero": {
+        "col_names": {'ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2__effct', 'ccv01_w2__cncn', 'ccv01_w2__prtcl', 'ccv01_w2__trtmt||2.0', 'ccv01_w2__trtmt||3.0', 'ccv01_w2__trtmt||4.0', 'ucq01__ucq080', 'ucq01__ucq091', 'ucq01__ucq092', 'ucq01__ucq100', 'ucq01__ucq110', 'ucq01__ucq120', 'ucq01__ucq130', 'ucq01__ucq140', 'ucq01__ucq150', 'ucq01__ucq160', 'ucq01__ucq170', 'ucq01__ucq040', 'ucq01__ucq050', 'ucq01__ucq060', 'ucq01__ucq070', 'dm01_w0__assist', 'dm01_w0__massist', 'dm01_w0__unempl', 'dm01_w0__munempl', 'dm01_w0__otherinc', 'dm01_w0__minc_other', 'dm01_w0__totincom', 'wpai01__wpai01', 'wpai01__wpai02', 'wpai01__wpai03', 'wpai01__wpai04', 'wpai01__wpai05', 'wpai01__wpai_totalhrs', 'wpai01__wpai_pctmissed', 'wpai01__wpai_pctworked', 'wpai01__wpai_pctwrkimp', 'wpai01__wpai_totwrkimp', 'dm01_enroll__resid||2.0', 'dm01_enroll__resid||3.0', 'dm01_enroll__resid||4.0', 'dm01_enroll__resid||5.0', 'dm01_enroll__resid||6.0', 'dm01_enroll__resid||7.0', 'dm01_enroll__resid||8.0', 'dm01_enroll__rtown||1.0', 'dm01_enroll__rtown||2.0', 'dm01_enroll__marital||2.0', 'dm01_enroll__marital||3.0', 'dm01_enroll__marital||4.0', 'dm01_enroll__marital||5.0', 'dm01_enroll__marital||6.0', 'dm01_enroll__empl||2.0', 'dm01_enroll__empl||4.0', 'dm01_enroll__empl||5.0', 'dm01_enroll__empl||6.0', 'dm01_enroll__volun||1.0', 'dm01_enroll__volun||2.0', 'dm01_enroll__leave||1.0', 'dm01_enroll__publica||1.0', 'dm01_enroll__medicaid||1.0', 'phx01__pd_ag', 'phx01__pd_noag', 'phx01__specphob', 'phx01__soc_phob', 'phx01__ocd_phx', 'phx01__psd', 'phx01__gad_phx', 'phx01__axi_oth', 'phx01__aii_def', 'phx01__aii_na', 'phx01__pd_border', 'phx01__pd_depend', 'phx01__pd_antis', 'phx01__pd_paran', 'phx01__pd_nos', 'phx01__axii_oth', 'phx01__dep', 'phx01__deppar', 'phx01__depsib', 'phx01__depchld', 'phx01__bip', 'phx01__bippar', 'phx01__bipsib', 'phx01__bipchld', 'phx01__alcohol', 'phx01__alcpar', 'phx01__alcsib', 'phx01__alcchld', 'phx01__drug_phx', 'phx01__drgpar', 'phx01__drgsib', 'phx01__drgchld', 'phx01__suic_phx', 'phx01__suicpar', 'phx01__suicsib', 'phx01__suicchld', 'phx01__wrsms', 'phx01__anorexia', 'phx01__bulimia||2/5', 'phx01__bulimia||3', 'phx01__bulimia||4', 'phx01__alcoh||1.0', 'phx01__alcoh||2.0', 'phx01__amphet||1.0', 'phx01__amphet||2.0', 'phx01__cannibis||1.0', 'phx01__cannibis||2.0', 'phx01__opioid||1.0', 'phx01__opioid||2.0', 'phx01__ax_cocaine||1.0', 'phx01__ax_cocaine||2.0', 'mhx01__psmed', 'idsc01__ivrtn', 'idsc01__ienv', 'idsc01__iapdc', 'idsc01__iapin', 'idsc01__iwtdc', 'idsc01__iwtin', 'side_effects01__fisfq', 'side_effects01__fisin', 'side_effects01__grseb'},
+        "conversion_map": {np.nan: 0}
+    },
+    "blank_to_one": {
+        "col_names": {'ccv01_w2__stmed', 'ccv01_w2__trtmt||1.0', 'ucq01__ucq010', 'dm01_enroll__resid||1.0', 'dm01_enroll__rtown||3.0', 'dm01_enroll__marital||1.0', 'dm01_enroll__volun||0.0', 'dm01_enroll__leave||0.0', 'dm01_enroll__publica||0.0', 'dm01_enroll__medicaid||0.0', 'phx01__epino', 'phx01__ai_none', 'phx01__aii_none'},
+        "conversion_map": {np.nan: 1}
+    },
+    "blank_to_twenty": {
+        "col_names": {'ccv01_w2__medication1_dosage'},
+        "conversion_map": {np.nan: 20}
+    }
+}
