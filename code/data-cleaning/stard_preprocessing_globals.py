@@ -285,3 +285,5 @@ VALUE_CONVERSION_MAP_IMPUTE = {
         "conversion_map": None
     }
 }
+
+NEW_FEATURES = ['imput_anyanxiety', 'imput_bech', 'imput_maier', 'imput_santen', 'imput_gibbons', 'imput_hamd7', 'imput_hamdret', 'imput_hamdanx', 'imput_hamdsle', 'imput_idsc5w0', 'imput_idsc5w2', 'imput_idsc5pccg', 'imput_qidscpccg']

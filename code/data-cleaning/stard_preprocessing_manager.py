@@ -5,7 +5,8 @@ import numpy as np
 from collections import namedtuple
 
 from utils import *
-from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP, VALUE_CONVERSION_MAP_IMPUTE
+from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP, \
+    VALUE_CONVERSION_MAP_IMPUTE, NEW_FEATURES
 
 """ 
 This will take in multiple text files (representing psychiatric scales) and output multiple CSV files, at least for each scale read in.
@@ -16,7 +17,7 @@ COLUMN_SELECTION_PREFIX = ROW_SELECTION_PREFIX + "cs__"
 ONE_HOT_ENCODED_PREFIX = COLUMN_SELECTION_PREFIX + "ohe__"
 VALUES_CONVERTED_PREFIX = ONE_HOT_ENCODED_PREFIX + "vc__"
 AGGREGATED_ROWS_PREFIX = VALUES_CONVERTED_PREFIX + "ag__" # Final: "rs__cs__ohe__vc__ag__" which represents the order of the pipeline
-IMPUTED_PREFIX = AGGREGATED_ROWS_PREFIX + "i__"
+IMPUTED_PREFIX = AGGREGATED_ROWS_PREFIX + "im__"
 CSV_SUFFIX = ".csv"
 
 DIR_PROCESSED_DATA = "processed_data"
@@ -26,6 +27,7 @@ DIR_ONE_HOT_ENCODED = "one_hot_encoded_scales"
 DIR_VALUES_CONVERTED = "values_converted_scales"
 DIR_AGGREGATED_ROWS = "aggregated_rows_scales"
 DIR_IMPUTED = "imputed_scales"
+DIR_Y_MATRIX = "y_matrix"
 
 def select_rows(input_dir_path):
     output_dir_path = input_dir_path + "/" + DIR_PROCESSED_DATA
@@ -527,8 +529,28 @@ def impute(root_data_dir_path):
         agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
         agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
 
+        crs01_df = pd.read_csv(root_data_dir_path + "/crs01.txt", sep="\t", skiprows=[1])
+
+        for new_feature in NEW_FEATURES:
+            agg_df[new_feature] = np.nan
+
         # Handle imputation based on cross-column conditions
         for i, row in agg_df.iterrows():
+            if ('gender||F' in row and 'gender||M' in row) and (np.isnan(row['gender||F']) or np.isnan(row['gender||M'])):
+                    gender = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['gender'].iloc[0]
+                    if gender == "M":
+                        agg_df.set_value(i, 'gender||F', 0)
+                        agg_df.set_value(i, 'gender||M', 1)
+                    elif gender == "F" or np.isnan(gender):
+                        agg_df.set_value(i, 'gender||F', 1)
+                        agg_df.set_value(i, 'gender||M', 0)
+            if 'interview_age' in row and np.isnan(row['interview_age']):
+                age = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['interview_age'].iloc[0]
+                if np.isnan(age):
+                    print("Age is null", row["subjectkey"])
+                    agg_df.set_value(i, 'interview_age', agg_df['interview_age'].median())
+                else:
+                    agg_df.set_value(i, 'interview_age', age)
             if 'ucq01__ucq010' in row:
                 val = 1
                 if row['ucq01__ucq010'] == 0:
@@ -577,19 +599,62 @@ def impute(root_data_dir_path):
                              'hrsd01__hdtot_r']
                 agg_df.set_value(i, 'hrsd01__hdtot_r', np.sum(row[col_names]))
 
-        # Handle gender and age
-        # Read in crs01 and retrieve the missing values
-        
-        # Add new features
+            agg_df = add_new_imputed_features(agg_df, row, i)
 
         # Drop columns
-        # wsas01__wsastot
+        agg_df = agg_df.drop(columns=['wsas01__wsastot'])
 
         # Loop through each row, and replace specific columns by the combination of other columns.
         final_data_matrix = agg_df
 
     output_file_name = IMPUTED_PREFIX + "stard_data_matrix"
     final_data_matrix.to_csv(output_imputed_dir_path + output_file_name + CSV_SUFFIX, index=False)
+    print("File has been written to:", output_imputed_dir_path + output_file_name + CSV_SUFFIX)
+
+def add_new_imputed_features(df, row, i):
+    imput_anyanxiety = ['phx01__psd', 'phx01__pd_ag', 'phx01__pd_noag', 'phx01__specphob', 'phx01__soc_phob', 'phx01__gad_phx']
+    val = 1 if sum(row[imput_anyanxiety] == 1) > 0 else 0
+    df.set_value(i, 'imput_anyanxiety', val)
+
+    imput_bech = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng']
+    df.set_value(i, 'imput_bech', np.sum(row[imput_bech]))
+
+    imput_maier = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hagit']
+    df.set_value(i, 'imput_maier', np.sum(row[imput_maier]))
+
+    imput_santen = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hsuic']
+    df.set_value(i, 'imput_santen', np.sum(row[imput_santen]))
+
+    imput_gibbons = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hsuic', 'hrsd01__hagit', 'hrsd01__hsanx', 'hrsd01__hsex']
+    df.set_value(i, 'imput_gibbons', np.sum(row[imput_gibbons]))
+
+    imput_hamd7 = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hpanx', 'hrsd01__hsanx', 'hrsd01__ hengy', 'hrsd01__hsuicide']
+    df.set_value(i, 'imput_hamd7', np.sum(row[imput_hamd7]))
+
+    imput_hamdret = ['hrsd01__hmdsd', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hsex']
+    df.set_value(i, 'imput_hamdret', np.sum(row[imput_hamdret]))
+
+    imput_hamdanx = ['hrsd01__hpanx', 'hrsd01__hsanx', 'hrsd01__happt', 'hrsd01__hengy', 'hrsd01__hhypc']
+    df.set_value(i, 'imput_hamdanx', np.sum(row[imput_hamdanx]))
+
+    imput_hamdsle = ['hrsd01__hsoin', 'hrsd01__hmnin', 'hrsd01__hemin']
+    df.set_value(i, 'imput_hamdsle', np.sum(row[imput_hamdsle]))
+
+    imput_idsc5w0 = ['qids01_w0c__vmdsd', 'qids01_w0c__vintr', 'qids01_w0c__vengy', 'qids01_w0c__vvwsf', 'qids01_w0c__vslow']
+    val_imput_idsc5w0 = np.sum(row[imput_idsc5w0])
+    df.set_value(i, 'imput_idsc5w0', val_imput_idsc5w0)
+
+    imput_idsc5w2 = ['qids01_w2c__vmdsd', 'qids01_w2c__vintr', 'qids01_w2c__vengy', 'qids01_w2c__vvwsf', 'qids01_w2c__vslow']
+    val_imput_idsc5w2 = np.sum(row[imput_idsc5w2])
+    df.set_value(i, 'imput_idsc5w2', val_imput_idsc5w2)
+
+    val = round((val_imput_idsc5w2 - val_imput_idsc5w0) / val_imput_idsc5w0 if val_imput_idsc5w0 else 0, 3)
+    df.set_value(i, 'imput_idsc5pccg', val)
+
+    val = round((row['qids01_w2c__qstot'] - row['qids01_w0c__qstot']) / row['qids01_w0c__qstot'] if row['qids01_w0c__qstot'] else 0, 3)
+    df.set_value(i, 'imput_qidscpccg', val)
+
+    return df
 
 def replace_with_median(df, col_names):
     if set(col_names).issubset(df.columns):
@@ -616,6 +681,72 @@ def one_hot_encode(df, columns):
 def drop_empty_columns(df):
     return df.dropna(axis="columns", how="all")  # Drop columns that are all empty
 
+def generate_y(root_data_dir_path):
+    output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
+    output_y_dir_path = output_dir_path + "/" + DIR_Y_MATRIX + "/"
+
+    print("\n--------------------------------7. Y MATRIX GENERATION-----------------------------------\n")
+
+    y_lvl2_rem_ccv01 = pd.DataFrame()
+    y_lvl2_rem_qids01 = pd.DataFrame()
+
+    for filename in os.listdir(root_data_dir_path):
+        if not os.path.exists(output_dir_path):
+            os.mkdir(output_dir_path)
+        if not os.path.exists(output_y_dir_path):
+            os.mkdir(output_y_dir_path)
+
+        scale_name = filename.split(".")[0]
+        if scale_name not in ['ccv01', 'qids01']:
+            continue
+
+        curr_scale_path = root_data_dir_path + "/" + filename
+
+        # Read in the txt file + preliminary processing
+        scale_df = pd.read_csv(curr_scale_path, sep='\t', skiprows=[1])
+
+        print("*************************************************************")
+        print("Handling scale = ", scale_name)
+
+        if scale_name == "ccv01":
+            scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
+            scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
+
+            i = 0
+            for id, group in scale_df.groupby(['subjectkey']):
+                y_lvl2_rem_ccv01.loc[i, "subjectkey"] = id
+                subset = group[(group['level'] == "Level 1") | (group['level'] == "Level 2") & (group['remsn'] == 1)]
+                if subset.shape[0] == 0:
+                    y_lvl2_rem_ccv01.loc[i, "target"] = 0
+                else:
+                    y_lvl2_rem_ccv01.loc[i, "target"] = 1
+                i += 1
+
+        if scale_name == "qids01":
+            # scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
+            scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
+
+            i = 0
+            for id, group in scale_df.groupby(['subjectkey']):
+                y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
+                subset = group[(group['level'] == "Level 3") | (group['level'] == "Level 4")]
+                if subset.shape[0] == 0:
+                    y_lvl2_rem_qids01.loc[i, "target"] = 0
+                else:
+                    subset = group[(group['version_form'] == "Clinician") & (group['level'] != "Follow-Up") & (group['qstot'] <= 5)]
+                    if subset.shape[0] > 0:
+                        y_lvl2_rem_qids01.loc[i, "target"] = 1
+                    else:
+                        y_lvl2_rem_qids01.loc[i, "target"] = 0
+                i += 1
+
+    y_lvl2_rem_ccv01.to_csv(output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids01.to_csv(output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX, index=False)
+
+    print("File has been written to:", output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX)
+    print("File has been written to:", output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX)
+
+
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
     option = sys.argv[2]
@@ -639,6 +770,9 @@ if __name__ == "__main__":
     elif is_valid and option in ["--impute", "-im"]:
         impute(data_dir_path)
 
+    elif is_valid and option in ["--y-generation", "-y"]:
+        generate_y(data_dir_path)
+
     elif is_valid and option in ["--run-all", "-a"]:
         select_rows(data_dir_path)
         select_columns(data_dir_path)
@@ -646,6 +780,7 @@ if __name__ == "__main__":
         convert_values(data_dir_path)
         aggregate_rows(data_dir_path)
         impute(data_dir_path)
+        generate_y(data_dir_path)
 
     else:
         raise Exception("Enter valid arguments\n"

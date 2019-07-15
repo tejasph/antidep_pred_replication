@@ -2,7 +2,7 @@
 Allows you to paste strings that are separated by a newline. Spits out the python list representation of it.
 """
 
-names =[]
+names = []
 
 try:
     while True:
@@ -11,3 +11,4 @@ except EOFError:
     pass
 
 print(names)
+
