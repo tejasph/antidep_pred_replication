@@ -711,11 +711,10 @@ def generate_y(root_data_dir_path):
         if scale_name == "ccv01":
             scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
-
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
                 y_lvl2_rem_ccv01.loc[i, "subjectkey"] = id
-                subset = group[(group['level'] == "Level 1") | (group['level'] == "Level 2") & (group['remsn'] == 1)]
+                subset = group[((group['level'] == "Level 1") | (group['level'] == "Level 2")) & (group['remsn'] == 1)]
                 if subset.shape[0] == 0:
                     y_lvl2_rem_ccv01.loc[i, "target"] = 0
                 else:
@@ -723,14 +722,12 @@ def generate_y(root_data_dir_path):
                 i += 1
 
         if scale_name == "qids01":
-            # scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
-
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
                 y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
                 subset = group[(group['level'] == "Level 3") | (group['level'] == "Level 4")]
-                if subset.shape[0] == 0:
+                if subset.shape[0] > 0:
                     y_lvl2_rem_qids01.loc[i, "target"] = 0
                 else:
                     subset = group[(group['version_form'] == "Clinician") & (group['level'] != "Follow-Up") & (group['qstot'] <= 5)]
