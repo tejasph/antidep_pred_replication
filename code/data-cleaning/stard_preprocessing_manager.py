@@ -29,6 +29,8 @@ DIR_AGGREGATED_ROWS = "aggregated_rows_scales"
 DIR_IMPUTED = "imputed_scales"
 DIR_Y_MATRIX = "y_matrix"
 
+LINE_BREAK = "*************************************************************"
+
 def select_rows(input_dir_path):
     output_dir_path = input_dir_path + "/" + DIR_PROCESSED_DATA
     output_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
@@ -45,16 +47,13 @@ def select_rows(input_dir_path):
         if scale_name not in ORIGINAL_SCALE_NAMES:
             continue
 
-        # if scale_name != "qlesq01":
-        #     continue
-
         curr_scale_path = input_dir_path + "/" + filename
 
         # Read in the txt file + preliminary processing
         scale_df = pd.read_csv(curr_scale_path, sep='\t', skiprows=[1])
         scale_df = drop_empty_columns(scale_df)
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale = ", scale_name)
 
         selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
@@ -66,22 +65,13 @@ def select_rows(input_dir_path):
             # Convert column to float type
             scale_df.loc[:, "week"] = scale_df["week"].astype("float")
 
-            # Split into 2 separate files
-            # if scale_name == "side_effects01":
-            #     # This scale has the values in the level column as floats.
-            #     criteria_1_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 3)]
-            #     criteria_2_df = scale_df[(scale_df["level"] == 1) & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
             if scale_name == "ccv01":
-                # criteria_1_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["week"] == 2)]
                 criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
 
-            # output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_w0"
             output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w2"
 
-            # criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
 
-            # criteria_1_df.to_csv(output_row_selected_dir_path + output_file_name_1 + CSV_SUFFIX, index=False)
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
         elif scale_name == "dm01":
@@ -251,7 +241,7 @@ def select_columns(root_data_dir_path):
         curr_scale_path = input_dir_path + "/" + filename
 
         scale_name = filename.split(".")[0].split("__")[-1]
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file + preliminary processing
@@ -297,7 +287,7 @@ def one_hot_encode_scales(root_data_dir_path):
         if "one_hot_encode" in SCALES[scale_name]:
              cols_to_one_hot_encode = SCALES[scale_name]["one_hot_encode"]
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
@@ -382,7 +372,7 @@ def convert_values(root_data_dir_path):
 
         scale_name = filename.split(".")[0].split("__")[-1]
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
@@ -453,7 +443,7 @@ def aggregate_rows(root_data_dir_path):
 
         scale_name = filename.split(".")[0].split("__")[-1]
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
@@ -511,13 +501,13 @@ def impute(root_data_dir_path):
 
         scale_name = filename.split(".")[0].split("__")[-1]
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling full data matrix =", scale_name, ", filename =", filename)
 
         # Read in the txt file
         agg_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
 
-        # Handle replace with mean or median
+        # Handle replace with mode or median
         agg_df = replace_with_median(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_median"]["col_names"]))
         agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_mode"]["col_names"]))
 
@@ -608,8 +598,9 @@ def impute(root_data_dir_path):
         final_data_matrix = agg_df
 
     output_file_name = IMPUTED_PREFIX + "stard_data_matrix"
-    final_data_matrix.to_csv(output_imputed_dir_path + output_file_name + CSV_SUFFIX, index=False)
-    print("File has been written to:", output_imputed_dir_path + output_file_name + CSV_SUFFIX)
+    output_path = output_imputed_dir_path + output_file_name + CSV_SUFFIX
+    final_data_matrix.to_csv(output_path, index=False)
+    print("File has been written to:", output_path)
 
 def add_new_imputed_features(df, row, i):
     imput_anyanxiety = ['phx01__psd', 'phx01__pd_ag', 'phx01__pd_noag', 'phx01__specphob', 'phx01__soc_phob', 'phx01__gad_phx']
@@ -659,17 +650,25 @@ def add_new_imputed_features(df, row, i):
 def replace_with_median(df, col_names):
     if set(col_names).issubset(df.columns):
         df[col_names] = df[col_names].apply(lambda col: col.fillna(col.median()), axis=0)
+        print("Imputed blanks with median")
+    else:
+        raise Exception("Column names are not subset.")
     return df
 
 def replace_with_mode(df, col_names):
     if set(col_names).issubset(df.columns):
-        df[col_names] = df[col_names].apply(lambda col: col.fillna(col.mode()), axis=0)
+        df[col_names] = df[col_names].apply(lambda col: col.fillna(float(col.median())), axis=0)
+        print("Imputed blanks with mode")
+    else:
+        raise Exception("Column names are not subset.")
     return df
 
 def replace(df, col_names, conversion_map):
     if set(col_names).issubset(df.columns):
         df[col_names] = df[col_names].replace(to_replace=conversion_map)
         print("Replaced", conversion_map)
+    else:
+        raise Exception("Column names are not subset.")
     return df
 
 def one_hot_encode(df, columns):
@@ -689,6 +688,7 @@ def generate_y(root_data_dir_path):
 
     y_lvl2_rem_ccv01 = pd.DataFrame()
     y_lvl2_rem_qids01 = pd.DataFrame()
+    y_wk8_response_qids01 = pd.DataFrame()
 
     for filename in os.listdir(root_data_dir_path):
         if not os.path.exists(output_dir_path):
@@ -705,7 +705,7 @@ def generate_y(root_data_dir_path):
         # Read in the txt file + preliminary processing
         scale_df = pd.read_csv(curr_scale_path, sep='\t', skiprows=[1])
 
-        print("*************************************************************")
+        print(LINE_BREAK)
         print("Handling scale = ", scale_name)
 
         if scale_name == "ccv01":
@@ -737,12 +737,34 @@ def generate_y(root_data_dir_path):
                         y_lvl2_rem_qids01.loc[i, "target"] = 0
                 i += 1
 
+            # Create CAN-BIND overlapping targets
+            i = 0
+            for id, group in scale_df.groupby(['subjectkey']):
+                # Grab the baseline entry
+                subset = group[(group['version_form'] == "Self Rating")]
+                if subset.shape[0] == 0:
+                    continue
+
+                baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                y_wk8_response_qids01.loc[i, "subjectkey"] = id
+
+                # Grab the later days_baseline entries
+                subset = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
+                y_wk8_response_qids01.loc[i, "target"] = 0
+                for k, row in subset.iterrows():
+                    # If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
+                    if row['qstot'] <= 0.5 * baseline:
+                        y_wk8_response_qids01.loc[i, "target"] = 1
+                        break
+                i += 1
+
     y_lvl2_rem_ccv01.to_csv(output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX, index=False)
     y_lvl2_rem_qids01.to_csv(output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX, index=False)
+    y_wk8_response_qids01.to_csv(output_y_dir_path + "y_wk8_response_qids01" + CSV_SUFFIX, index=False)
 
     print("File has been written to:", output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX)
     print("File has been written to:", output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX)
-
+    print("File has been written to:", output_y_dir_path + "y_wk8_response_qids01" + CSV_SUFFIX)
 
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
@@ -778,6 +800,15 @@ if __name__ == "__main__":
         aggregate_rows(data_dir_path)
         impute(data_dir_path)
         generate_y(data_dir_path)
+
+        print("\nSteps complete:\n" +
+              "\t Row selection\n" +
+              "\t Column selection\n" +
+              "\t One-hot encoding\n" +
+              "\t Value conversion\n" +
+              "\t Row aggregation (generate a single matrix)\n" +
+              "\t Imputation of missing values\n" +
+              "\t Generation of y matrices\n")
 
     else:
         raise Exception("Enter valid arguments\n"
