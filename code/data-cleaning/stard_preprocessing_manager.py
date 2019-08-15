@@ -74,14 +74,24 @@ def select_rows(input_dir_path):
 
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
-        elif scale_name == "dm01":
+        elif scale_name == "hcdm01":
             scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
 
-            criteria_1_df = scale_df[scale_df["level"] == "Enrollment"]
-            criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 7)]
+            criteria_1_df = scale_df[(scale_df["days_baseline"].notnull() & scale_df["days_baseline"] < 22)
+                                     & (scale_df["resid"].notnull()
+                                       | scale_df["marital"].notnull()
+                                       | scale_df["student"].notnull()
+                                       | scale_df["empl"].notnull()
+                                       | scale_df["famim"].notnull())]
+            criteria_2_df = scale_df[(scale_df["level"] == "Level 1")
+                                     & (scale_df["inc_curr"].notnull()
+                                       | scale_df["assist"].notnull()
+                                       | scale_df["unempl"].notnull()
+                                       | scale_df["otherinc"].notnull()
+                                       | scale_df["totincom"].notnull())]
 
-            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_enroll"
-            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w0"
+            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "enroll"
+            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "w0"
 
             criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
@@ -117,6 +127,8 @@ def select_rows(input_dir_path):
                   "days_baseline, level): {}".format(sum(scale_df["week"].isnull()))) # 13234 are null
             print("Number of qids rows before eliminating rows empty for all of {} columns: {}"
                   .format(["vsoin", "vmnin", "vemin", "vhysm", "vmdsd"], scale_df.shape[0]))
+
+            # Select rows where these following columns are not null
             scale_df = scale_df[(scale_df["vsoin"].notnull())
                                 & (scale_df["vmnin"].notnull())
                                 & (scale_df["vemin"].notnull())
@@ -154,8 +166,9 @@ def select_rows(input_dir_path):
         scale_df = pd.read_csv(preqids_file_path)
         # scale_df = scale_df.drop(columns=["Unnamed: 0"])
 
-        # Convert column to float type
+        # Convert column to numeric type
         scale_df.loc[:, "week"] = scale_df["week"].astype("float")
+        scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
 
         # Split into 3 separate files
         criteria_1_df = scale_df[(scale_df["level"] == "Level 1")
@@ -164,13 +177,20 @@ def select_rows(input_dir_path):
         criteria_2_df = scale_df[(scale_df["level"] == "Level 1")
                                  & (scale_df["week"] < 1)
                                  & (scale_df["version_form"] == "Self Rating")]
-        criteria_3_df = scale_df[(scale_df["level"] == "Level 1")
+        criteria_3_df_a = scale_df[(scale_df["level"] == "Level 1")
                                  & (2 <= scale_df["week"]) & (scale_df["week"] < 3)
                                  & (scale_df["version_form"] == "Clinician")]
-        criteria_4_df = scale_df[(scale_df["level"] == "Level 1")
-                                 & (2 <= scale_df["week"])
-                                 & (scale_df["week"] < 3)
+        criteria_3_df_b = scale_df[(scale_df["level"] == "Level 2")
+                                 & (7 < scale_df["days_baseline"]) & (scale_df["days_baseline"] < 22)
+                                 & (scale_df["version_form"] == "Clinician")]
+        criteria_3_df = pd.concat([criteria_3_df_a, criteria_3_df_b])
+        criteria_4_df_a = scale_df[(scale_df["level"] == "Level 1")
+                                 & (2 <= scale_df["week"]) & (scale_df["week"] < 3)
                                  & (scale_df["version_form"] == "Self Rating")]
+        criteria_4_df_b = scale_df[(scale_df["level"] == "Level 2")
+                                 & (7 <= scale_df["days_baseline"]) & (scale_df["days_baseline"] < 22)
+                                 & (scale_df["version_form"] == "Self Rating")]
+        criteria_4_df = pd.concat([criteria_4_df_a, criteria_4_df_b])
 
         scale_name = "qids01"
         selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
@@ -519,6 +539,29 @@ def impute(root_data_dir_path):
         agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
         agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
 
+        # Handle qids variable replacement
+        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]):
+            split_name = col_name.split("_")
+            target_name = split_name[0] + "_w0sr__" + split_name[-1]
+            blank_subset = agg_df[col_name].isnull()
+            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+
+        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]):
+            split_name = col_name.split("_")
+            target_name = split_name[0] + "_w0c__" + split_name[-1]
+            blank_subset = agg_df[col_name].isnull()
+            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+
+        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w2c_to_w2sr"]["col_names"]):
+            split_name = col_name.split("_")
+            target_name = split_name[0] + "_w2sr__" + split_name[-1]
+            blank_subset = agg_df[col_name].isnull()
+            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+
+        # Replace remaining blanks with mode
+        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]))
+        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]))
+
         crs01_df = pd.read_csv(root_data_dir_path + "/crs01.txt", sep="\t", skiprows=[1])
 
         for new_feature in NEW_FEATURES:
@@ -588,7 +631,26 @@ def impute(root_data_dir_path):
                              'hrsd01__hsex',
                              'hrsd01__hdtot_r']
                 agg_df.set_value(i, 'hrsd01__hdtot_r', np.sum(row[col_names]))
+            if 'qids01_w0sr__qstot' in row:
+                value = np.nanmax(row["qids01_w0sr__vsoin", "qids01_w0sr__vmin", "qids01_w0sr__vemin", "qids01_w0sr__vhysm"]) \
+                + np.nanmax(["qids01_w0sr__vapdc", "qids01_w0sr__vapin", "qids01_w0sr__vwtdc", "qids01_w0sr__vwtin"]) \
+                + np.nanmax(["qids01_w0sr__vslow", "qids01_w0sr__vagit"]) \
+                + np.sum(row["qids01_w0sr__vmdsd", "qids01_w0sr__vengy", "qids01_w0sr__vintr", "qids01_w0sr__vsuic", "qids01_w0sr__vvwsf", "qids01_w0sr__vcntr"])
+                agg_df.set_value(i, 'qids01_w0sr__qstot', value)
+            if 'qids01_w0c__qstot' in row:
+                value = np.nanmax(row["qids01_w0c__vsoin", "qids01_w0c__vmin", "qids01_w0c__vemin", "qids01_w0c__vhysm"]) \
+                + np.nanmax(["qids01_w0c__vapdc", "qids01_w0c__vapin", "qids01_w0c__vwtdc", "qids01_w0c__vwtin"]) \
+                + np.nanmax(["qids01_w0c__vslow", "qids01_w0c__vagit"]) \
+                + np.sum(row["qids01_w0c__vmdsd", "qids01_w0c__vengy", "qids01_w0c__vintr", "qids01_w0c__vsuic", "qids01_w0c__vvwsf", "qids01_w0c__vcntr"])
+                agg_df.set_value(i, 'qids01_w0c__qstot', value)
+            if 'qids01_w2c__qstot' in row:
+                value = np.nanmax(row["qids01_w2c__vsoin", "qids01_w2c__vmin", "qids01_w2c__vemin", "qids01_w2c__vhysm"]) \
+                + np.nanmax(["qids01_w2c__vapdc", "qids01_w2c__vapin", "qids01_w2c__vwtdc", "qids01_w2c__vwtin"]) \
+                + np.nanmax(["qids01_w2c__vslow", "qids01_w2c__vagit"]) \
+                + np.sum(row["qids01_w2c__vmdsd", "qids01_w2c__vengy", "qids01_w2c__vintr", "qids01_w2c__vsuic", "qids01_w2c__vvwsf", "qids01_w2c__vcntr"])
+                agg_df.set_value(i, 'qids01_w2c__qstot', value)
 
+            # Handle adding imputed features
             agg_df = add_new_imputed_features(agg_df, row, i)
 
         # Drop columns
@@ -652,15 +714,15 @@ def replace_with_median(df, col_names):
         df[col_names] = df[col_names].apply(lambda col: col.fillna(col.median()), axis=0)
         print("Imputed blanks with median")
     else:
-        raise Exception("Column names are not subset.")
+        raise Exception("Column names are not in subset.")
     return df
 
 def replace_with_mode(df, col_names):
     if set(col_names).issubset(df.columns):
-        df[col_names] = df[col_names].apply(lambda col: col.fillna(float(col.median())), axis=0)
+        df[col_names] = df[col_names].apply(lambda col: col.fillna(float(col.mode())), axis=0)
         print("Imputed blanks with mode")
     else:
-        raise Exception("Column names are not subset.")
+        raise Exception("Column names are not in subset.")
     return df
 
 def replace(df, col_names, conversion_map):
