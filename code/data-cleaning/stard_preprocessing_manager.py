@@ -18,6 +18,7 @@ ONE_HOT_ENCODED_PREFIX = COLUMN_SELECTION_PREFIX + "ohe__"
 VALUES_CONVERTED_PREFIX = ONE_HOT_ENCODED_PREFIX + "vc__"
 AGGREGATED_ROWS_PREFIX = VALUES_CONVERTED_PREFIX + "ag__" # Final: "rs__cs__ohe__vc__ag__" which represents the order of the pipeline
 IMPUTED_PREFIX = AGGREGATED_ROWS_PREFIX + "im__"
+
 CSV_SUFFIX = ".csv"
 
 DIR_PROCESSED_DATA = "processed_data"
@@ -28,6 +29,7 @@ DIR_VALUES_CONVERTED = "values_converted_scales"
 DIR_AGGREGATED_ROWS = "aggregated_rows_scales"
 DIR_IMPUTED = "imputed_scales"
 DIR_Y_MATRIX = "y_matrix"
+DIR_SUBJECT_SELECTED = "final_xy_data_matrices"
 
 LINE_BREAK = "*************************************************************"
 
@@ -75,8 +77,8 @@ def select_rows(input_dir_path):
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
         elif scale_name == "hcdm01":
-            scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
-
+            scale_name = "dm01"
+            scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("float")
             criteria_1_df = scale_df[(scale_df["days_baseline"].notnull() & scale_df["days_baseline"] < 22)
                                      & (scale_df["resid"].notnull()
                                        | scale_df["marital"].notnull()
@@ -90,8 +92,8 @@ def select_rows(input_dir_path):
                                        | scale_df["otherinc"].notnull()
                                        | scale_df["totincom"].notnull())]
 
-            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "enroll"
-            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "w0"
+            output_file_name_1 = ROW_SELECTION_PREFIX + scale_name + "_enroll"
+            output_file_name_2 = ROW_SELECTION_PREFIX + scale_name + "_w0"
 
             criteria_1_df = select_subject_rows(criteria_1_df, scale_name, selection_criteria)
             criteria_2_df = select_subject_rows(criteria_2_df, scale_name, selection_criteria)
@@ -125,7 +127,7 @@ def select_rows(input_dir_path):
 
             print("Number of qids week column are null after replacing with week values matching key (subjectkey, "
                   "days_baseline, level): {}".format(sum(scale_df["week"].isnull()))) # 13234 are null
-            print("Number of qids rows before eliminating rows empty for all of {} columns: {}"
+            print("\nNumber of qids rows before eliminating rows empty for all of {} columns: {}"
                   .format(["vsoin", "vmnin", "vemin", "vhysm", "vmdsd"], scale_df.shape[0]))
 
             # Select rows where these following columns are not null
@@ -137,6 +139,23 @@ def select_rows(input_dir_path):
             print("Number of qids rows after eliminating rows empty for all of {} columns: {}"
                   .format(["vsoin", "vmnin", "vemin", "vhysm", "vmdsd"], scale_df.shape[0]))
 
+            # Select rows where qvtot is blank
+            print("Number of qids week column are null: {}".format(sum(scale_df["week"].isnull())))
+
+            scale_df = scale_df[(scale_df["qvtot"].isnull())]
+            print("\nNumber of qids week column are null after selecting empty qvtot rows: {}".format(sum(scale_df["week"].isnull())))
+
+            # Handle filling in week with 0's and 2's
+            week_zero_cond = (scale_df["week"].isnull()) & (scale_df["days_baseline"] < 8) & (scale_df["level"] == "Level 1")
+            week_two_cond = (scale_df["week"].isnull()) & (scale_df["days_baseline"] < 22) & (scale_df["level"] == "Level 1")
+
+            scale_df.loc[week_zero_cond, "week"] = 0
+            print("Number of qids week column are null after selecting conditions for filling with 0: {}".format(sum(scale_df["week"].isnull())))
+
+            scale_df.loc[week_two_cond, "week"] = 2
+            print("Number of qids week column are null after selecting conditions for filling with 2: {}".format(sum(scale_df["week"].isnull())))
+
+            # Output
             output_file_name = "pre" + ROW_SELECTION_PREFIX + "pre" + scale_name
             scale_df.to_csv(output_row_selected_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
@@ -632,22 +651,22 @@ def impute(root_data_dir_path):
                              'hrsd01__hdtot_r']
                 agg_df.set_value(i, 'hrsd01__hdtot_r', np.sum(row[col_names]))
             if 'qids01_w0sr__qstot' in row:
-                value = np.nanmax(row["qids01_w0sr__vsoin", "qids01_w0sr__vmin", "qids01_w0sr__vemin", "qids01_w0sr__vhysm"]) \
-                + np.nanmax(["qids01_w0sr__vapdc", "qids01_w0sr__vapin", "qids01_w0sr__vwtdc", "qids01_w0sr__vwtin"]) \
-                + np.nanmax(["qids01_w0sr__vslow", "qids01_w0sr__vagit"]) \
-                + np.sum(row["qids01_w0sr__vmdsd", "qids01_w0sr__vengy", "qids01_w0sr__vintr", "qids01_w0sr__vsuic", "qids01_w0sr__vvwsf", "qids01_w0sr__vcntr"])
+                value = np.nanmax(list(row[["qids01_w0sr__vsoin", "qids01_w0sr__vmnin", "qids01_w0sr__vemin", "qids01_w0sr__vhysm"]])) \
+                + np.nanmax(list(row[["qids01_w0sr__vapdc", "qids01_w0sr__vapin", "qids01_w0sr__vwtdc", "qids01_w0sr__vwtin"]])) \
+                + np.nanmax(list(row[["qids01_w0sr__vslow", "qids01_w0sr__vagit"]])) \
+                + np.sum(row[["qids01_w0sr__vmdsd", "qids01_w0sr__vengy", "qids01_w0sr__vintr", "qids01_w0sr__vsuic", "qids01_w0sr__vvwsf", "qids01_w0sr__vcntr"]])
                 agg_df.set_value(i, 'qids01_w0sr__qstot', value)
             if 'qids01_w0c__qstot' in row:
-                value = np.nanmax(row["qids01_w0c__vsoin", "qids01_w0c__vmin", "qids01_w0c__vemin", "qids01_w0c__vhysm"]) \
-                + np.nanmax(["qids01_w0c__vapdc", "qids01_w0c__vapin", "qids01_w0c__vwtdc", "qids01_w0c__vwtin"]) \
-                + np.nanmax(["qids01_w0c__vslow", "qids01_w0c__vagit"]) \
-                + np.sum(row["qids01_w0c__vmdsd", "qids01_w0c__vengy", "qids01_w0c__vintr", "qids01_w0c__vsuic", "qids01_w0c__vvwsf", "qids01_w0c__vcntr"])
+                value = np.nanmax(list(row[["qids01_w0c__vsoin", "qids01_w0c__vmnin", "qids01_w0c__vemin", "qids01_w0c__vhysm"]])) \
+                + np.nanmax(list(row[["qids01_w0c__vapdc", "qids01_w0c__vapin", "qids01_w0c__vwtdc", "qids01_w0c__vwtin"]])) \
+                + np.nanmax(list(row[["qids01_w0c__vslow", "qids01_w0c__vagit"]])) \
+                + np.sum(row[["qids01_w0c__vmdsd", "qids01_w0c__vengy", "qids01_w0c__vintr", "qids01_w0c__vsuic", "qids01_w0c__vvwsf", "qids01_w0c__vcntr"]])
                 agg_df.set_value(i, 'qids01_w0c__qstot', value)
             if 'qids01_w2c__qstot' in row:
-                value = np.nanmax(row["qids01_w2c__vsoin", "qids01_w2c__vmin", "qids01_w2c__vemin", "qids01_w2c__vhysm"]) \
-                + np.nanmax(["qids01_w2c__vapdc", "qids01_w2c__vapin", "qids01_w2c__vwtdc", "qids01_w2c__vwtin"]) \
-                + np.nanmax(["qids01_w2c__vslow", "qids01_w2c__vagit"]) \
-                + np.sum(row["qids01_w2c__vmdsd", "qids01_w2c__vengy", "qids01_w2c__vintr", "qids01_w2c__vsuic", "qids01_w2c__vvwsf", "qids01_w2c__vcntr"])
+                value = np.nanmax(list(row[["qids01_w2c__vsoin", "qids01_w2c__vmnin", "qids01_w2c__vemin", "qids01_w2c__vhysm"]])) \
+                + np.nanmax(list(row[["qids01_w2c__vapdc", "qids01_w2c__vapin", "qids01_w2c__vwtdc", "qids01_w2c__vwtin"]])) \
+                + np.nanmax(list(row[["qids01_w2c__vslow", "qids01_w2c__vagit"]])) \
+                + np.sum(row[["qids01_w2c__vmdsd", "qids01_w2c__vengy", "qids01_w2c__vintr", "qids01_w2c__vsuic", "qids01_w2c__vvwsf", "qids01_w2c__vcntr"]])
                 agg_df.set_value(i, 'qids01_w2c__qstot', value)
 
             # Handle adding imputed features
@@ -714,7 +733,7 @@ def replace_with_median(df, col_names):
         df[col_names] = df[col_names].apply(lambda col: col.fillna(col.median()), axis=0)
         print("Imputed blanks with median")
     else:
-        raise Exception("Column names are not in subset.")
+        raise Exception("Column names are not subset: {}".format(set(col_names).difference(df.columns)))
     return df
 
 def replace_with_mode(df, col_names):
@@ -722,7 +741,7 @@ def replace_with_mode(df, col_names):
         df[col_names] = df[col_names].apply(lambda col: col.fillna(float(col.mode())), axis=0)
         print("Imputed blanks with mode")
     else:
-        raise Exception("Column names are not in subset.")
+        raise Exception("Column names are not subset: {}".format(set(col_names).difference(df.columns)))
     return df
 
 def replace(df, col_names, conversion_map):
@@ -730,7 +749,7 @@ def replace(df, col_names, conversion_map):
         df[col_names] = df[col_names].replace(to_replace=conversion_map)
         print("Replaced", conversion_map)
     else:
-        raise Exception("Column names are not subset.")
+        raise Exception("Column names are not subset: {}".format(set(col_names).difference(df.columns)))
     return df
 
 def one_hot_encode(df, columns):
@@ -820,13 +839,119 @@ def generate_y(root_data_dir_path):
                         break
                 i += 1
 
-    y_lvl2_rem_ccv01.to_csv(output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX, index=False)
+    # y_lvl2_rem_ccv01.to_csv(output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX, index=False)
     y_lvl2_rem_qids01.to_csv(output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX, index=False)
     y_wk8_response_qids01.to_csv(output_y_dir_path + "y_wk8_response_qids01" + CSV_SUFFIX, index=False)
 
-    print("File has been written to:", output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX)
+    # print("File has been written to:", output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX)
     print("File has been written to:", output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX)
     print("File has been written to:", output_y_dir_path + "y_wk8_response_qids01" + CSV_SUFFIX)
+
+def select_subjects(root_data_dir_path):
+    output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
+    output_subject_selected_path = output_dir_path + "/" + DIR_SUBJECT_SELECTED + "/"
+
+    input_imputed_dir_path = output_dir_path + "/" + DIR_IMPUTED + "/"
+    input_y_generation_dir_path = output_dir_path + "/" + DIR_Y_MATRIX + "/"
+    input_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
+
+    print("\n--------------------------------7. SUBJECT SELECTION-----------------------------------\n")
+
+    if not os.path.exists(output_dir_path):
+        os.mkdir(output_dir_path)
+    if not os.path.exists(output_subject_selected_path):
+        os.mkdir(output_subject_selected_path)
+
+    orig_data_matrix = pd.read_csv(input_imputed_dir_path + "/rs__cs__ohe__vc__ag__im__stard_data_matrix.csv")
+
+    X_lvl2_rem_qids01__stringent = orig_data_matrix
+    X_lvl2_rem_qids01__less_stringent = orig_data_matrix
+    X_wk8_response_qids01__stringent = orig_data_matrix
+    X_wk8_response_qids01__less_stringent = orig_data_matrix
+
+    # Select subjects from imputed (aggregated) data based on the y matrices
+    y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
+    output = handle_subject_selection_conditions(
+        input_row_selected_dir_path,
+        X_lvl2_rem_qids01__stringent,
+        X_lvl2_rem_qids01__less_stringent,
+        y_lvl2_rem_qids01
+    )
+    X_lvl2_rem_qids01__stringent = output[0]
+    X_lvl2_rem_qids01__less_stringent = output[1]
+
+    # Subset the y matrices so that it matches the X matrices
+    y_lvl2_rem_qids01__stringent = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__stringent.subjectkey)]
+    y_lvl2_rem_qids01__less_stringent= y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__less_stringent.subjectkey)]
+
+    y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
+    output = handle_subject_selection_conditions(
+        input_row_selected_dir_path,
+        X_wk8_response_qids01__stringent,
+        X_wk8_response_qids01__less_stringent,
+        y_wk8_response_qids01
+    )
+    X_wk8_response_qids01__stringent = output[0]
+    X_wk8_response_qids01__less_stringent = output[1]
+
+    # Subset the y matrices so that it matches the X matrices
+    y_lvl2_rem_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
+    y_lvl2_rem_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
+
+    X_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
+    X_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+    X_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
+    X_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
+
+    y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+
+    print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
+
+def handle_subject_selection_conditions(input_row_selected_dir_path, X_stringent, X_less_stringent, y_df):
+    # Select subjects with corresponding y values
+    X_stringent = X_stringent[X_stringent["subjectkey"].isin(y_df["subjectkey"])]
+    X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(y_df["subjectkey"])]
+
+    # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
+    file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
+    X_stringent = X_stringent[X_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
+    X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
+
+    # Handle stringent qids condition
+    file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
+    file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
+    file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
+    file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+
+    condition_all = ((X_stringent.subjectkey.isin(file1.subjectkey))
+                     & (X_stringent.subjectkey.isin(file2.subjectkey))
+                     & (X_stringent.subjectkey.isin(file3.subjectkey))
+                     & (X_stringent.subjectkey.isin(file4.subjectkey)))
+    X_stringent = X_stringent[condition_all]
+
+    # Handle less stringent qids condition
+    file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
+    file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
+    file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
+    file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+
+    condition_or = (
+        ((X_less_stringent.subjectkey.isin(file1.subjectkey)) | (X_less_stringent.subjectkey.isin(file2.subjectkey)))
+        & ((X_less_stringent.subjectkey.isin(file3.subjectkey)) | (X_less_stringent.subjectkey.isin(file4.subjectkey)))
+    )
+    X_less_stringent = X_less_stringent[condition_or]
+
+    return (X_stringent, X_less_stringent)
 
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
@@ -854,6 +979,9 @@ if __name__ == "__main__":
     elif is_valid and option in ["--y-generation", "-y"]:
         generate_y(data_dir_path)
 
+    elif is_valid and option in ["--subject-select", "-ss"]:
+        select_subjects(data_dir_path)
+
     elif is_valid and option in ["--run-all", "-a"]:
         select_rows(data_dir_path)
         select_columns(data_dir_path)
@@ -862,6 +990,7 @@ if __name__ == "__main__":
         aggregate_rows(data_dir_path)
         impute(data_dir_path)
         generate_y(data_dir_path)
+        select_subjects(data_dir_path)
 
         print("\nSteps complete:\n" +
               "\t Row selection\n" +
@@ -870,7 +999,8 @@ if __name__ == "__main__":
               "\t Value conversion\n" +
               "\t Row aggregation (generate a single matrix)\n" +
               "\t Imputation of missing values\n" +
-              "\t Generation of y matrices\n")
+              "\t Generation of y matrices\n" +
+              "\t Subject selection\n")
 
     else:
         raise Exception("Enter valid arguments\n"

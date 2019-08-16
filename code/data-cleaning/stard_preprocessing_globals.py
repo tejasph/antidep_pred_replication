@@ -3,10 +3,10 @@ import numpy as np
 ignr = np.nan
 
 ORIGINAL_SCALE_NAMES = {
-    "dm01": {
-        "subjectkey_selector": "week",
-        "preference": "smaller"
-    },
+    # "dm01": {
+    #     "subjectkey_selector": "week",
+    #     "preference": "smaller"
+    # },
     "hcdm01": {
         "subjectkey_selector": "dm01_id",
         "preference": "smaller"
