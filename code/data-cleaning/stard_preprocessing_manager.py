@@ -855,7 +855,7 @@ def select_subjects(root_data_dir_path):
     input_y_generation_dir_path = output_dir_path + "/" + DIR_Y_MATRIX + "/"
     input_row_selected_dir_path = output_dir_path + "/" + DIR_ROW_SELECTED + "/"
 
-    print("\n--------------------------------7. SUBJECT SELECTION-----------------------------------\n")
+    print("\n--------------------------------8. SUBJECT SELECTION-----------------------------------\n")
 
     if not os.path.exists(output_dir_path):
         os.mkdir(output_dir_path)
