@@ -4,8 +4,10 @@ import pandas as pd
 import numpy as np
 from collections import namedtuple
 
+import warnings
+
 from utils import *
-from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, SCALES, VALUE_CONVERSION_MAP, \
+from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, BLACK_LIST_SCALES, SCALES, VALUE_CONVERSION_MAP, \
     VALUE_CONVERSION_MAP_IMPUTE, NEW_FEATURES
 
 """ 
@@ -48,6 +50,8 @@ def select_rows(input_dir_path):
         scale_name = filename.split(".")[0]
         if scale_name not in ORIGINAL_SCALE_NAMES:
             continue
+        if scale_name in BLACK_LIST_SCALES:
+            continue
 
         curr_scale_path = input_dir_path + "/" + filename
 
@@ -66,7 +70,6 @@ def select_rows(input_dir_path):
 
             # Convert column to float type
             scale_df.loc[:, "week"] = scale_df["week"].astype("float")
-
             if scale_name == "ccv01":
                 criteria_2_df = scale_df[(scale_df["level"] == "Level 1") & (2 <= scale_df["week"]) & (scale_df["week"] < 3)]
 
@@ -77,7 +80,11 @@ def select_rows(input_dir_path):
             criteria_2_df.to_csv(output_row_selected_dir_path + output_file_name_2 + CSV_SUFFIX, index=False)
 
         elif scale_name == "hcdm01":
+            # Special case, hcdm01 is a modified version of dm01. To avoid changing all downstream naming, just re-assign.
             scale_name = "dm01"
+            # So, also grab the correct row selection criteria since scale_name was changed.
+            selection_criteria = ORIGINAL_SCALE_NAMES[scale_name]
+
             scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("float")
             criteria_1_df = scale_df[(scale_df["days_baseline"].notnull() & scale_df["days_baseline"] < 22)
                                      & (scale_df["resid"].notnull()
@@ -170,7 +177,7 @@ def select_rows(input_dir_path):
                 scale_df = scale_df[scale_df["level"] == "Enrollment"]
             elif scale_name == "idsc01":
                 scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
-                scale_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 15) & (scale_df["time_point"] == 1)]
+                scale_df = scale_df[(scale_df["level"] == "Level 1") & (scale_df["days_baseline"] < 22)]
             elif scale_name == "side_effects01":
                 scale_df.loc[:, "week"] = scale_df["week"].astype("float")
                 scale_df = scale_df[(scale_df["level"] == 1) & (scale_df["week"] < 3)]
@@ -228,7 +235,8 @@ def select_rows(input_dir_path):
         criteria_3_df.to_csv(output_row_selected_dir_path + output_file_name_3 + CSV_SUFFIX, index=False)
         criteria_4_df.to_csv(output_row_selected_dir_path + output_file_name_4 + CSV_SUFFIX, index=False)
 
-def select_subject_rows(scale_df, scale_name, selection_criteria):
+def select_subject_rows(scale_df, scale_name, selection_criteria, debug=False):
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
     if selection_criteria == {}:
         return scale_df
 
@@ -241,16 +249,27 @@ def select_subject_rows(scale_df, scale_name, selection_criteria):
         if preference == "larger":
             condition_val = np.nanmax(subject_rows_df[selector_col_name])
 
-        if condition_val is np.nan:
-            print("NaN:", subjectkey, scale_name)
+        if debug:
+            if np.isnan(condition_val):
+                print("NaN:", subjectkey, scale_name)
 
-        # There could be multiple matches
+        # There could be multiple matches, so select a single one based on the selection criteria configuration for a scale.
         matches = scale_df[(scale_df["subjectkey"] == subjectkey) & (scale_df[selector_col_name] == condition_val)]
+        if scale_name == "dm01" and np.isnan(condition_val):
+            # This is hard-coded, because it was added later and it's unknown whehter the desired effect for this scale
+            # is shared with all the other scales. Would need to spend more time to evaluate this, and compare before/after
+            # row selection cases for each scale. For now, keep it this way.
+            # Reason: all values for the "enroll" selection criteria condition are blank.
+            col_matches_condition_val = (scale_df[selector_col_name] == condition_val) | (np.isnan(scale_df[selector_col_name]))
+            matches = scale_df[(scale_df["subjectkey"] == subjectkey) & (col_matches_condition_val)]
+
         if len(matches) > 0:
-            # print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
+            if debug:
+                print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
             scale_df = scale_df[(scale_df["subjectkey"] != subjectkey) | (scale_df.index == matches.index[0])]
         else:
-            # print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
+            if debug:
+                print(scale_name, selector_col_name, subjectkey, condition_val, subject_rows_df[selector_col_name])
             scale_df = scale_df[(scale_df["subjectkey"] != subjectkey)]
 
     return scale_df
@@ -284,7 +303,7 @@ def select_columns(root_data_dir_path):
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file + preliminary processing
-        scale_df = pd.read_csv(curr_scale_path, skiprows=[1])
+        scale_df = pd.read_csv(curr_scale_path)
 
         # Drop empty columns
         scale_df = drop_empty_columns(scale_df)
@@ -330,7 +349,7 @@ def one_hot_encode_scales(root_data_dir_path):
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
-        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+        scale_df = pd.read_csv(input_dir_path + "/" + filename)
 
         if scale_name == "dm01_enroll":
             cols_to_convert = ['empl', 'volun', 'leave', 'publica', 'medicaid', 'privins']
@@ -415,7 +434,7 @@ def convert_values(root_data_dir_path):
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
-        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+        scale_df = pd.read_csv(input_dir_path + "/" + filename)
 
         for col_name in scale_df.columns.values:
             for key, dict in VALUE_CONVERSION_MAP.items():
@@ -442,7 +461,11 @@ def convert_values(root_data_dir_path):
                         elif key == 1:
                             conversion_map[value] = value - 1
                     scale_df[col_name] = scale_df[col_name].replace(to_replace=conversion_map)
-            
+
+        if scale_name == "dm01_enroll":
+            scale_df["resm"] = scale_df["resy"] * 12 + scale_df["resm"]
+            scale_df = scale_df.drop(columns=["resy"])
+
         output_file_name = VALUES_CONVERTED_PREFIX + scale_name
         scale_df.to_csv(output_values_converted_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
@@ -486,7 +509,7 @@ def aggregate_rows(root_data_dir_path):
         print("Handling scale =", scale_name, ", filename =", filename)
 
         # Read in the txt file
-        scale_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+        scale_df = pd.read_csv(input_dir_path + "/" + filename)
 
         # Append scale name and version to the column name
         cols = {}
@@ -518,6 +541,7 @@ def aggregate_rows(root_data_dir_path):
     aggregated_df.to_csv(output_aggregated_rows_dir_path + output_file_name + CSV_SUFFIX, index=False)
 
 def impute(root_data_dir_path):
+    warnings.filterwarnings("ignore", category=FutureWarning)
     output_dir_path = root_data_dir_path + "/" + DIR_PROCESSED_DATA
     output_aggregated_rows_dir_path = output_dir_path + "/" + DIR_AGGREGATED_ROWS + "/"
     output_imputed_dir_path = output_dir_path + "/" + DIR_IMPUTED + "/"
@@ -544,7 +568,7 @@ def impute(root_data_dir_path):
         print("Handling full data matrix =", scale_name, ", filename =", filename)
 
         # Read in the txt file
-        agg_df = pd.read_csv(input_dir_path + "/" + filename, skiprows=[1])
+        agg_df = pd.read_csv(input_dir_path + "/" + filename)
 
         # Handle replace with mode or median
         agg_df = replace_with_median(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_median"]["col_names"]))
@@ -582,6 +606,7 @@ def impute(root_data_dir_path):
         agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]))
 
         crs01_df = pd.read_csv(root_data_dir_path + "/crs01.txt", sep="\t", skiprows=[1])
+        crs01_df.loc[:, "interview_age"] = crs01_df["interview_age"].astype("float")
 
         for new_feature in NEW_FEATURES:
             agg_df[new_feature] = np.nan
@@ -870,6 +895,8 @@ def select_subjects(root_data_dir_path):
     X_wk8_response_qids01__less_stringent = orig_data_matrix
 
     # Select subjects from imputed (aggregated) data based on the y matrices
+
+    ### Handle the level2 stuff
     y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
     output = handle_subject_selection_conditions(
         input_row_selected_dir_path,
@@ -884,6 +911,7 @@ def select_subjects(root_data_dir_path):
     y_lvl2_rem_qids01__stringent = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__stringent.subjectkey)]
     y_lvl2_rem_qids01__less_stringent= y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__less_stringent.subjectkey)]
 
+    ### Handle the week8 stuff
     y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
     output = handle_subject_selection_conditions(
         input_row_selected_dir_path,
@@ -895,18 +923,20 @@ def select_subjects(root_data_dir_path):
     X_wk8_response_qids01__less_stringent = output[1]
 
     # Subset the y matrices so that it matches the X matrices
-    y_lvl2_rem_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
-    y_lvl2_rem_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
+    y_wk8_response_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
+    y_wk8_response_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
 
+    # Output X matrices to CSV
     X_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
     X_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
     X_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
     X_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
 
+    # Output y matrices to CSV
     y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
     y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
-    y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
-    y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+    y_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
+    y_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
 
     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
@@ -1006,3 +1036,12 @@ if __name__ == "__main__":
         raise Exception("Enter valid arguments\n"
               "\t path: the path to a real directory\n"
               "\t e.g. python stard_preprocessing_manager.py /Users/teyden/Downloads/stardmarch19v3")
+
+
+def get_row(scale_df, subjectkey):
+    return scale_df[(scale_df["level"] == "Level 1") & (scale_df["subjectkey"] == subjectkey)
+                    & (scale_df["inc_curr"].notnull()
+                    | scale_df["assist"].notnull()
+                    | scale_df["unempl"].notnull()
+                    | scale_df["otherinc"].notnull()
+                    | scale_df["totincom"].notnull())]
