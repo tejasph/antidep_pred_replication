@@ -24,7 +24,7 @@ ORIGINAL_SCALE_NAMES = {
     "hrsd01": {
     },
     "idsc01": {
-        "subjectkey_selector": "idsc01_id",
+        "subjectkey_selector": "days_baseline",
         "preference": "smaller"
     },
     "mhx01": {

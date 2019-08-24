@@ -521,8 +521,13 @@ def aggregate_rows(root_data_dir_path):
         scale_df = scale_df.rename(columns = cols)
 
         if i == 0:
+            # if scale_name == "pdsq01":
+            #     print(scale_df[scale_df.subjectkey == "NDAR_INVCA539XY1"])
             aggregated_df = scale_df
         else:
+            # if scale_name == "pdsq01":
+            #     print(scale_df[scale_df.subjectkey == "NDAR_INVCA539XY1"])
+
             aggregated_df["subjectkey"] = aggregated_df["subjectkey"].astype(object)
             scale_df["subjectkey"] = scale_df["subjectkey"].astype(object)
 
