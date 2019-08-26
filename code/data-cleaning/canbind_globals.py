@@ -277,3 +277,43 @@ QLESQ_COL_MAPPING = {
     "QLESQ_1A_16_baseline": "QLESQ_1B_16_baseline",
     "QLESQA_TOT_baseline": "QLESQB_TOT_baseline"
 }
+
+# JJ added following for the imputation step
+VALUE_CONVERSION_MAP_IMPUTE = {
+    "blank_to_zero": {
+        "col_names": {'LAM_2_baseline','LAM_3_baseline','LAM_4_A_baseline','LAM_4_B_baseline','LAM_4_C_baseline','LAM_4_D_baseline','LAM_4_E_baseline','LAM_4_F_baseline','LAM_4_G_baseline','LAM_TOT_OVERALL_baseline','LAM_TOT_PRODUCT_baseline','LAM_TOT_ABSENT_baseline','SDS_1_1_baseline','QLESQ_1A_15_baseline'},
+        "conversion_map": {np.nan: 0}
+    },
+    "blank_to_one": {
+        "col_names": {},
+        "conversion_map": None
+    },
+    "blank_to_twenty": {
+        "col_names": {},
+        "conversion_map": None
+    },
+    "blank_to_median": {
+        "col_names": {'EDUC','MINI_AGRPHOBIA_TIME','MINI_APD_TIME','MINI_MED_RULED_OUT','PSYHIS_FH','PSYHIS_MDD_AGE','PSYHIS_MDD_PREV','PSYHIS_MDE_EP_DUR_MO','PSYHIS_MDE_CUR_TX','PSYHIS_MDE_NUM','MADRS_APRNT_SDNS_baseline','MADRS_APRNT_SDNS_week2','MADRS_CONC_DFCTY_baseline','MADRS_CONC_DFCTY_week2','MADRS_INBLTY_TO_FEEL_baseline','MADRS_INBLTY_TO_FEEL_week2','MADRS_INN_TNSN_baseline','MADRS_INN_TNSN_week2','MADRS_LASS_baseline','MADRS_LASS_week2','MADRS_PESS_THTS_baseline','MADRS_PESS_THTS_week2','MADRS_RDCD_APTIT_baseline','MADRS_RDCD_APTIT_week2','MADRS_RDCD_SLP_baseline','MADRS_RDCD_SLP_week2','MADRS_RPTRD_SDNS_baseline','MADRS_RPTRD_SDNS_week2','MADRS_SUICDL_THTS_baseline','MADRS_SUICDL_THTS_week2','GAD7_1_1_week2','GAD7_1_2_baseline','GAD7_1_2_week2','GAD7_1_3_baseline','GAD7_1_3_week2','GAD7_1_4_baseline','GAD7_1_4_week2','GAD7_1_5_baseline','GAD7_1_5_week2','GAD7_1_6_baseline','GAD7_1_6_week2','GAD7_1_7_baseline','GAD7_1_7_week2','GAD7_2_baseline','GAD7_2_week2','GAD7_TOT_baseline','GAD7_TOT_week2','HCL_1_screening','HCL_2_screening','HCL_3_0_screening','HCL_3_1_screening','HCL_3_2_screening','HCL_3_3_screening','HCL_3_4_screening','HCL_3_5_screening','HCL_3_6_screening','HCL_3_7_screening','HCL_3_8_screening','HCL_3_9_screening','HCL_3_10_screening','HCL_3_11_screening','HCL_3_12_screening','HCL_3_13_screening','HCL_3_14_screening','HCL_3_15_screening','HCL_3_16_screening','HCL_3_17_screening','HCL_3_18_screening','HCL_3_19_screening','HCL_3_20_screening','HCL_3_21_screening','HCL_3_22_screening','HCL_3_23_screening','HCL_3_24_screening','HCL_3_25_screening','HCL_3_26_screening','HCL_3_27_screening','HCL_3_28_screening','HCL_3_29_screening','HCL_3_30_screening','HCL_3_31_screening','HCL_3_32_screening','HCL_TOTAL_screening','SDS_2_1_baseline','SDS_3_1_baseline','SDS_4_baseline','QIDS_SR_3_baseline','QIDS_SR_6_baseline','QIDS_SR_8_baseline','QIDS_SR_7_week2','QIDS_SR_9_week2','BL_HEIGHT','BL_WEIGHT','BL_BMI','SDS_5', 'QLESQ_1A_3_baseline_QLESQ_1B_3_baseline_merged'},
+        "conversion_map": None
+    },
+    "blank_to_mode": {
+        "col_names": {},
+        "conversion_map": None
+    },
+    "qids_w0c_to_w0sr": {
+        "col_names": {},
+        "conversion_map": None
+    },
+    "qids_w0sr_to_w0c": {
+        "col_names": {},
+        "conversion_map": None
+    },
+    "qids_w2c_to_w2sr": {
+        "col_names": {},
+        "conversion_map": None
+    }
+}
+
+# JJ added this for new feature imputation
+NEW_FEATURES = []
+

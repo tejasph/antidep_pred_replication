@@ -1,2 +1,6 @@
 # ignore all data file
 data/*
+code/data-cleaning/canbind_data/
+code/data-cleaning/__pycache__/stard_globals.cpython-36.pyc
+code/data-cleaning/__pycache__/utils.cpython-36.pyc
+code/data-cleaning/__pycache__/canbind_globals.cpython-36.pyc
