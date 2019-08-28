@@ -5,10 +5,10 @@ import numpy as np
 
 from utils import *
 
-from overlapping_globals import HEADER_CONVERSION_DICT, CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP,NEW_FEATURES_CANBIND,QIDS_STARD_TO_CANBIND_DICT as Q_DICT
-from overlapping_globals import STARD_OVERLAPPING_VALUE_CONVERSION_MAP
+from overlapping_globals import HEADER_CONVERSION_DICT, CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP,NEW_FEATURES_CANBIND,QIDS_STARD_TO_CANBIND_DICT as Q_DICT_C
+from overlapping_globals import STARD_OVERLAPPING_VALUE_CONVERSION_MAP, STARD_TO_DROP
 
-
+Q_DICT_S = dict(map(reversed, Q_DICT_C.items()))
 
 
 def convert_stard_to_overlapping(output_dir=""):
@@ -19,15 +19,15 @@ def convert_stard_to_overlapping(output_dir=""):
 
     # df = pd.read_csv(file_path)
     ##orig_df = pd.read_csv(output_dir + "/stard-clean-aggregated-data.csv")
-    orig_df = pd.read_csv(output_dir + "/" + "X_lvl2_rem_qids01__stringent.csv")
+    df = pd.read_csv(output_dir + "/" + "X_lvl2_rem_qids01__stringent.csv")
     
-    ##df = orig_df.drop(["Unnamed: 0"], axis=1)
-    df = orig_df
+    #df = orig_df.drop(["Unnamed: 0"], axis=1)
+    #df = orig_df
     
     
     # Take whitelist columns first
     df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]
-    
+        
     # Then process them
     for case, config in STARD_OVERLAPPING_VALUE_CONVERSION_MAP.items():
         if case == "keep":
@@ -37,45 +37,70 @@ def convert_stard_to_overlapping(output_dir=""):
             for col_name, multiple in config["col_names"].items():
                 df[col_name] = df[col_name].apply(lambda x: x * multiple)
         else:
-            df["episode_date"] = 1
-            df["epino"] = 0
-            
-            
-            
-            #TODO"dm01_w0__totincom": 12*1.23*1.19
-                            
-            #TODO alcoh
-            #TODO phx01__episode_date
-            #TODO phx01__bulimia||2/5
-            #phx01__amphet||1.0
-            #TODO phx01__dep
-            #phx01_epino
-            #TODO "dm01_enroll__empl||3.0
-            
-            # for i, row in df.iterrows():
-            #     # TODO many of these cases won't work, and this is because features are based on unprocessed and processed data. Can't fix til handling that.
-            #     if row["empl_4.0"] == 1 or row["empl_5.0"] == 1 or row["empl_10.0"] == 1:
-            #         df.set_value(i, "empl_3.0", 1)
-            #     if row["empl_7.0"] == 1:
-            #         df.set_value(i, "empl_3.0", 1)
-            #     if row["empl_12.0"] == 1 or row["empl_13.0"] == 1:
-            #         df.set_value(i, "empl_2.0", 1)
-            #     if row["dep"] == 1 or row["bip"] ==1 or row["alcohol"] == 1 or row["drug_phx"] == 1 or row["suic_phx"] == 1:
-            #         df.set_value(i, "dep::bip::alcohol::drug_ph::suic_phx", 1)
-            #     if row["amphet"] == 1 or row["cannibis"] ==1 or row["opioid"] == 1 or row["ax_cocaine"] == 1:
-            #         df.set_value(i, "amphet::cannibis::opioid::ax_cocaine", 1)
-            #     if row["dage"] < 0:
-            #         df.set_value(i, "dage", row["age"] - row["dage"])
-            #     if row["epino"] >= 2:
-            #         df.set_value(i, "epino", 1)
+            for i, row in df.iterrows():
+                #dm01_w0__totincom: Converts monthly usd old income to current CAD, and then categorizes per canbind     
+                totincom_convert = row["dm01_w0__totincom"]*12*1.25*1.19 #Converts to annual, then inflation, then USDtoCAD
+                if totincom_convert <10000:
+                    df.set_value(i, "dm01_w0__totincom", 1)
+                if totincom_convert <25000:
+                    df.set_value(i, "dm01_w0__totincom", 2)
+                if totincom_convert <50000:
+                    df.set_value(i, "dm01_w0__totincom", 3)
+                if totincom_convert <75000:
+                    df.set_value(i, "dm01_w0__totincom", 4)
+                if totincom_convert <10000:
+                    df.set_value(i, "dm01_w0__totincom", 5)
+                if totincom_convert <150000:
+                    df.set_value(i, "dm01_w0__totincom", 6)
+                if totincom_convert <200000:
+                    df.set_value(i, "dm01_w0__totincom", 7)
+                if totincom_convert >=200000:
+                    df.set_value(i, "dm01_w0__totincom", 8)
+                # phx01__alcoh set 1 if either 1
+                if row["phx01__alcoh||2.0"] == 1:
+                    df.set_value(i, "phx01__alcoh||1.0", 1)
+                # phx01__episode_date: set all as 1
+                df.set_value(i, "phx01__episode_date", 1)
+                # phx01__bulimia||2/5: set 1 if any of bulimia one-hots
+                bullemias = ['phx01__bulimia||3','phx01__bulimia||4']
+                set_if_found_in_others(i,row,'phx01__bulimia||2/5',bullemias,1, df)
+                # phx01__amphet||1.0: set 1 if any of the non alchol substance uses
+                non_alch_sub = ['phx01__amphet||2.0','phx01__cannibis||1.0','phx01__cannibis||2.0','phx01__opioid||1.0','phx01__opioid||2.0','phx01__ax_cocaine||1.0','phx01__ax_cocaine||2.0']
+                set_if_found_in_others(i,row,'phx01__amphet||1.0',non_alch_sub,1, df)
+                # phx01__dep: 1 if any family history conditions are 1 
+                family_hxs = ['phx01__deppar','phx01__depsib','phx01__depchld','phx01__bip','phx01__bippar','phx01__bipsib','phx01__bipchld','phx01__alcohol','phx01__alcpar','phx01__alcsib',
+                              'phx01__alcchld','phx01__drug_phx','phx01__drgpar','phx01__drgsib','phx01__drgchld','phx01__suic_phx','phx01__suicpar','phx01__suicsib','phx01__suicchld']
+                set_if_found_in_others(i,row,'phx01__dep',family_hxs,1, df)
+                # dm01_enroll__empl||3.0 to 1 if any full time employment options
+                full_time_statuses = ["dm01_enroll__empl||4.0","dm01_enroll__empl||5.0"]
+                set_if_found_in_others(i,row,'dm01_enroll__empl||3.0',full_time_statuses,1,df)
+                
+                add_new_imputed_features_stard(df, row, i) # fill in new features
+    
+
+    ## TODO impute: 'PSYHIS_MDD_PREV:::'
+    # set phx01__epino to 1 if this is >= 2
+                #epino_val = row["phx01__epino"]
+                #if epino_val >= 2:
+                #    df.set_value(i,"phx01__epino", 1)
+                #if epino_val < 2:
+                #    df.set_value(i,"phx01__epino", 0)
 
     # Eliminate subjects that don't have any records > 21 This section removed, should be done already beforehand in generation of X_stard
     ##df = eliminate_early_leavers(df)
     ##df = df.drop(["days_baseline"], axis=1)
 
-    ##df = df.sort_values(by=["subjectkey"])
-    ##df = df.reset_index(drop=True)
-    ##df.to_csv(output_dir + "/" + "canbind_imputed.csv")
+    # Drop columns that were used for calcs above
+    for to_drop in STARD_TO_DROP:
+        df = df.drop([to_drop], axis=1)
+    
+    # Rename Column Headers according to dict
+    df = df.rename(HEADER_CONVERSION_DICT, axis=1)
+    
+    # Check that all column headers have ::: to ensure they have correspondance in CAN-BIND
+    for header in list(df.columns.values):
+        if not (':::' in header):
+            print('Warning! Likely unwanted column in output: ' + header)
     
     # Sort and output
     df = df.sort_values(by=['SUBJLABEL:::subjectkey'])
@@ -83,7 +108,6 @@ def convert_stard_to_overlapping(output_dir=""):
     df = df.reset_index(drop=True)
     df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
     df.to_csv(output_dir + "/stard-overlapping-X-data.csv")
-
 
 def convert_canbind_to_overlapping(output_dir=""):
     if output_dir == "":
@@ -158,7 +182,7 @@ def add_new_imputed_features_canbind(df, row, i):
     df.set_value(i, ':::imput_anyanxiety', val)
         
     # imput_QIDS_SR_perc_change
-    val = round((row[Q_DICT['qids01_w2sr__qstot']] - row[Q_DICT['qids01_w0sr__qstot']]) / row[Q_DICT['qids01_w0sr__qstot']] if row[Q_DICT['qids01_w0sr__qstot']] else 0, 3)
+    val = round((row[Q_DICT_C['qids01_w2sr__qstot']] - row[Q_DICT_C['qids01_w0sr__qstot']]) / row[Q_DICT_C['qids01_w0sr__qstot']] if row[Q_DICT_C['qids01_w0sr__qstot']] else 0, 3)
     df.set_value(i, 'imput_QIDS_SR_perc_change:::', val)
     
     # Imputed new QIDS features
@@ -184,6 +208,67 @@ def add_new_imputed_features_canbind(df, row, i):
         # imput_QIDS_SR_insomnia
         val = round(np.nanmax(list(row[['QIDS_SR_1_' + time2,'QIDS_SR_2_' + time2,'QIDS_SR_3_' + time2]])))
         df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
+
+def add_new_imputed_features_stard(df, row, i):
+    
+    # imput_anyanxiety
+    imput_anyanxiety = ['phx01__psd', 'phx01__pd_noag', 'phx01__pd_ag', 'phx01__soc_phob', 'phx01__gad_phx','phx01__specphob']
+    val = 1 if sum(row[imput_anyanxiety] == 1) > 0 else 0
+    df.set_value(i, ':::imput_anyanxiety', val)
+        
+    # imput_QIDS_SR_perc_change
+    val = round((row['qids01_w2sr__qstot'] - row['qids01_w0sr__qstot']) / row['qids01_w0sr__qstot'] if row['qids01_w0sr__qstot'] else 0, 3)
+    df.set_value(i, 'imput_QIDS_SR_perc_change:::', val)
+    
+    # Imputed new QIDS features
+    for time in ['week0','week2']: 
+        time2 = 'baseline' if time =='week0' else 'week2' #week0 is sometimes called _baseline
+        
+        #print('is our dict working?')
+        print(round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))))
+        
+        GETTING WIERD WARNING THAT EVERYTHING IS A NAN DESPITE QIDS SHOULD BE INTACT DEBUG
+        
+        # imput_QIDS_SR_sleep_domain
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]])))#,Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2],Q_DICT_S['QIDS_SR_4_' + time2]]])))
+        df.set_value(i, 'imput_QIDS_SR_sleep_domain_' + time + ':::', val)
+
+        # imput_QIDS_SR_appetite_domain
+        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_6_' + time2],Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_8_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
+        ##df.set_value(i, 'imput_QIDS_SR_appetite_domain_' + time + ':::', val)
+        
+        # imput_QIDS_SR_psychomot_domain
+        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_15_' + time2],Q_DICT_S['QIDS_SR_16_' + time2]]])))
+        ##df.set_value(i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::', val)
+        
+        # imput_QIDS_SR_overeating
+        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
+        ##df.set_value(i, 'imput_QIDS_SR_overeating_' + time + ':::', val)
+
+        # imput_QIDS_SR_insomnia
+        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2]]])))
+        ##df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
+        
+        # imput_QIDS_SR_ATYPICAL
+        #val = round(np.nanmax(list(row[['QIDS_SR_1_' + time2,'QIDS_SR_2_' + time2,'QIDS_SR_3_' + time2]])))
+        df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', 1)
+
+def set_if_found_in_others(i,row,to_set, others, val, df):
+    """
+    Quick helper function. Sets row[to_set][i] to value if 
+    any of the values in others ==1.
+    Useful whem collapsing a one-hot set of columns to 1 if 
+    any of the columns are 1. 
+    """
+    for c in others:
+        other_val = int(row[c])
+        if other_val ==1:
+            df.set_value(i, to_set, val)
+        elif other_val ==0:
+            continue
+        else:
+            raise Exception('set_if_found should only be used for columns that are 1 or 0, given: ' + str(other_val))
+    
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":
