@@ -6,30 +6,9 @@ import numpy as np
 from utils import *
 
 from overlapping_globals import HEADER_CONVERSION_DICT, CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP,NEW_FEATURES_CANBIND,QIDS_STARD_TO_CANBIND_DICT as Q_DICT
+from overlapping_globals import STARD_OVERLAPPING_VALUE_CONVERSION_MAP
 
-STARD_OVERLAPPING_VALUE_CONVERSION_MAP = {
-    "whitelist": ['epino', 'subjectkey', 'educat', 'pd_ag', 'pd_antis', 'gad_phx', 'anorexia', 'bulimia_0.0',
-                  'ocd_phx', 'pd_noag', 'psd', 'soc_phob', 'epino', 'qlesq01', 'qlesq02', 'qlesq03', 'qlesq04',
-                  'qlesq05', 'qlesq06', 'qlesq07', 'qlesq08', 'qlesq09', 'qlesq10', 'qlesq11', 'qlesq12', 'qlesq13',
-                  'qlesq14', 'qlesq16', 'totqlesq', 'interview_age', 'episode_date',
-                  'wsas01', 'wsas03', 'wsas02', 'wpai_totalhrs', 'wpai02', 'empl_2.0', 'empl_1.0', 'empl_3.0', 'episode_date',
-                  'dage', 'empl_1.0', 'empl_3.0', 'empl_5.0', 'empl_2.0','empl_4.0', 'empl_6.0', 'marital_5.0',
-                  'marital_2.0', 'marital_3.0', 'marital_1.0', 'marital_4.0', 'marital_6.0',
-                  'qstot_week0_Self Rating', 'qstot_week2_Self Rating'], # Left out: 'alcoh' (one hot encoded) 'totincom' (too sparse) 'empl_8.0' 'empl_14.0' (non existent in data)
-    "multiply": {
-        "description": "Multiply the value by the multiple specified.",
-        "col_names": {
-            "wsas01": 1.25,
-            "wsas03": 1.25,
-            "wsas02": 1.25,
-            "wpai_totalhrs": 2,
-            "wpai02": 2,
-            "episode_date": -1,
-        }
-    },
-    "other": {},
-    "blacklist": ['empl_5.0', 'empl_4.0'] # Use to remove after done processing
-}
+
 
 
 def convert_stard_to_overlapping(output_dir=""):
@@ -39,25 +18,40 @@ def convert_stard_to_overlapping(output_dir=""):
         os.mkdir(output_dir)
 
     # df = pd.read_csv(file_path)
-    orig_df = pd.read_csv(output_dir + "/stard-clean-aggregated-data.csv")
-    df = orig_df.drop(["Unnamed: 0"], axis=1)
-
+    ##orig_df = pd.read_csv(output_dir + "/stard-clean-aggregated-data.csv")
+    orig_df = pd.read_csv(output_dir + "/" + "X_lvl2_rem_qids01__stringent.csv")
+    
+    ##df = orig_df.drop(["Unnamed: 0"], axis=1)
+    df = orig_df
+    
+    
     # Take whitelist columns first
-    df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"] + ["days_baseline"]]
-
+    df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]
+    
     # Then process them
     for case, config in STARD_OVERLAPPING_VALUE_CONVERSION_MAP.items():
         if case == "keep":
             # Nothing to do, already grabbed from whitelist
             continue
         elif case == "multiply":
-            mult_config = config[case]
-            for col_name, multiple in mult_config.items():
+            for col_name, multiple in config["col_names"].items():
                 df[col_name] = df[col_name].apply(lambda x: x * multiple)
         else:
             df["episode_date"] = 1
             df["epino"] = 0
-
+            
+            
+            
+            #TODO"dm01_w0__totincom": 12*1.23*1.19
+                            
+            #TODO alcoh
+            #TODO phx01__episode_date
+            #TODO phx01__bulimia||2/5
+            #phx01__amphet||1.0
+            #TODO phx01__dep
+            #phx01_epino
+            #TODO "dm01_enroll__empl||3.0
+            
             # for i, row in df.iterrows():
             #     # TODO many of these cases won't work, and this is because features are based on unprocessed and processed data. Can't fix til handling that.
             #     if row["empl_4.0"] == 1 or row["empl_5.0"] == 1 or row["empl_10.0"] == 1:
@@ -75,13 +69,20 @@ def convert_stard_to_overlapping(output_dir=""):
             #     if row["epino"] >= 2:
             #         df.set_value(i, "epino", 1)
 
-    # Eliminate subjects that don't have any records > 21
-    df = eliminate_early_leavers(df)
-    df = df.drop(["days_baseline"], axis=1)
+    # Eliminate subjects that don't have any records > 21 This section removed, should be done already beforehand in generation of X_stard
+    ##df = eliminate_early_leavers(df)
+    ##df = df.drop(["days_baseline"], axis=1)
 
-    df = df.sort_values(by=["subjectkey"])
+    ##df = df.sort_values(by=["subjectkey"])
+    ##df = df.reset_index(drop=True)
+    ##df.to_csv(output_dir + "/" + "canbind_imputed.csv")
+    
+    # Sort and output
+    df = df.sort_values(by=['SUBJLABEL:::subjectkey'])
+    df = df.drop(['SUBJLABEL:::subjectkey'], axis=1)
     df = df.reset_index(drop=True)
-    df.to_csv(output_dir + "/" + "canbind_imputed.csv")
+    df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
+    df.to_csv(output_dir + "/stard-overlapping-X-data.csv")
 
 
 def convert_canbind_to_overlapping(output_dir=""):
@@ -107,7 +108,6 @@ def convert_canbind_to_overlapping(output_dir=""):
             # Nothing to do, already grabbed from whitelist
             continue
         elif case == "multiply":
-            mult_config = config
             for col_name, multiple in config["col_names"].items():
                 df[col_name] = df[col_name].apply(lambda x: x * multiple)
         else:
