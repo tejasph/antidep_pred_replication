@@ -27,6 +27,9 @@ def convert_stard_to_overlapping(output_dir=""):
     
     # Take whitelist columns first
     df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]
+    
+    # Warn if any null found, as they should not be!
+    check_missing_values(df)
         
     # Then process them
     for case, config in STARD_OVERLAPPING_VALUE_CONVERSION_MAP.items():
@@ -121,6 +124,9 @@ def convert_canbind_to_overlapping(output_dir=""):
 
     # Take whitelist columns first
     df = df[CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]
+
+    # Warn if any NaN found, as they should not be!
+    check_missing_values(df)
 
     # Add new features as blank
     for new_feature in NEW_FEATURES_CANBIND:
@@ -223,35 +229,40 @@ def add_new_imputed_features_stard(df, row, i):
     # Imputed new QIDS features
     for time in ['week0','week2']: 
         time2 = 'baseline' if time =='week0' else 'week2' #week0 is sometimes called _baseline
+        time3 = 'w0' if time =='week0' else 'w2' #week0 is sometimes called w0, and week2 w2
         
-        #print('is our dict working?')
-        print(round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))))
+        ###print('is our dict working?')
+        ##print(round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))))
         
-        GETTING WIERD WARNING THAT EVERYTHING IS A NAN DESPITE QIDS SHOULD BE INTACT DEBUG
+        ##if np.isnan((list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))):
+        ##    print("This is i: " + str(i))
+        ##    print("This is row: " + str(row))
+        ##    print("This is week2: " + str(time2))
+        ##    raise Exception("nan entries found")
         
         # imput_QIDS_SR_sleep_domain
-        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]])))#,Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2],Q_DICT_S['QIDS_SR_4_' + time2]]])))
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2],Q_DICT_S['QIDS_SR_4_' + time2]]])))
         df.set_value(i, 'imput_QIDS_SR_sleep_domain_' + time + ':::', val)
 
         # imput_QIDS_SR_appetite_domain
-        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_6_' + time2],Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_8_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
-        ##df.set_value(i, 'imput_QIDS_SR_appetite_domain_' + time + ':::', val)
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_6_' + time2],Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_8_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
+        df.set_value(i, 'imput_QIDS_SR_appetite_domain_' + time + ':::', val)
         
         # imput_QIDS_SR_psychomot_domain
-        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_15_' + time2],Q_DICT_S['QIDS_SR_16_' + time2]]])))
-        ##df.set_value(i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::', val)
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_15_' + time2],Q_DICT_S['QIDS_SR_16_' + time2]]])))
+        df.set_value(i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::', val)
         
         # imput_QIDS_SR_overeating
-        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
-        ##df.set_value(i, 'imput_QIDS_SR_overeating_' + time + ':::', val)
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
+        df.set_value(i, 'imput_QIDS_SR_overeating_' + time + ':::', val)
 
         # imput_QIDS_SR_insomnia
-        ##val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2]]])))
-        ##df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
+        val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2]]])))
+        df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
         
         # imput_QIDS_SR_ATYPICAL
-        #val = round(np.nanmax(list(row[['QIDS_SR_1_' + time2,'QIDS_SR_2_' + time2,'QIDS_SR_3_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', 1)
+        val = round(np.nanmax(list(row[['qids01_' + time3 + 'sr__vhysm','qids01_' + time3 + 'sr__vapin', 'qids01_' + time3 + 'sr__vwtin', 'qids01_' + time3 + 'sr__vengy']])))
+        df.set_value(i, 'QIDS_ATYPICAL_' + time + ':::', val)
 
 def set_if_found_in_others(i,row,to_set, others, val, df):
     """
@@ -268,6 +279,11 @@ def set_if_found_in_others(i,row,to_set, others, val, df):
             continue
         else:
             raise Exception('set_if_found should only be used for columns that are 1 or 0, given: ' + str(other_val))
+            
+def check_missing_values(df):
+    nulls = df.isnull().sum().sum()
+    if nulls != 0:
+        print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
 
 if __name__ == "__main__":
