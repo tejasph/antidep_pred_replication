@@ -18,13 +18,8 @@ def convert_stard_to_overlapping(output_dir=""):
         os.mkdir(output_dir)
 
     # df = pd.read_csv(file_path)
-    ##orig_df = pd.read_csv(output_dir + "/stard-clean-aggregated-data.csv")
     df = pd.read_csv(output_dir + "/" + "X_lvl2_rem_qids01__stringent.csv")
-    
-    #df = orig_df.drop(["Unnamed: 0"], axis=1)
-    #df = orig_df
-    
-    
+
     # Take whitelist columns first
     df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]
     
@@ -79,15 +74,6 @@ def convert_stard_to_overlapping(output_dir=""):
                 set_if_found_in_others(i,row,'dm01_enroll__empl||3.0',full_time_statuses,1,df)
                 
                 add_new_imputed_features_stard(df, row, i) # fill in new features
-    
-
-    ## TODO impute: 'PSYHIS_MDD_PREV:::'
-    # set phx01__epino to 1 if this is >= 2
-                #epino_val = row["phx01__epino"]
-                #if epino_val >= 2:
-                #    df.set_value(i,"phx01__epino", 1)
-                #if epino_val < 2:
-                #    df.set_value(i,"phx01__epino", 0)
 
     # Eliminate subjects that don't have any records > 21 This section removed, should be done already beforehand in generation of X_stard
     ##df = eliminate_early_leavers(df)
@@ -230,15 +216,6 @@ def add_new_imputed_features_stard(df, row, i):
     for time in ['week0','week2']: 
         time2 = 'baseline' if time =='week0' else 'week2' #week0 is sometimes called _baseline
         time3 = 'w0' if time =='week0' else 'w2' #week0 is sometimes called w0, and week2 w2
-        
-        ###print('is our dict working?')
-        ##print(round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))))
-        
-        ##if np.isnan((list(row[[Q_DICT_S['QIDS_SR_1_' + time2]]]))):
-        ##    print("This is i: " + str(i))
-        ##    print("This is row: " + str(row))
-        ##    print("This is week2: " + str(time2))
-        ##    raise Exception("nan entries found")
         
         # imput_QIDS_SR_sleep_domain
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2],Q_DICT_S['QIDS_SR_4_' + time2]]])))
