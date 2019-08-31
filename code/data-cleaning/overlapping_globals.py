@@ -19,6 +19,7 @@ NEW_FEATURES_STARD = ['PSYHIS_MDD_PREV:::',
     'imput_QIDS_SR_perc_change:::'
     'QIDS_ATYPICAL_baseline:::'
     'QIDS_ATYPICAL_week2:::'
+    'QLESQA_TOT_QLESQB_TOT_merged:::' # Has a qlesq tot but that one uses items 14 and 15
     ]
 
 NEW_FEATURES_CANBIND = [':::imput_anyanxiety',
@@ -108,7 +109,7 @@ HEADER_CONVERSION_DICT = {
         'QLESQ_1A_13_baseline_QLESQ_1B_13_baseline_merged':'QLESQ_1A_13_baseline_QLESQ_1B_13_baseline_merged:::qlesq01__qlesq13',
         'QLESQ_1A_14_baseline_QLESQ_1B_14_baseline_merged':'QLESQ_1A_14_baseline_QLESQ_1B_14_baseline_merged:::qlesq01__qlesq14',
         'QLESQ_1A_16_baseline_QLESQ_1B_16_baseline_merged':'QLESQ_1A_16_baseline_QLESQ_1B_16_baseline_merged:::qlesq01__qlesq16',
-        'QLESQA_TOT_baseline_QLESQB_TOT_baseline_merged':'QLESQA_TOT_QLESQB_TOT_merged:::qlesq01__totqlesq',
+        'QLESQA_TOT_baseline_QLESQB_TOT_baseline_merged':'QLESQA_TOT_QLESQB_TOT_merged:::',
         'SDS_1_1_baseline':'SDS_1_1_baseline:::wsas01__wsas01',
         'SDS_2_1_baseline':'SDS_2_1_baseline:::wsas01__wsas03',
         'SDS_3_1_baseline':'SDS_3_1_baseline:::wsas01__wsas02',
@@ -194,7 +195,6 @@ HEADER_CONVERSION_DICT = {
         'qlesq01__qlesq13':'QLESQ_1A_13_baseline_QLESQ_1B_13_baseline_merged:::qlesq01__qlesq13',
         'qlesq01__qlesq14':'QLESQ_1A_14_baseline_QLESQ_1B_14_baseline_merged:::qlesq01__qlesq14',
         'qlesq01__qlesq16':'QLESQ_1A_16_baseline_QLESQ_1B_16_baseline_merged:::qlesq01__qlesq16',
-        'qlesq01__totqlesq':'QLESQA_TOT_QLESQB_TOT_merged:::qlesq01__totqlesq',
         'wsas01__wsas01':'SDS_1_1_baseline:::wsas01__wsas01',
         'wsas01__wsas03':'SDS_2_1_baseline:::wsas01__wsas03',
         'wsas01__wsas02':'SDS_3_1_baseline:::wsas01__wsas02',
@@ -390,8 +390,7 @@ CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP = {
     "multiply": {
         "description": "Multiply the value by the multiple specified.",
         "col_names": {
-            "PSYHIS_MDE_EP_DUR_MO": 30,
-
+            #"PSYHIS_MDE_EP_DUR_MO": 30, Keep this as months so number smaller
         }
     },
     "other": {}
@@ -444,7 +443,6 @@ STARD_OVERLAPPING_VALUE_CONVERSION_MAP = {
 	'qlesq01__qlesq13',
 	'qlesq01__qlesq14',
 	'qlesq01__qlesq16',
-	'qlesq01__totqlesq',
 	'wsas01__wsas01',
 	'wsas01__wsas03',
 	'wsas01__wsas02',
@@ -538,11 +536,12 @@ STARD_OVERLAPPING_VALUE_CONVERSION_MAP = {
             "wsas01__wsas02": 1.25,
             "wpai01__wpai_totalhrs": 2,
             "wpai01__wpai02": 2,
-            "phx01__episode_date": 0.0333, # /30. Double check doesn't also need negative
+            "phx01__episode_date": -0.0333, # /30. Double check doesn't also need negative
+            "interview_age": 0.082222 #/12 to convert month age to year
         }
     },
-    "other": {},
-    "blacklist": ['empl_5.0', 'empl_4.0'] # Use to remove after done processing
+    "other": {}
+    ##"blacklist": ['empl_5.0', 'empl_4.0'] # Use to remove after done processing
 }
         
 STARD_TO_DROP = ['phx01__alcoh||2.0',

@@ -51,7 +51,8 @@ f = open("compare_matrices_output.csv","w")
 f.write("Output entailing various statistics of columns in both STARD and CANBIND overlapping matrices to compare and find bugs,\n")
 f.write(",CANBIND,STARD,\n")
 
-for col in stard_headers:
+# Write mean, median, mode, min, max to file for analysis
+for col in sorted(list(stard_headers)): # Sort headers alphabetically to make things easier
     f.write(col + ",\n")
     s_mean = stard_df.loc[:,col].mean()
     s_median = stard_df.loc[:,col].median()

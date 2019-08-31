@@ -34,31 +34,11 @@ def convert_stard_to_overlapping(output_dir=""):
         elif case == "multiply":
             for col_name, multiple in config["col_names"].items():
                 df[col_name] = df[col_name].apply(lambda x: x * multiple)
-        else:
+        elif case == "other":
             for i, row in df.iterrows():
-                #dm01_w0__totincom: Converts monthly usd old income to current CAD, and then categorizes per canbind     
-                totincom_convert = row["dm01_w0__totincom"]*12*1.25*1.19 #Converts to annual, then inflation, then USDtoCAD
-                if totincom_convert <10000:
-                    df.set_value(i, "dm01_w0__totincom", 1)
-                if totincom_convert <25000:
-                    df.set_value(i, "dm01_w0__totincom", 2)
-                if totincom_convert <50000:
-                    df.set_value(i, "dm01_w0__totincom", 3)
-                if totincom_convert <75000:
-                    df.set_value(i, "dm01_w0__totincom", 4)
-                if totincom_convert <10000:
-                    df.set_value(i, "dm01_w0__totincom", 5)
-                if totincom_convert <150000:
-                    df.set_value(i, "dm01_w0__totincom", 6)
-                if totincom_convert <200000:
-                    df.set_value(i, "dm01_w0__totincom", 7)
-                if totincom_convert >=200000:
-                    df.set_value(i, "dm01_w0__totincom", 8)
                 # phx01__alcoh set 1 if either 1
                 if row["phx01__alcoh||2.0"] == 1:
                     df.set_value(i, "phx01__alcoh||1.0", 1)
-                # phx01__episode_date: set all as 1
-                df.set_value(i, "phx01__episode_date", 1)
                 # phx01__bulimia||2/5: set 1 if any of bulimia one-hots
                 bullemias = ['phx01__bulimia||3','phx01__bulimia||4']
                 set_if_found_in_others(i,row,'phx01__bulimia||2/5',bullemias,1, df)
@@ -72,7 +52,27 @@ def convert_stard_to_overlapping(output_dir=""):
                 # dm01_enroll__empl||3.0 to 1 if any full time employment options
                 full_time_statuses = ["dm01_enroll__empl||4.0","dm01_enroll__empl||5.0"]
                 set_if_found_in_others(i,row,'dm01_enroll__empl||3.0',full_time_statuses,1,df)
+                                
+                #dm01_w0__totincom: Converts monthly usd old income to current CAD, and then categorizes per canbind     
+                totincom_convert = row["dm01_w0__totincom"]*12*1.25*1.19 #Converts to annual, then inflation, then USDtoCAD
+                if totincom_convert <10000:
+                    df.set_value(i, "dm01_w0__totincom", 1)
+                elif totincom_convert <25000:
+                    df.set_value(i, "dm01_w0__totincom", 2)
+                elif totincom_convert <50000:
+                    df.set_value(i, "dm01_w0__totincom", 3)
+                elif totincom_convert <75000:
+                    df.set_value(i, "dm01_w0__totincom", 4)
+                elif totincom_convert <100000:
+                    df.set_value(i, "dm01_w0__totincom", 5)
+                elif totincom_convert <150000:
+                    df.set_value(i, "dm01_w0__totincom", 6)
+                elif totincom_convert <200000:
+                    df.set_value(i, "dm01_w0__totincom", 7)
+                elif totincom_convert >=200000:
+                    df.set_value(i, "dm01_w0__totincom", 8)
                 
+                # Add in new features
                 add_new_imputed_features_stard(df, row, i) # fill in new features
 
     # Eliminate subjects that don't have any records > 21 This section removed, should be done already beforehand in generation of X_stard
@@ -113,7 +113,7 @@ def convert_canbind_to_overlapping(output_dir=""):
 
     # Warn if any NaN found, as they should not be!
     check_missing_values(df)
-
+    
     # Add new features as blank
     for new_feature in NEW_FEATURES_CANBIND:
             df[new_feature] = np.nan
@@ -126,7 +126,7 @@ def convert_canbind_to_overlapping(output_dir=""):
         elif case == "multiply":
             for col_name, multiple in config["col_names"].items():
                 df[col_name] = df[col_name].apply(lambda x: x * multiple)
-        else:
+        elif case == "other":
             for i, row in df.iterrows():
                 if row["MINI_SBSTNC_DPNDC_NONALCHL_TIME"] == 1:
                     df.set_value(i, "MINI_SBSTNC_ABUSE_NONALCHL_TIME", 1)
@@ -216,6 +216,14 @@ def add_new_imputed_features_stard(df, row, i):
     val = 1 if row['phx01__epino'] >= 2 else 0
     df.set_value(i, 'PSYHIS_MDD_PREV:::', val)
     
+    # 'QLESQA_TOT_QLESQB_TOT_merged:::'
+    val = 0
+    for j in range(1,15): # Sum items 1-14
+        str_j = str(j)
+        str_j = "0" + str_j if j < 10 else str_j
+        val = val + row['qlesq01__qlesq' + str_j]
+    df.set_value(i, 'QLESQA_TOT_QLESQB_TOT_merged:::', val)
+    
     # Imputed new QIDS features
     for time in ['week0','week2']: 
         time2 = 'baseline' if time =='week0' else 'week2' #week0 is sometimes called _baseline
@@ -242,7 +250,7 @@ def add_new_imputed_features_stard(df, row, i):
         df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
         
         # imput_QIDS_SR_ATYPICAL
-        val = round(np.nanmax(list(row[['qids01_' + time3 + 'sr__vhysm','qids01_' + time3 + 'sr__vapin', 'qids01_' + time3 + 'sr__vwtin', 'qids01_' + time3 + 'sr__vengy']])))
+        val = round(np.sum(list(row[['qids01_' + time3 + 'sr__vhysm','qids01_' + time3 + 'sr__vapin', 'qids01_' + time3 + 'sr__vwtin', 'qids01_' + time3 + 'sr__vengy']])))
         df.set_value(i, 'QIDS_ATYPICAL_' + time2 + ':::', val)
 
 def set_if_found_in_others(i,row,to_set, others, val, df):
