@@ -178,7 +178,7 @@ HEADER_CONVERSION_DICT = {
         'phx01__dep':'PSYHIS_FH:::phx01__dep',
         'phx01__dage':'PSYHIS_MDD_AGE:::phx01__dage',
         'phx01__episode_date':'PSYHIS_MDE_EP_DUR_MO:::phx01__episode_date',
-        'phx01__epino':'PSYHIS_MDE_NUM:::phx01__episode_date',
+        'phx01__epino':'PSYHIS_MDE_NUM:::phx01__epino',
         'qlesq01__qlesq01':'QLESQ_1A_1_baseline_QLESQ_1B_1_baseline_merged:::qlesq01__qlesq01',
         'qlesq01__qlesq02':'QLESQ_1A_2_baseline_QLESQ_1B_2_baseline_merged:::qlesq01__qlesq02',
         'qlesq01__qlesq03':'QLESQ_1A_3_baseline_QLESQ_1B_3_baseline_merged:::qlesq01__qlesq03',

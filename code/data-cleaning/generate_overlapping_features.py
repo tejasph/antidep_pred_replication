@@ -212,6 +212,10 @@ def add_new_imputed_features_stard(df, row, i):
     val = round((row['qids01_w2sr__qstot'] - row['qids01_w0sr__qstot']) / row['qids01_w0sr__qstot'] if row['qids01_w0sr__qstot'] else 0, 3)
     df.set_value(i, 'imput_QIDS_SR_perc_change:::', val)
     
+    # PSYHIS_MDD_PREV:::
+    val = 1 if row['phx01__epino'] >= 2 else 0
+    df.set_value(i, 'PSYHIS_MDD_PREV:::', val)
+    
     # Imputed new QIDS features
     for time in ['week0','week2']: 
         time2 = 'baseline' if time =='week0' else 'week2' #week0 is sometimes called _baseline
@@ -239,7 +243,7 @@ def add_new_imputed_features_stard(df, row, i):
         
         # imput_QIDS_SR_ATYPICAL
         val = round(np.nanmax(list(row[['qids01_' + time3 + 'sr__vhysm','qids01_' + time3 + 'sr__vapin', 'qids01_' + time3 + 'sr__vwtin', 'qids01_' + time3 + 'sr__vengy']])))
-        df.set_value(i, 'QIDS_ATYPICAL_' + time + ':::', val)
+        df.set_value(i, 'QIDS_ATYPICAL_' + time2 + ':::', val)
 
 def set_if_found_in_others(i,row,to_set, others, val, df):
     """
