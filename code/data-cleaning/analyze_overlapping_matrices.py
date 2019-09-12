@@ -47,7 +47,7 @@ if len(only_canbind) ==0:
 else:
     print(only_canbind)
 
-f = open("compare_matrices_output.csv","w")
+f = open("analyze_overlapping_output.csv","w")
 f.write("Output entailing various statistics of columns in both STARD and CANBIND overlapping matrices to compare and find bugs,\n")
 f.write(",CANBIND,STARD,\n")
 

@@ -27,9 +27,9 @@ def impute(data_dir):
     #df = replace_with_mode(df, list(VALUE_CONVERSION_MAP_IMPUTE["blank_to_mode"]["col_names"]))
     
     # Handle direct value conversions (NaN to a specific number)
-    blank_to_zero_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_zero"]
     ##blank_to_one_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_one"]
     ##blank_to_twenty_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_twenty"]
+    blank_to_zero_config = VALUE_CONVERSION_MAP_IMPUTE["blank_to_zero"]
     df = replace(df, list(blank_to_zero_config["col_names"]), blank_to_zero_config["conversion_map"])
     ##agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
     ##agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
