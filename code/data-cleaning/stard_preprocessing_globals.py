@@ -234,6 +234,11 @@ VALUE_CONVERSION_MAP = {
         "col_names": {'ax_cocaine', 'alcoh', 'amphet', 'cannibis' , 'opioid'},
         "conversion_map": {0: ignr}
     },
+    ## Following added by JJN to convert qlesq4 6 --> blank
+    "six_to_nan": {
+        "col_names": {'qlesq04'},
+        "conversion_map": {6: ignr}
+    },
     "two_to_zero": {
         "col_names": {'wpai01', 'sfhs04', 'sfhs05', 'sfhs06', 'sfhs07', 'ucq010', 'ucq020', 'ucq080', 'ucq110',
                       'ucq120', 'ucq140', 'ucq160', 'ucq040', 'ucq060'},
