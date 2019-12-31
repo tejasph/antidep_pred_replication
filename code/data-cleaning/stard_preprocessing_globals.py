@@ -209,12 +209,17 @@ VALUE_CONVERSION_MAP = {
         "col_names": {'medication1_dosage'},
         "conversion_map": {0: ignr, 999: ignr}
     },
+    ## JJN added epino to this to get rid of -9's, and also made a separate -3 to nan as this is needed for epino per the bug
     "-9_to_nan": {
         "col_names": {'heart', 'vsclr', 'hema', 'eyes', 'ugi', 'lgi', 'renal', 'genur', 'mskl', 'neuro', 'psych',
                       'respiratory', 'liverd', 'endod', 'hsoin', 'hmnin', 'hemin', 'hmdsd', 'hpanx', 'hinsg', 'happt',
                       'hwl', 'hsanx', 'hhypc', 'hvwsf', 'hsuic', 'hintr', 'hengy', 'hslow', 'hagit', 'hsex', 'suic_phx',
-                      'drug_phx', 'alcohol', 'bip', 'dep', 'dage'},
+                      'drug_phx', 'alcohol', 'bip', 'dep', 'dage', 'epino'},
         "conversion_map": {-9: ignr}
+    },
+    "-3_to_nan": {
+        "col_names": {'epino'},
+        "conversion_map": {-3: ignr}
     },
     # "blank_to_zero": {
     #     "col_names": {'sex_prs', 'gdiar', 'gcnst', 'gdmth', 'gnone', 'gnsea', 'gstro', 'htplp', 'htdzy', 'htchs', 'htnone',
