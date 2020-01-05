@@ -918,99 +918,178 @@ def select_subjects(root_data_dir_path):
 
     orig_data_matrix = pd.read_csv(input_imputed_dir_path + "/rs__cs__ohe__vc__ag__im__stard_data_matrix.csv")
 
-    X_lvl2_rem_qids01__stringent = orig_data_matrix
-    X_lvl2_rem_qids01__less_stringent = orig_data_matrix
-    X_wk8_response_qids01__stringent = orig_data_matrix
-    X_wk8_response_qids01__less_stringent = orig_data_matrix
-
+    # New final X matrices
+    X_lvl2_rem_qids01 = orig_data_matrix
+    X_wk8_response_qids01 = orig_data_matrix
+    
     # Select subjects from imputed (aggregated) data based on the y matrices
 
     ### Handle the level2 stuff
     y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
-    output = handle_subject_selection_conditions(
-        input_row_selected_dir_path,
-        X_lvl2_rem_qids01__stringent,
-        X_lvl2_rem_qids01__less_stringent,
-        y_lvl2_rem_qids01
-    )
-    X_lvl2_rem_qids01__stringent = output[0]
-    X_lvl2_rem_qids01__less_stringent = output[1]
-
+    X_lvl2_rem_qids01__final = handle_subject_selection_conditions_lvl2_rem(input_row_selected_dir_path, X_lvl2_rem_qids01, y_lvl2_rem_qids01)
+    
     # Subset the y matrices so that it matches the X matrices
-    y_lvl2_rem_qids01__stringent = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__stringent.subjectkey)]
-    y_lvl2_rem_qids01__less_stringent= y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__less_stringent.subjectkey)]
+    y_lvl2_rem_qids01__final = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__final.subjectkey)]
 
     ### Handle the week8 stuff
-    y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
-    output = handle_subject_selection_conditions(
-        input_row_selected_dir_path,
-        X_wk8_response_qids01__stringent,
-        X_wk8_response_qids01__less_stringent,
-        y_wk8_response_qids01
-    )
-    X_wk8_response_qids01__stringent = output[0]
-    X_wk8_response_qids01__less_stringent = output[1]
-
+    y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_wk8_response_qids01" + CSV_SUFFIX)
+    X_wk8_response_qids01__final = handle_subject_selection_conditions_wk8_response(input_row_selected_dir_path, X_wk8_response_qids01, y_wk8_response_qids01)
+    
     # Subset the y matrices so that it matches the X matrices
-    y_wk8_response_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
-    y_wk8_response_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
+    y_wk8_response_qids01__final = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__final.subjectkey)]
 
     # Output X matrices to CSV
-    X_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
-    X_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
-    X_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
-    X_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
+    X_lvl2_rem_qids01__final.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__final" + CSV_SUFFIX, index=False)
+    X_wk8_response_qids01__final.to_csv(output_subject_selected_path + "X_wk8_response_qids01__final" + CSV_SUFFIX, index=False)
 
     # Output y matrices to CSV
-    y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
-    y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
-    y_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
-    y_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids01__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__final" + CSV_SUFFIX, index=False)
+    y_wk8_response_qids01__final.to_csv(output_subject_selected_path + "y_wk8_response_qids01__final" + CSV_SUFFIX, index=False)
 
-    print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX)
-    print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__final" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__final" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__final" + CSV_SUFFIX)
+    print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__final" + CSV_SUFFIX)
 
-def handle_subject_selection_conditions(input_row_selected_dir_path, X_stringent, X_less_stringent, y_df):
+
+# =============================================================================
+#     
+#     
+#     
+#     # OLD---------------------------------------------------------
+#     X_lvl2_rem_qids01__stringent = orig_data_matrix
+#     X_lvl2_rem_qids01__less_stringent = orig_data_matrix
+#     X_wk8_response_qids01__stringent = orig_data_matrix
+#     X_wk8_response_qids01__less_stringent = orig_data_matrix
+#     
+# 
+#     # Select subjects from imputed (aggregated) data based on the y matrices
+# 
+#     ### Handle the level2 stuff
+#     y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
+#     output = handle_subject_selection_conditions(
+#         input_row_selected_dir_path,
+#         X_lvl2_rem_qids01__stringent,
+#         X_lvl2_rem_qids01__less_stringent,
+#         y_lvl2_rem_qids01
+#     )
+#     X_lvl2_rem_qids01__stringent = output[0]
+#     X_lvl2_rem_qids01__less_stringent = output[1]
+# 
+#     # Subset the y matrices so that it matches the X matrices
+#     y_lvl2_rem_qids01__stringent = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__stringent.subjectkey)]
+#     y_lvl2_rem_qids01__less_stringent= y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__less_stringent.subjectkey)]
+# 
+#     ### Handle the week8 stuff
+#     y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
+#     output = handle_subject_selection_conditions(
+#         input_row_selected_dir_path,
+#         X_wk8_response_qids01__stringent,
+#         X_wk8_response_qids01__less_stringent,
+#         y_wk8_response_qids01
+#     )
+#     X_wk8_response_qids01__stringent = output[0]
+#     X_wk8_response_qids01__less_stringent = output[1]
+# 
+#     # Subset the y matrices so that it matches the X matrices
+#     y_wk8_response_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
+#     y_wk8_response_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
+# 
+#     # Output X matrices to CSV
+#     X_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
+#     X_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+#     X_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
+#     X_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
+# 
+#     # Output y matrices to CSV
+#     y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
+#     y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
+#     y_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
+#     y_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
+# 
+#     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX)
+#     print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
+# 
+# =============================================================================
+
+def handle_subject_selection_conditions_lvl2_rem(input_row_selected_dir_path, X, y_df):
+    # New subject selection handling function based off  old one, just for the lvl 2 remission
+    
     # Select subjects with corresponding y values
-    X_stringent = X_stringent[X_stringent["subjectkey"].isin(y_df["subjectkey"])]
-    X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(y_df["subjectkey"])]
-
+    y = y_df.dropna(axis='rows') # Drop subjects lacking a y value
+    X = X[X["subjectkey"].isin(y["subjectkey"])]
+    
     # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
-    X_stringent = X_stringent[X_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
-    X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
+    X = X[X["subjectkey"].isin(file_ucq["subjectkey"])]
+    
+    # Select subjects that have ucq entries, aka eliminate subjects that don't have week0 QIDS-C entries
+    file_qids01_w0c = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
+    X = X[X["subjectkey"].isin(file_qids01_w0c["subjectkey"])]
 
-    # Handle stringent qids condition
-    file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
-    file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
-    file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
-    file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+    return X
 
-    condition_all = ((X_stringent.subjectkey.isin(file1.subjectkey))
-                     & (X_stringent.subjectkey.isin(file2.subjectkey))
-                     & (X_stringent.subjectkey.isin(file3.subjectkey))
-                     & (X_stringent.subjectkey.isin(file4.subjectkey)))
-    X_stringent = X_stringent[condition_all]
+def handle_subject_selection_conditions_wk8_response(input_row_selected_dir_path, X, y_df):
+    # New subject selection handling function based off  old one, just for the week 8 response
+    # Select subjects with corresponding non-blank y values
+    y = y_df.dropna(axis='rows') # Drop subjects lacking a y value
+    X = X[X["subjectkey"].isin(y["subjectkey"])]
+    
+    # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
+    file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
+    X = X[X["subjectkey"].isin(file_ucq["subjectkey"])]
+    
+    # Select subjects that have ucq entries, aka eliminate subjects that don't have week0 QIDS-SR entries
+    file_qids01_w0sr = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
+    X = X[X["subjectkey"].isin(file_qids01_w0sr["subjectkey"])]
 
-    # Handle less stringent qids condition
-    file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
-    file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
-    file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
-    file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+    return X
 
-    condition_or = (
-        ((X_less_stringent.subjectkey.isin(file1.subjectkey)) | (X_less_stringent.subjectkey.isin(file2.subjectkey)))
-        & ((X_less_stringent.subjectkey.isin(file3.subjectkey)) | (X_less_stringent.subjectkey.isin(file4.subjectkey)))
-    )
-    X_less_stringent = X_less_stringent[condition_or]
 
-    return (X_stringent, X_less_stringent)
+# =============================================================================
+# 
+# def handle_subject_selection_conditions(input_row_selected_dir_path, X_stringent, X_less_stringent, y_df):
+#     # Select subjects with corresponding y values
+#     X_stringent = X_stringent[X_stringent["subjectkey"].isin(y_df["subjectkey"])]
+#     X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(y_df["subjectkey"])]
+# 
+#     # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
+#     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
+#     X_stringent = X_stringent[X_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
+#     X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
+# 
+#     # Handle stringent qids condition
+#     file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
+#     file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
+#     file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
+#     file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+# 
+#     condition_all = ((X_stringent.subjectkey.isin(file1.subjectkey))
+#                      & (X_stringent.subjectkey.isin(file2.subjectkey))
+#                      & (X_stringent.subjectkey.isin(file3.subjectkey))
+#                      & (X_stringent.subjectkey.isin(file4.subjectkey)))
+#     X_stringent = X_stringent[condition_all]
+# 
+#     # Handle less stringent qids condition
+#     file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
+#     file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
+#     file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
+#     file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
+# 
+#     condition_or = (
+#         ((X_less_stringent.subjectkey.isin(file1.subjectkey)) | (X_less_stringent.subjectkey.isin(file2.subjectkey)))
+#         & ((X_less_stringent.subjectkey.isin(file3.subjectkey)) | (X_less_stringent.subjectkey.isin(file4.subjectkey)))
+#     )
+#     X_less_stringent = X_less_stringent[condition_or]
+# 
+#     return (X_stringent, X_less_stringent)
+# =============================================================================
 
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
