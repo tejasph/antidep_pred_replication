@@ -797,7 +797,7 @@ def generate_y(root_data_dir_path):
 
     print("\n--------------------------------7. Y MATRIX GENERATION-----------------------------------\n")
 
-    y_lvl2_rem_ccv01 = pd.DataFrame()
+#    y_lvl2_rem_ccv01 = pd.DataFrame()
     y_lvl2_rem_qids01 = pd.DataFrame()
     y_wk8_response_qids01 = pd.DataFrame()
 
@@ -819,34 +819,58 @@ def generate_y(root_data_dir_path):
         print(LINE_BREAK)
         print("Handling scale = ", scale_name)
 
-        if scale_name == "ccv01":
-            scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
-            scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
-            i = 0
-            for id, group in scale_df.groupby(['subjectkey']):
-                y_lvl2_rem_ccv01.loc[i, "subjectkey"] = id
-                subset = group[((group['level'] == "Level 1") | (group['level'] == "Level 2")) & (group['remsn'] == 1)]
-                if subset.shape[0] == 0:
-                    y_lvl2_rem_ccv01.loc[i, "target"] = 0
-                else:
-                    y_lvl2_rem_ccv01.loc[i, "target"] = 1
-                i += 1
+# old y generation using ccv01
+# =============================================================================
+#         if scale_name == "ccv01":
+#             scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
+#             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
+#             i = 0
+#             for id, group in scale_df.groupby(['subjectkey']):
+#                 y_lvl2_rem_ccv01.loc[i, "subjectkey"] = id
+#                 subset = group[((group['level'] == "Level 1") | (group['level'] == "Level 2")) & (group['remsn'] == 1)]
+#                 if subset.shape[0] == 0:
+#                     y_lvl2_rem_ccv01.loc[i, "target"] = 0
+#                 else:
+#                     y_lvl2_rem_ccv01.loc[i, "target"] = 1
+#                 i += 1
+# =============================================================================
 
         if scale_name == "qids01":
             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
                 y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
-                subset = group[(group['level'] == "Level 3") | (group['level'] == "Level 4")]
+                subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
+                # Assign 0 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
+                # do not remit in Level 1 and then drop out
                 if subset.shape[0] > 0:
                     y_lvl2_rem_qids01.loc[i, "target"] = 0
-                else:
-                    subset = group[(group['version_form'] == "Clinician") & (group['level'] != "Follow-Up") & (group['qstot'] <= 5)]
-                    if subset.shape[0] > 0:
-                        y_lvl2_rem_qids01.loc[i, "target"] = 1
-                    else:
-                        y_lvl2_rem_qids01.loc[i, "target"] = 0
+                
+                # Assign 1 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
+                subset_rems = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
+                if subset_rems.shape[0] > 0:
+                    y_lvl2_rem_qids01.loc[i, "target"] = 1
+
                 i += 1
+
+# Old y_lvl2_rem_qids01 generation                
+# =============================================================================
+#              if scale_name == "qids01":
+#             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
+#             i = 0
+#             for id, group in scale_df.groupby(['subjectkey']):
+#                 y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
+#                 subset = group[(group['level'] == "Level 3") | (group['level'] == "Level 4")]
+#                 if subset.shape[0] > 0:
+#                     y_lvl2_rem_qids01.loc[i, "target"] = 0
+#                 else:
+#                     subset = group[(group['version_form'] == "Clinician") & (group['level'] != "Follow-Up") & (group['qstot'] <= 5)]
+#                     if subset.shape[0] > 0:
+#                         y_lvl2_rem_qids01.loc[i, "target"] = 1
+#                     else:
+#                         y_lvl2_rem_qids01.loc[i, "target"] = 0
+#                 i += 1    
+# =============================================================================
 
             # Create CAN-BIND overlapping targets
             i = 0
