@@ -587,29 +587,32 @@ def impute(root_data_dir_path):
         agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
         agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
 
-        # Handle qids variable replacement
-        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]):
-            split_name = col_name.split("_")
-            target_name = split_name[0] + "_w0sr__" + split_name[-1]
-            blank_subset = agg_df[col_name].isnull()
-            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-
-        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]):
-            split_name = col_name.split("_")
-            target_name = split_name[0] + "_w0c__" + split_name[-1]
-            blank_subset = agg_df[col_name].isnull()
-            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-
-        for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w2c_to_w2sr"]["col_names"]):
-            split_name = col_name.split("_")
-            target_name = split_name[0] + "_w2sr__" + split_name[-1]
-            blank_subset = agg_df[col_name].isnull()
-            agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-
-        # Replace remaining blanks with mode
-        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]))
-        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]))
-
+## JJN: Replaced qids handling by simply adding it to the median replacement, except for the a few special cases
+# =============================================================================
+#         # Handle qids variable replacement
+#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]):
+#             split_name = col_name.split("_")
+#             target_name = split_name[0] + "_w0sr__" + split_name[-1]
+#             blank_subset = agg_df[col_name].isnull()
+#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+# 
+#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]):
+#             split_name = col_name.split("_")
+#             target_name = split_name[0] + "_w0c__" + split_name[-1]
+#             blank_subset = agg_df[col_name].isnull()
+#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+# 
+#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w2c_to_w2sr"]["col_names"]):
+#             split_name = col_name.split("_")
+#             target_name = split_name[0] + "_w2sr__" + split_name[-1]
+#             blank_subset = agg_df[col_name].isnull()
+#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
+#
+#
+#        # Replace remaining blanks with mode
+#        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]))
+#        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]))
+# =============================================================================
         crs01_df = pd.read_csv(root_data_dir_path + "/crs01.txt", sep="\t", skiprows=[1])
         crs01_df.loc[:, "interview_age"] = crs01_df["interview_age"].astype("float")
 
@@ -686,6 +689,12 @@ def impute(root_data_dir_path):
                 + np.nanmax(list(row[["qids01_w0sr__vslow", "qids01_w0sr__vagit"]])) \
                 + np.sum(row[["qids01_w0sr__vmdsd", "qids01_w0sr__vengy", "qids01_w0sr__vintr", "qids01_w0sr__vsuic", "qids01_w0sr__vvwsf", "qids01_w0sr__vcntr"]])
                 agg_df.set_value(i, 'qids01_w0sr__qstot', value)
+            if 'qids01_w2sr__qstot' in row:
+                value = np.nanmax(list(row[["qids01_w2sr__vsoin", "qids01_w2sr__vmnin", "qids01_w2sr__vemin", "qids01_w2sr__vhysm"]])) \
+                + np.nanmax(list(row[["qids01_w2sr__vapdc", "qids01_w2sr__vapin", "qids01_w2sr__vwtdc", "qids01_w2sr__vwtin"]])) \
+                + np.nanmax(list(row[["qids01_w2sr__vslow", "qids01_w2sr__vagit"]])) \
+                + np.sum(row[["qids01_w2sr__vmdsd", "qids01_w2sr__vengy", "qids01_w2sr__vintr", "qids01_w2sr__vsuic", "qids01_w2sr__vvwsf", "qids01_w2sr__vcntr"]])
+                agg_df.set_value(i, 'qids01_w2sr__qstot', value)
             if 'qids01_w0c__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w0c__vsoin", "qids01_w0c__vmnin", "qids01_w0c__vemin", "qids01_w0c__vhysm"]])) \
                 + np.nanmax(list(row[["qids01_w0c__vapdc", "qids01_w0c__vapin", "qids01_w0c__vwtdc", "qids01_w0c__vwtin"]])) \

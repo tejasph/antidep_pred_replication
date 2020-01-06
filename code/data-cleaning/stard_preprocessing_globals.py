@@ -295,25 +295,32 @@ VALUE_CONVERSION_MAP_IMPUTE = {
         "conversion_map": {np.nan: 20}
     },
     "blank_to_median": {
-        "col_names": {'sfhs01__pcs12', 'sfhs01__mcs12', 'phx01__episode_date'},
+        "col_names": {'sfhs01__pcs12', 'sfhs01__mcs12', 'phx01__episode_date',
+                      'qids01_w0c__vsoin', 'qids01_w0c__vmnin', 'qids01_w0c__vemin', 'qids01_w0c__vhysm', 'qids01_w0c__vmdsd', 'qids01_w0c__vcntr', 'qids01_w0c__vvwsf', 'qids01_w0c__vsuic', 'qids01_w0c__vintr', 'qids01_w0c__vengy', 'qids01_w0c__vslow', 'qids01_w0c__vagit',
+                      'qids01_w2c__vsoin', 'qids01_w2c__vmnin', 'qids01_w2c__vemin', 'qids01_w2c__vhysm', 'qids01_w2c__vmdsd', 'qids01_w2c__vcntr', 'qids01_w2c__vvwsf', 'qids01_w2c__vsuic', 'qids01_w2c__vintr', 'qids01_w2c__vengy', 'qids01_w2c__vslow', 'qids01_w2c__vagit',
+                      'qids01_w0sr__vsoin', 'qids01_w0sr__vmnin', 'qids01_w0sr__vemin', 'qids01_w0sr__vhysm', 'qids01_w0sr__vmdsd', 'qids01_w0sr__vcntr', 'qids01_w0sr__vvwsf', 'qids01_w0sr__vsuic', 'qids01_w0sr__vintr', 'qids01_w0sr__vengy', 'qids01_w0sr__vslow', 'qids01_w0sr__vagit',
+                      'qids01_w2sr__vsoin', 'qids01_w2sr__vmnin', 'qids01_w2sr__vemin', 'qids01_w2sr__vhysm', 'qids01_w2sr__vmdsd', 'qids01_w2sr__vcntr', 'qids01_w2sr__vvwsf', 'qids01_w2sr__vsuic', 'qids01_w2sr__vintr', 'qids01_w2sr__vengy', 'qids01_w2sr__vslow', 'qids01_w2sr__vagit'                      
+                      },
         "conversion_map": None
     },
     "blank_to_mode": {
         "col_names": {'crs01__heart', 'crs01__vsclr', 'crs01__hema', 'crs01__eyes', 'crs01__ugi', 'crs01__lgi', 'crs01__renal', 'crs01__genur', 'crs01__mskl', 'crs01__neuro', 'crs01__psych', 'crs01__respiratory', 'crs01__liverd', 'crs01__endod', 'pdsq01__evy2w', 'pdsq01__joy2w', 'pdsq01__int2w', 'pdsq01__lap2w', 'pdsq01__gap2w', 'pdsq01__lsl2w', 'pdsq01__msl2w', 'pdsq01__jmp2w', 'pdsq01__trd2w', 'pdsq01__glt2w', 'pdsq01__neg2w', 'pdsq01__flr2w', 'pdsq01__cnt2w', 'pdsq01__dcn2w', 'pdsq01__psv2w', 'pdsq01__wsh2w', 'pdsq01__btr2w', 'pdsq01__tht2w', 'pdsq01__ser2w', 'pdsq01__spf2w', 'pdsq01__sad2y', 'pdsq01__apt2y', 'pdsq01__slp2y', 'pdsq01__trd2y', 'pdsq01__cd2y', 'pdsq01__low2y', 'pdsq01__hpl2y', 'pdsq01__trexp', 'pdsq01__trwit', 'pdsq01__tetht', 'pdsq01__teups', 'pdsq01__temem', 'pdsq01__tedis', 'pdsq01__teblk', 'pdsq01__termd', 'pdsq01__tefsh', 'pdsq01__teshk', 'pdsq01__tedst', 'pdsq01__tenmb', 'pdsq01__tegug', 'pdsq01__tegrd', 'pdsq01__tejmp', 'pdsq01__ebnge', 'pdsq01__ebcrl', 'pdsq01__ebfl', 'pdsq01__ebhgy', 'pdsq01__ebaln', 'pdsq01__ebdsg', 'pdsq01__ebups', 'pdsq01__ebdt', 'pdsq01__ebvmt', 'pdsq01__ebwgh', 'pdsq01__obgrm', 'pdsq01__obfgt', 'pdsq01__obvlt', 'pdsq01__obstp', 'pdsq01__obint', 'pdsq01__obcln', 'pdsq01__obrpt', 'pdsq01__obcnt', 'pdsq01__anhrt', 'pdsq01__anbrt', 'pdsq01__anshk', 'pdsq01__anrsn', 'pdsq01__anczy', 'pdsq01__ansym', 'pdsq01__anwor', 'pdsq01__anavd', 'pdsq01__pechr', 'pdsq01__pecnf', 'pdsq01__peslp', 'pdsq01__petlk', 'pdsq01__pevth', 'pdsq01__peimp', 'pdsq01__imagn', 'pdsq01__imspy', 'pdsq01__imdgr', 'pdsq01__impwr', 'pdsq01__imcrl', 'pdsq01__imvcs', 'pdsq01__fravd', 'pdsq01__frfar', 'pdsq01__frcwd', 'pdsq01__frlne', 'pdsq01__frbrg', 'pdsq01__frbus', 'pdsq01__frcar', 'pdsq01__fralo', 'pdsq01__fropn', 'pdsq01__franx', 'pdsq01__frsit', 'pdsq01__emwry', 'pdsq01__emstu', 'pdsq01__ematn', 'pdsq01__emsoc', 'pdsq01__emavd', 'pdsq01__emspk', 'pdsq01__emeat', 'pdsq01__emupr', 'pdsq01__emwrt', 'pdsq01__emstp', 'pdsq01__emqst', 'pdsq01__embmt', 'pdsq01__empty', 'pdsq01__emanx', 'pdsq01__emsit', 'pdsq01__dkmch', 'pdsq01__dkfam', 'pdsq01__dkfrd', 'pdsq01__dkcut', 'pdsq01__dkpbm', 'pdsq01__dkmge', 'pdsq01__dgmch', 'pdsq01__dgfam', 'pdsq01__dgfrd', 'pdsq01__dgcut', 'pdsq01__dgpbm', 'pdsq01__dgmge', 'pdsq01__wynrv', 'pdsq01__wybad', 'pdsq01__wysdt', 'pdsq01__wydly', 'pdsq01__wyrst', 'pdsq01__wyslp', 'pdsq01__wytsn', 'pdsq01__wycnt', 'pdsq01__wysnp', 'pdsq01__wycrl', 'pdsq01__phstm', 'pdsq01__phach', 'pdsq01__phsck', 'pdsq01__phpr', 'pdsq01__phcse', 'pdsq01__wiser', 'pdsq01__wistp', 'pdsq01__wiill', 'pdsq01__wintr', 'pdsq01__widr', 'wsas01__wsas01', 'wsas01__wsas02', 'wsas01__wsas03', 'wsas01__wsas04', 'wsas01__wsas05', 'wpai01__wpai06', 'wpai01__wpai_pctactimp', 'dm01_enroll__resm', 'dm01_enroll__relat', 'dm01_enroll__frend', 'dm01_enroll__thous', 'dm01_enroll__educat', 'dm01_enroll__student', 'dm01_enroll__mkedc', 'dm01_enroll__enjoy', 'dm01_enroll__famim', 'sfhs01__sfhs01', 'sfhs01__sfhs02', 'sfhs01__sfhs03', 'sfhs01__sfhs04', 'sfhs01__sfhs05', 'sfhs01__sfhs06', 'sfhs01__sfhs07', 'sfhs01__sfhs08', 'sfhs01__sfhs09', 'sfhs01__sfhs10', 'sfhs01__sfhs11', 'sfhs01__sfhs12', 'phx01__dage', 'idsc01__isoin', 'idsc01__imnin', 'idsc01__iemin', 'idsc01__ihysm', 'idsc01__imdsd', 'idsc01__ianx', 'idsc01__ipanc', 'idsc01__iirtb', 'idsc01__irct', 'idsc01__iqty', 'idsc01__icntr', 'idsc01__ivwsf', 'idsc01__ivwfr', 'idsc01__isuic', 'idsc01__iintr', 'idsc01__iplsr', 'idsc01__iengy', 'idsc01__isex', 'idsc01__islow', 'idsc01__iagit', 'idsc01__ismtc', 'idsc01__isymp', 'idsc01__igas', 'idsc01__iintp', 'idsc01__ildn', 'idsc01__iwrse||1.0', 'idsc01__iwrse||2.0', 'idsc01__iwrse||3.0', 'hrsd01__hsoin', 'hrsd01__hmnin', 'hrsd01__hemin', 'hrsd01__hmdsd', 'hrsd01__hpanx', 'hrsd01__hinsg', 'hrsd01__happt', 'hrsd01__hwl', 'hrsd01__hsanx', 'hrsd01__hhypc', 'hrsd01__hvwsf', 'hrsd01__hsuic', 'hrsd01__hintr', 'hrsd01__hengy', 'hrsd01__hslow', 'hrsd01__hagit', 'hrsd01__hsex', 'qlesq01__qlesq01', 'qlesq01__qlesq02', 'qlesq01__qlesq03', 'qlesq01__qlesq04', 'qlesq01__qlesq05', 'qlesq01__qlesq06', 'qlesq01__qlesq07', 'qlesq01__qlesq08', 'qlesq01__qlesq09', 'qlesq01__qlesq10', 'qlesq01__qlesq11', 'qlesq01__qlesq12', 'qlesq01__qlesq13', 'qlesq01__qlesq14', 'qlesq01__qlesq15', 'qlesq01__qlesq16', 'qlesq01__totqlesq'},
         "conversion_map": None
     },
-    "qids_w0c_to_w0sr": {
-        "col_names": {'qids01_w0c__vsoin', 'qids01_w0c__vmnin', 'qids01_w0c__vemin', 'qids01_w0c__vhysm', 'qids01_w0c__vmdsd', 'qids01_w0c__vapdc', 'qids01_w0c__vapin', 'qids01_w0c__vwtdc', 'qids01_w0c__vwtin', 'qids01_w0c__vcntr', 'qids01_w0c__vvwsf', 'qids01_w0c__vsuic', 'qids01_w0c__vintr', 'qids01_w0c__vengy', 'qids01_w0c__vslow', 'qids01_w0c__vagit'},
-        "conversion_map": None
-    },
-    "qids_w0sr_to_w0c": {
-        "col_names": {'qids01_w0sr__vsoin', 'qids01_w0sr__vmnin', 'qids01_w0sr__vemin', 'qids01_w0sr__vhysm', 'qids01_w0sr__vmdsd', 'qids01_w0sr__vapdc', 'qids01_w0sr__vapin', 'qids01_w0sr__vwtdc', 'qids01_w0sr__vwtin', 'qids01_w0sr__vcntr', 'qids01_w0sr__vvwsf', 'qids01_w0sr__vsuic', 'qids01_w0sr__vintr', 'qids01_w0sr__vengy', 'qids01_w0sr__vslow', 'qids01_w0sr__vagit'},
-        "conversion_map": None
-    },
-    "qids_w2c_to_w2sr": {
-        "col_names": {'qids01_w2c__vsoin', 'qids01_w2c__vmnin', 'qids01_w2c__vemin', 'qids01_w2c__vhysm', 'qids01_w2c__vmdsd', 'qids01_w2c__vapdc', 'qids01_w2c__vapin', 'qids01_w2c__vwtdc', 'qids01_w2c__vwtin', 'qids01_w2c__vcntr', 'qids01_w2c__vvwsf', 'qids01_w2c__vsuic', 'qids01_w2c__vintr', 'qids01_w2c__vengy', 'qids01_w2c__vslow', 'qids01_w2c__vagit'},
-        "conversion_map": None
-    }
+# =============================================================================
+#     "qids_w0c_to_w0sr": {
+#         "col_names": {'qids01_w0c__vsoin', 'qids01_w0c__vmnin', 'qids01_w0c__vemin', 'qids01_w0c__vhysm', 'qids01_w0c__vmdsd', 'qids01_w0c__vapdc', 'qids01_w0c__vapin', 'qids01_w0c__vwtdc', 'qids01_w0c__vwtin', 'qids01_w0c__vcntr', 'qids01_w0c__vvwsf', 'qids01_w0c__vsuic', 'qids01_w0c__vintr', 'qids01_w0c__vengy', 'qids01_w0c__vslow', 'qids01_w0c__vagit'},
+#         "conversion_map": None
+#     },
+#     "qids_w0sr_to_w0c": {
+#         "col_names": {'qids01_w0sr__vsoin', 'qids01_w0sr__vmnin', 'qids01_w0sr__vemin', 'qids01_w0sr__vhysm', 'qids01_w0sr__vmdsd', 'qids01_w0sr__vapdc', 'qids01_w0sr__vapin', 'qids01_w0sr__vwtdc', 'qids01_w0sr__vwtin', 'qids01_w0sr__vcntr', 'qids01_w0sr__vvwsf', 'qids01_w0sr__vsuic', 'qids01_w0sr__vintr', 'qids01_w0sr__vengy', 'qids01_w0sr__vslow', 'qids01_w0sr__vagit'},
+#         "conversion_map": None
+#     },
+#     "qids_w2c_to_w2sr": {
+#         "col_names": {'qids01_w2c__vsoin', 'qids01_w2c__vmnin', 'qids01_w2c__vemin', 'qids01_w2c__vhysm', 'qids01_w2c__vmdsd', 'qids01_w2c__vapdc', 'qids01_w2c__vapin', 'qids01_w2c__vwtdc', 'qids01_w2c__vwtin', 'qids01_w2c__vcntr', 'qids01_w2c__vvwsf', 'qids01_w2c__vsuic', 'qids01_w2c__vintr', 'qids01_w2c__vengy', 'qids01_w2c__vslow', 'qids01_w2c__vagit'},
+#         "conversion_map": None
+#     }
+# =============================================================================
 }
 
 NEW_FEATURES = ['imput_anyanxiety', 'imput_bech', 'imput_maier', 'imput_santen', 'imput_gibbons', 'imput_hamd7', 'imput_hamdret', 'imput_hamdanx', 'imput_hamdsle', 'imput_idsc5w0', 'imput_idsc5w2', 'imput_idsc5pccg', 'imput_qidscpccg']
