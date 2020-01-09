@@ -521,17 +521,13 @@ def aggregate_rows(root_data_dir_path):
         scale_df = scale_df.rename(columns = cols)
 
         if i == 0:
-            # if scale_name == "pdsq01":
-            #     print(scale_df[scale_df.subjectkey == "NDAR_INVCA539XY1"])
             aggregated_df = scale_df
         else:
-            # if scale_name == "pdsq01":
-            #     print(scale_df[scale_df.subjectkey == "NDAR_INVCA539XY1"])
-
             aggregated_df["subjectkey"] = aggregated_df["subjectkey"].astype(object)
             scale_df["subjectkey"] = scale_df["subjectkey"].astype(object)
 
-            # The left df has to be the one with more rows, as joining the two will ensure all subjects are grabbed.
+            # The left df has to be the one with more rows, as joining the two will ensure all subjects are grabbed. With an outer join (as opposed to left join) 
+            # this is likely not relevant anymore but I'm leaving this as I don't have time to check this. It will not cause any issues anyway. 
             if aggregated_df.shape[0] >= scale_df.shape[0]:
                 left = aggregated_df
                 right = scale_df
@@ -539,7 +535,7 @@ def aggregate_rows(root_data_dir_path):
                 left = scale_df
                 right = aggregated_df
 
-            aggregated_df = left.merge(right, on="subjectkey", how="left")
+            aggregated_df = left.merge(right, on="subjectkey", how="outer")
 
     output_file_name = AGGREGATED_ROWS_PREFIX + "stard_data_matrix"
     aggregated_df = aggregated_df.reindex(columns=(main_keys + list([a for a in aggregated_df.columns if a not in main_keys])))
@@ -622,20 +618,31 @@ def impute(root_data_dir_path):
         # Handle imputation based on cross-column conditions
         for i, row in agg_df.iterrows():
             if ('gender||F' in row and 'gender||M' in row) and (np.isnan(row['gender||F']) or np.isnan(row['gender||M'])):
-                    gender = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['gender'].iloc[0]
-                    if gender == "M":
-                        agg_df.set_value(i, 'gender||F', 0)
-                        agg_df.set_value(i, 'gender||M', 1)
-                    elif gender == "F" or np.isnan(gender):
-                        agg_df.set_value(i, 'gender||F', 1)
-                        agg_df.set_value(i, 'gender||M', 0)
+                    # If one of the dummy variables for gender are empty, then grab it from the scale crs01. 
+                    gender_series = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['gender']
+                    if len(gender_series) == 0:
+                        # Ultimately want to remove subjects that have age or gender missing, likely.
+                        print("This subject [" + row['subjectkey'] + "] does not have a value stored in 'crs01' for gender. Keep this blank for now.")
+                    else:
+                        gender = gender_series.iloc[0]
+                        if gender == "M":
+                            agg_df.set_value(i, 'gender||F', 0)
+                            agg_df.set_value(i, 'gender||M', 1)
+                        elif gender == "F" or np.isnan(gender):
+                            agg_df.set_value(i, 'gender||F', 1)
+                            agg_df.set_value(i, 'gender||M', 0)
             if 'interview_age' in row and np.isnan(row['interview_age']):
-                age = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['interview_age'].iloc[0]
-                if np.isnan(age):
-                    print("Age is null", row["subjectkey"])
-                    agg_df.set_value(i, 'interview_age', agg_df['interview_age'].median())
+                age_series = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['interview_age']
+                if len(age_series) == 0:
+                    # Ultimately want to remove subjects that have age or gender missing, likely.
+                    print("This subject [" + row['subjectkey'] + "] does not have a value stored in 'crs01' for interview_age. Keep this blank for now.")
                 else:
-                    agg_df.set_value(i, 'interview_age', age)
+                    age = age_series.iloc[0]
+                    if np.isnan(age):
+                        print("Age is null", row["subjectkey"])
+                        agg_df.set_value(i, 'interview_age', agg_df['interview_age'].median())
+                    else:
+                        agg_df.set_value(i, 'interview_age', age)
             if 'ucq01__ucq010' in row:
                 val = 1
                 if row['ucq01__ucq010'] == 0:
