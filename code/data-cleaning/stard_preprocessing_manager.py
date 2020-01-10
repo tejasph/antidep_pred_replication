@@ -663,6 +663,8 @@ def impute(root_data_dir_path):
                     agg_df.set_value(i, 'dm01_w0__mempl', 0)
                     agg_df.set_value(i, 'dm01_enroll__empl||1.0', 1)
                     agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
+                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
+                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)    
 
                 else:
                     agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
@@ -715,7 +717,9 @@ def impute(root_data_dir_path):
                 + np.sum(row[["qids01_w2c__vmdsd", "qids01_w2c__vengy", "qids01_w2c__vintr", "qids01_w2c__vsuic", "qids01_w2c__vvwsf", "qids01_w2c__vcntr"]])
                 agg_df.set_value(i, 'qids01_w2c__qstot', value)
 
-            # Handle adding imputed features
+            
+        # Re-iterate through agg_df for imputation of the new features, so that "row" contains updated values, to fix imput_qidscpccg bug
+        for i, row in agg_df.iterrows():
             agg_df = add_new_imputed_features(agg_df, row, i)
 
         # Drop columns

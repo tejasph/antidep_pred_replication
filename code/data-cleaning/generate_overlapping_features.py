@@ -18,7 +18,7 @@ def convert_stard_to_overlapping(output_dir=""):
         os.mkdir(output_dir)
 
     # df = pd.read_csv(file_path)
-    df = pd.read_csv(output_dir + "/" + "X_lvl2_rem_qids01__stringent.csv")
+    df = pd.read_csv(output_dir + "/" + "X_wk8_response_qids01__final.csv")
 
     # Take whitelist columns first
     df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]
