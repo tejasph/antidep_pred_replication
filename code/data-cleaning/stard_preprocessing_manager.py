@@ -465,6 +465,9 @@ def convert_values(root_data_dir_path):
         if scale_name == "dm01_enroll":
             scale_df["resm"] = scale_df["resy"] * 12 + scale_df["resm"]
             scale_df = scale_df.drop(columns=["resy"])
+            
+        if scale_name == "phx01":
+            scale_df["episode_date"] = abs(scale_df["episode_date"]) 
 
         output_file_name = VALUES_CONVERTED_PREFIX + scale_name
         scale_df.to_csv(output_values_converted_dir_path + output_file_name + CSV_SUFFIX, index=False)
@@ -644,40 +647,58 @@ def impute(root_data_dir_path):
                     else:
                         agg_df.set_value(i, 'interview_age', age)
             if 'ucq01__ucq010' in row:
-                val = 1
-                if row['ucq01__ucq010'] == 0:
-                    val = 0
-                agg_df.set_value(i, 'ucq01__ucq020', val)
-                agg_df.set_value(i, 'ucq01__ucq030', val)
+                val = row['ucq01__ucq010']
+                #if row['ucq01__ucq010'] == 0:
+                #    val = 0
+                if np.isnan(row['ucq01__ucq020']):
+                    agg_df.set_value(i, 'ucq01__ucq020', val)
+                if np.isnan(row['ucq01__ucq030']):
+                    agg_df.set_value(i, 'ucq01__ucq030', val)
             if 'wpai01__wpai01' in row:
                 if row['wpai01__wpai01'] == 1:
-                    agg_df.set_value(i, 'dm01_w0__inc_curr', 1)
-                    agg_df.set_value(i, 'dm01_w0__mempl', 2000)
-                    agg_df.set_value(i, 'dm01_enroll__empl||1.0', 0)
-                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 1)
-                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 0)
-                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 1)
+                    if np.isnan(row['dm01_w0__inc_curr']):
+                        agg_df.set_value(i, 'dm01_w0__inc_curr', 1)
+                    if np.isnan(row['dm01_w0__mempl']):
+                        agg_df.set_value(i, 'dm01_w0__mempl', 2000)
+                    if np.isnan(row['dm01_enroll__empl||1.0']):
+                        agg_df.set_value(i, 'dm01_enroll__empl||1.0', 0)
+                    if np.isnan(row['dm01_enroll__empl||3.0']):
+                        agg_df.set_value(i, 'dm01_enroll__empl||3.0', 1)
+                    if np.isnan(row['dm01_enroll__privins||0.0']):
+                        agg_df.set_value(i, 'dm01_enroll__privins||0.0', 0)
+                    if np.isnan(row['dm01_enroll__privins||1.0']):
+                        agg_df.set_value(i, 'dm01_enroll__privins||1.0', 1)
 
                 elif row['wpai01__wpai01'] == 0 or np.isnan(row['wpai01__wpai01']):
-                    agg_df.set_value(i, 'dm01_w0__inc_curr', 0)
-                    agg_df.set_value(i, 'dm01_w0__mempl', 0)
-                    agg_df.set_value(i, 'dm01_enroll__empl||1.0', 1)
-                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
-                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
-                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)    
+                    if np.isnan(row['dm01_w0__inc_curr']):
+                        agg_df.set_value(i, 'dm01_w0__inc_curr', 0)
+                    if np.isnan(row['dm01_w0__mempl']):
+                        agg_df.set_value(i, 'dm01_w0__mempl', 0)
+                    if np.isnan(row['dm01_enroll__empl||1.0']):
+                        agg_df.set_value(i, 'dm01_enroll__empl||1.0', 1)
+                    if np.isnan(row['dm01_enroll__privins||1.0']):
+                        agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
+                    if np.isnan(row['dm01_enroll__empl||3.0']):
+                        agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
+                    if np.isnan(row['dm01_enroll__privins||0.0']):
+                        agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)    
 
                 else:
-                    agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
-                    agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)
-                    agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
-            if 'wsas01__totwsas' in row:
-                col_names = ['wsas01__wsas01', 'wsas01__wsas03', 'wsas01__wsas04', 'wsas01__wsas05']
+                    # Above two scenarios should handle all, print message if wpai is something else
+                    print("Unxpected wpai01 value during imputation: " + str(row['wpai01__wpai01']))
+                    
+                    ##agg_df.set_value(i, 'dm01_enroll__empl||3.0', 0)
+                    ##agg_df.set_value(i, 'dm01_enroll__privins||0.0', 1)
+                    ##agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
+            if 'wsas01__totwsas' in row and np.isnan(row['wsas01__totwsas']):
+                col_names = ['wsas01__wsas01','wsas01__wsas02', 'wsas01__wsas03', 'wsas01__wsas04', 'wsas01__wsas05']
                 agg_df.set_value(i, 'wsas01__totwsas', np.sum(row[col_names]))
-            if 'hrsd01__hdtot_r' in row:
+            if 'hrsd01__hdtot_r' in row and np.isnan(row['hrsd01__hdtot_r']):
                 col_names = ['hrsd01__hsoin',
                              'hrsd01__hmnin',
                              'hrsd01__hemin',
                              'hrsd01__hmdsd',
+                             'hrsd01__hpanx'
                              'hrsd01__hinsg',
                              'hrsd01__happt',
                              'hrsd01__hwl',
@@ -689,8 +710,7 @@ def impute(root_data_dir_path):
                              'hrsd01__hengy',
                              'hrsd01__hslow',
                              'hrsd01__hagit',
-                             'hrsd01__hsex',
-                             'hrsd01__hdtot_r']
+                             'hrsd01__hsex']
                 agg_df.set_value(i, 'hrsd01__hdtot_r', np.sum(row[col_names]))
             if 'qids01_w0sr__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w0sr__vsoin", "qids01_w0sr__vmnin", "qids01_w0sr__vemin", "qids01_w0sr__vhysm"]])) \
@@ -854,22 +874,22 @@ def generate_y(root_data_dir_path):
 #                     y_lvl2_rem_ccv01.loc[i, "target"] = 1
 #                 i += 1
 # =============================================================================
-
+        # Reversed 0 and 1 from previous; 1 is now TRD, 0 is non-TRD, as we're predicting TRD. 
         if scale_name == "qids01":
             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
                 y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
                 subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
-                # Assign 0 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
+                # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
                 # do not remit in Level 1 and then drop out
                 if subset.shape[0] > 0:
-                    y_lvl2_rem_qids01.loc[i, "target"] = 0
+                    y_lvl2_rem_qids01.loc[i, "target"] = 1
                 
-                # Assign 1 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
+                # Assign 0 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
                 subset_rems = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
                 if subset_rems.shape[0] > 0:
-                    y_lvl2_rem_qids01.loc[i, "target"] = 1
+                    y_lvl2_rem_qids01.loc[i, "target"] = 0
 
                 i += 1
 
@@ -957,6 +977,13 @@ def select_subjects(root_data_dir_path):
     
     # Subset the y matrices so that it matches the X matrices
     y_wk8_response_qids01__final = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__final.subjectkey)]
+
+    # Sort both X and y matrices by 'subject' to make sure they match; y should already be sorted by this
+    X_lvl2_rem_qids01__final = X_lvl2_rem_qids01__final.sort_values(by=['subjectkey'])
+    X_wk8_response_qids01__final = X_wk8_response_qids01__final.sort_values(by=['subjectkey'])
+    
+    y_lvl2_rem_qids01__final = y_lvl2_rem_qids01__final.sort_values(by=['subjectkey'])
+    y_wk8_response_qids01__final = y_wk8_response_qids01__final.sort_values(by=['subjectkey'])
 
     # Output X matrices to CSV
     X_lvl2_rem_qids01__final.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__final" + CSV_SUFFIX, index=False)

@@ -536,7 +536,7 @@ STARD_OVERLAPPING_VALUE_CONVERSION_MAP = {
             "wsas01__wsas02": 1.25,
             "wpai01__wpai_totalhrs": 2,
             "wpai01__wpai02": 2,
-            "phx01__episode_date": -0.0333, # /30. Double check doesn't also need negative
+            "phx01__episode_date": 0.0333, # /30. Double check doesn't also need negative
             "interview_age": 0.082222 #/12 to convert month age to year
         }
     },
