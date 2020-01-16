@@ -876,61 +876,56 @@ def generate_y(root_data_dir_path):
 # =============================================================================
         # Reversed 0 and 1 from previous; 1 is now TRD, 0 is non-TRD, as we're predicting TRD. 
         if scale_name == "qids01":
-            scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
+            
+            #scale_df = scale_df.loc[scale_df['days_baseline'] > 21] This prevents the use of these anywhere below, so will wreck baseline for the other y.
+            over21_df = scale_df.loc[scale_df['days_baseline'] > 21] # New, use this to check subjects remained 4 weeks. 
+            #print(over21_df['subjectkey'])
+            #print('NDAR_INVPN807XGG' in over21_df['subjectkey'].values)
+            
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
-                y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
-                subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
-                # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
-                # do not remit in Level 1 and then drop out
-                if subset.shape[0] > 0:
-                    y_lvl2_rem_qids01.loc[i, "target"] = 1
+                if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
+                    y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
+                    subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
+                    # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
+                    # do not remit in Level 1 and then drop out
+                    if subset.shape[0] > 0:
+                        y_lvl2_rem_qids01.loc[i, "target"] = 1
                 
-                # Assign 0 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
-                subset_rems = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
-                if subset_rems.shape[0] > 0:
-                    y_lvl2_rem_qids01.loc[i, "target"] = 0
+                    # Assign 0 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
+                    subset_rems = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
+                    if subset_rems.shape[0] > 0:
+                        y_lvl2_rem_qids01.loc[i, "target"] = 0
 
-                i += 1
-
-# Old y_lvl2_rem_qids01 generation                
-# =============================================================================
-#              if scale_name == "qids01":
-#             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
-#             i = 0
-#             for id, group in scale_df.groupby(['subjectkey']):
-#                 y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
-#                 subset = group[(group['level'] == "Level 3") | (group['level'] == "Level 4")]
-#                 if subset.shape[0] > 0:
-#                     y_lvl2_rem_qids01.loc[i, "target"] = 0
-#                 else:
-#                     subset = group[(group['version_form'] == "Clinician") & (group['level'] != "Follow-Up") & (group['qstot'] <= 5)]
-#                     if subset.shape[0] > 0:
-#                         y_lvl2_rem_qids01.loc[i, "target"] = 1
-#                     else:
-#                         y_lvl2_rem_qids01.loc[i, "target"] = 0
-#                 i += 1    
-# =============================================================================
+                    i += 1
 
             # Create CAN-BIND overlapping targets
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
-                # Grab the baseline entry
-                subset = group[(group['version_form'] == "Self Rating")]
-                if subset.shape[0] == 0:
-                    continue
+                if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
+                    # Grab the baseline entry
+                    subset = group[(group['version_form'] == "Self Rating")]
+                    if subset.shape[0] == 0:
+                        continue
 
-                baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
-                y_wk8_response_qids01.loc[i, "subjectkey"] = id
-
-                # Grab the later days_baseline entries
-                subset = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
-                y_wk8_response_qids01.loc[i, "target"] = 0
-                for k, row in subset.iterrows():
-                    # If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
-                    if row['qstot'] <= 0.5 * baseline:
-                        y_wk8_response_qids01.loc[i, "target"] = 1
-                        break
+                    baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                    y_wk8_response_qids01.loc[i, "subjectkey"] = id
+                
+                    if id == "NDAR_INVAA077HCU":
+                        print("Baseline for HCU is:  " + str(baseline))
+                    
+                    # Grab the later days_baseline entries
+                    subset = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
+                    y_wk8_response_qids01.loc[i, "target"] = 0
+                    for k, row in subset.iterrows():
+                        if id == "NDAR_INVAA077HCU":
+                            print("Finding these qstots:  " + str(row['qstot']))
+                        #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
+                        if row['qstot'] <= 0.5 * baseline:
+                            if id == "NDAR_INVAA077HCU":
+                                print("HCU was found to be a responder with qstot: " + str(row['qstot']))
+                            y_wk8_response_qids01.loc[i, "target"] = 1
+                            break
                 i += 1
 
     # y_lvl2_rem_ccv01.to_csv(output_y_dir_path + "y_lvl2_rem_ccv01" + CSV_SUFFIX, index=False)

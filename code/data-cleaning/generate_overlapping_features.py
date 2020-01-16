@@ -92,11 +92,11 @@ def convert_stard_to_overlapping(output_dir=""):
             print('Warning! Likely unwanted column in output: ' + header)
     
     # Sort and output
-    df = df.sort_values(by=['SUBJLABEL:::subjectkey'])
-    ##df = df.drop(['SUBJLABEL:::subjectkey'], axis=1)
-    ##df = df.reset_index(drop=True)
-    ##df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
-    df.to_csv(output_dir + "/X_train_stard_extval.csv",index=False)
+    df = df.reset_index(drop=True)
+    df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
+    #df = df.sort_values(by=['SUBJLABEL:::subjectkey'])    
+    df = df.set_index(['SUBJLABEL:::subjectkey'])
+    df.to_csv(output_dir + "/X_train_stard_extval.csv",index=True)
 
 def convert_canbind_to_overlapping(output_dir=""):
     if output_dir == "":
@@ -159,11 +159,11 @@ def convert_canbind_to_overlapping(output_dir=""):
     
     
     # Sort and output
-    df = df.sort_values(by=['SUBJLABEL:::subjectkey'])
-    ##df = df.drop(['SUBJLABEL:::subjectkey'], axis=1)
-    ##df = df.reset_index(drop=True)
-    ##df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
-    df.to_csv(output_dir + "/X_test_cb_extval.csv",index=False)
+    df = df.reset_index(drop=True)
+    df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
+    #df = df.sort_values(by=['SUBJLABEL:::subjectkey'])    
+    df = df.set_index(['SUBJLABEL:::subjectkey'])
+    df.to_csv(output_dir + "/X_test_cb_extval.csv",index=True)
 
 
 def add_new_imputed_features_canbind(df, row, i):

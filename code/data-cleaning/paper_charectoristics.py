@@ -34,7 +34,12 @@ def write_overlapping_characteristics(data_dir):
       
     # Open file to write to. Write manually to allow strings
     f = open(data_dir + "/" + "paper_overlapping_characteristics.csv", "w")
-    f.write("Characteristic, STAR*D, CAN-BIND\n")
+    f.write("Characteristic, STAR*D,, CAN-BIND,\n")
+    
+    
+    # Wrtie line for n and %
+    f.write(',n,%,n,%\n')
+    
     
     # Female:Male. Write manually as aytypical
     defin = "Female:Male (%)"
@@ -49,8 +54,8 @@ def write_overlapping_characteristics(data_dir):
     female_cb_perc = "{:.1f}".format(100*female_cb/cb_n)
     male_cb_perc = "{:.1f}".format(100*male_cb/cb_n)
     
-    f.write(defin + "," + str(female_sd) + ":" + str(male_sd) + " (" + female_sd_perc + ":" + male_sd_perc + "),")
-    f.write(str(female_cb) + ":" + str(male_cb) + " (" + female_cb_perc + ":" + male_cb_perc + ")\n")
+    f.write(defin + "," + str(female_sd) + ":" + str(male_sd) + " ," + female_sd_perc + ":" + male_sd_perc + ",")
+    f.write(str(female_cb) + ":" + str(male_cb) + " ," + female_cb_perc + ":" + male_cb_perc + "\n")
     
     # Cannot do ethnicity, missing from STAR*D
     
@@ -79,6 +84,27 @@ def write_overlapping_characteristics(data_dir):
     never_cb = X_cb_extval['MRTL_STATUS_Never Married:::dm01_enroll__marital||1.0'].value_counts().to_dict()[1]
     write_characteristic_perc("Never Married (%)", never_sd, sd_n, never_cb, cb_n, f)
     
+    # Any substance-use
+    # First make two new columns for any substance use, by taking the max of the two substance columns (alch, non-alch)
+    X_cb_extval['substance'] = X_cb_extval[['MINI_ALCHL_ABUSE_TIME:::phx01__alcoh||1.0', 'MINI_SBSTNC_ABUSE_NONALCHL_TIME:::phx01__amphet||1.0']].max(axis=1)
+    X_sd_extval['substance'] = X_sd_extval[['MINI_ALCHL_ABUSE_TIME:::phx01__alcoh||1.0', 'MINI_SBSTNC_ABUSE_NONALCHL_TIME:::phx01__amphet||1.0']].max(axis=1)
+    
+    col = 'substance'
+    defin = "Substance use Disorder (%)"
+    sd = X_sd_extval[col].value_counts().to_dict()[1]
+    cb = X_cb_extval[col].value_counts().to_dict()[1]
+    write_characteristic_perc(defin, sd, sd_n, cb, cb_n, f)
+
+    # Any anxiety disorder
+    col = ':::imput_anyanxiety' 
+    defin = "Any Anxiety Disorder (%)"
+    sd = X_sd_extval[col].value_counts().to_dict()[1]
+    cb = X_cb_extval[col].value_counts().to_dict()[1]
+    write_characteristic_perc(defin, sd, sd_n, cb, cb_n, f)
+    
+
+    
+    
     # Employment Status
     sd = X_sd_extval['EMPLOY_STATUS_1.0:::dm01_enroll__empl||3.0'].value_counts().to_dict()[1]
     cb = X_cb_extval['EMPLOY_STATUS_1.0:::dm01_enroll__empl||3.0'].value_counts().to_dict()[1]
@@ -96,6 +122,10 @@ def write_overlapping_characteristics(data_dir):
     cb = X_cb_extval['EMPLOY_STATUS_7.0:::dm01_enroll__empl||6.0'].value_counts().to_dict()[1]
     write_characteristic_perc("Retired (%)", sd, sd_n, cb, cb_n, f)
     
+    # line for mean and %
+    f.write(', Mean, SD, Mean, SD\n')
+    
+    
     # Employment Status: Hours worked if employed    
     hrs_wrk_mn_sd = X_sd_extval[X_sd_extval['Employed'] > 0]['LAM_2_baseline:::wpai01__wpai_totalhrs'].mean()
     hrs_wrk_mn_cb = X_cb_extval[X_cb_extval['Employed'] > 0]['LAM_2_baseline:::wpai01__wpai_totalhrs'].mean()
@@ -103,8 +133,8 @@ def write_overlapping_characteristics(data_dir):
     hrs_wrk_std_sd = X_sd_extval[X_sd_extval['Employed'] > 0]['LAM_2_baseline:::wpai01__wpai_totalhrs'].std()
     hrs_wrk_std_cb = X_cb_extval[X_cb_extval['Employed'] > 0]['LAM_2_baseline:::wpai01__wpai_totalhrs'].std()
     defin = "Hours worked over last two weeks if employed (SD)"
-    f.write(defin + "," + "{:.1f}".format(hrs_wrk_mn_sd) +" (" + "{:.1f}".format(hrs_wrk_std_sd) + "),")
-    f.write("{:.1f}".format(hrs_wrk_mn_cb) +" (" + "{:.1f}".format(hrs_wrk_std_cb) + ")\n")
+    f.write(defin + "," + "{:.1f}".format(hrs_wrk_mn_sd) +" ," + "{:.1f}".format(hrs_wrk_std_sd) + ",")
+    f.write("{:.1f}".format(hrs_wrk_mn_cb) +" ," + "{:.1f}".format(hrs_wrk_std_cb) + ",\n")
     
     # Employment Status: Hours missed if employed
     hrs_msd_mn_sd = X_sd_extval[X_sd_extval['Employed'] > 0]['LAM_3_baseline:::wpai01__wpai02'].mean()
@@ -112,12 +142,12 @@ def write_overlapping_characteristics(data_dir):
     
     hrs_msd_std_sd = X_sd_extval[X_sd_extval['Employed'] > 0]['LAM_3_baseline:::wpai01__wpai02'].std()
     hrs_msd_std_cb = X_cb_extval[X_cb_extval['Employed'] > 0]['LAM_3_baseline:::wpai01__wpai02'].std()
-    defin = "Hours missed from illness over last two weeks if employed (SD)"
-    f.write(defin + "," + "{:.1f}".format(hrs_msd_mn_sd) +" (" + "{:.1f}".format(hrs_msd_std_sd) + "),")
-    f.write("{:.1f}".format(hrs_msd_mn_cb) +" (" + "{:.1f}".format(hrs_msd_std_cb) + ")\n")
+    defin = "Hours missed from illness over last two weeks if employed"
+    f.write(defin + "," + "{:.1f}".format(hrs_msd_mn_sd) +"," + "{:.1f}".format(hrs_msd_std_sd) + ",")
+    f.write("{:.1f}".format(hrs_msd_mn_cb) +" ," + "{:.1f}".format(hrs_msd_std_cb) + "\n")
     
     # Education
-    defin = "Years of education - mean (SD)"
+    defin = "Years of education (SD)"
     edu_years_mn_sd = X_sd_extval['EDUC:::dm01_enroll__educat'].mean()
     edu_years_mn_cb = X_cb_extval['EDUC:::dm01_enroll__educat'].mean()
         
@@ -126,7 +156,7 @@ def write_overlapping_characteristics(data_dir):
     write_characteristic_cust(defin, edu_years_mn_sd, edu_years_std_sd, edu_years_mn_cb, edu_years_std_cb, f)
 
     # Age at onset of first depression PSYHIS_MDD_AGE:::phx01__dage
-    defin = "Age in years at onset of depression - mean (SD)"
+    defin = "Age in years at onset of depression (SD)"
     col = 'PSYHIS_MDD_AGE:::phx01__dage'
     sd = X_sd_extval[col].mean()
     cb = X_cb_extval[col].mean()
@@ -143,7 +173,7 @@ def write_overlapping_characteristics(data_dir):
     write_characteristic_perc(defin, sd, sd_n, cb, cb_n, f)
     
     # No. prior episodes. Subtract 1 as the col counts current episode
-    defin = "No. of prior depressive episodes - mean (SD)"
+    defin = "No. of prior depressive episodes (SD)"
     col = 'PSYHIS_MDE_NUM:::phx01__epino'
     sd = X_sd_extval[col].sub(1).mean()
     cb = X_cb_extval[col].sub(1).mean()
@@ -153,7 +183,7 @@ def write_overlapping_characteristics(data_dir):
     write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f)
     
     # Current episode duration. Might want to cat this like in the paper
-    defin = "Current episode duration in months - mean (SD)"
+    defin = "Current episode duration in months (SD)"
     col = 'PSYHIS_MDE_EP_DUR_MO:::phx01__episode_date'
     sd = X_sd_extval[col].mean()
     cb = X_cb_extval[col].mean()
@@ -161,7 +191,30 @@ def write_overlapping_characteristics(data_dir):
     sd_br = X_sd_extval[col].std()
     cb_br = X_cb_extval[col].std()
     write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f)
+
     
+    # QIDS-SR Total Baseline
+    col = 'QIDS_OVERL_SEVTY_baseline:::qids01_w0sr__qstot'
+    defin = "Baseline QIDS-SR Total Score (SD)"
+    sd = X_sd_extval[col].mean()
+    cb = X_cb_extval[col].mean()
+        
+    sd_br = X_sd_extval[col].std()
+    cb_br = X_cb_extval[col].std()
+    write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f)
+    
+    # QIDS-SR Total Week 2
+    col = 'QIDS_OVERL_SEVTY_week2:::qids01_w2sr__qstot'
+    defin = "Week 2 QIDS-SR Total Score (SD)"
+    sd = X_sd_extval[col].mean()
+    cb = X_cb_extval[col].mean()
+        
+    sd_br = X_sd_extval[col].std()
+    cb_br = X_cb_extval[col].std()
+    write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f)
+    
+
+
     # Consider some more, such as co-morbidites, or use of antidepressant in current
     
     # Probably also want some baseline numbers like baseline QIDS_C, QIDS_SR
@@ -182,7 +235,7 @@ def write_characteristic_perc(defin, sd, sd_n, cb, cb_n, f):
         cbperc = "{:.1f}".format(100*cb/cb_n)
         
         # Write to file
-        f.write(defin + "," + str(sd) + " (" + sdperc + "), " + str(cb) + " (" + cbperc + ")\n" )
+        f.write(defin + "," + str(sd) + " ," + sdperc + ", " + str(cb) + " ," + cbperc + "\n" )
 
 def write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f):
         """ Helper function that writes a line of the characteristics file, allowing custom values to be entered into the parens
@@ -194,7 +247,7 @@ def write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f):
         f -- file to write to"""
                 
         # Write to file
-        f.write(defin + "," + "{:.1f}".format(sd) + " (" + "{:.1f}".format(sd_br) + "), " + "{:.1f}".format(cb) + " (" + "{:.1f}".format(cb_br) + ")\n" )
+        f.write(defin + "," + "{:.1f}".format(sd) + " ," + "{:.1f}".format(sd_br) + ", " + "{:.1f}".format(cb) + " ," + "{:.1f}".format(cb_br) + "\n" )
 
 
 
