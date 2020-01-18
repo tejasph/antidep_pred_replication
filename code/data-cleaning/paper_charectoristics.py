@@ -7,19 +7,19 @@ import numpy as np
 # Run supplying directory with the X and y matrices for the ext validation portion of the study
 # 
 
-def write_overlapping_characteristics(data_dir):
+def write_overlapping_characteristics(data_dir, results_dir):
     """ Writes characteristics of the overlapping datasets toa file, takes in directory of the X and y
     matrices, will place csv file output there too"""
         
     # Read Matrices as pandas dataframes
-    X_cb_extval = pd.read_csv(data_dir + "/" + "X_test_cb_extval.csv")
-    X_sd_extval = pd.read_csv(data_dir + "/" + "X_train_stard_extval.csv")
-    y_cb_extval = pd.read_csv(data_dir + "/" + "y_test_cb_extval.csv")
-    y_sd_extval = pd.read_csv(data_dir + "/" + "y_train_stard_extval.csv")
+    X_cb_extval = pd.read_csv(data_dir + "/2_ExternalValidation/" + "X_test_cb_extval.csv")
+    X_sd_extval = pd.read_csv(data_dir + "/2_ExternalValidation/" + "X_train_stard_extval.csv")
+    y_cb_extval = pd.read_csv(data_dir + "/2_ExternalValidation/" + "y_test_cb_extval.csv")
+    y_sd_extval = pd.read_csv(data_dir + "/2_ExternalValidation/" + "y_train_stard_extval.csv")
     
-    # Read the pre-overlapping matrices for some data needed for certain stuff
-    cb_pre = pd.read_csv(data_dir + "/" + "canbind_imputed.csv")
-    sd_pre = pd.read_csv(data_dir + "/" + "X_wk8_response_qids01__final.csv")
+    # Read the pre-overlapping matrices for some data needed for certain stuff. Manually point to these older pre-generate overlapping files
+    cb_pre = pd.read_csv("./final_datasets/" + "canbind_imputed.csv")
+    sd_pre = pd.read_csv("./final_datasets/" + "X_wk8_response_qids01__final.csv")
     
     X_cb_extval['Employed'] = cb_pre['EMPLOY_STATUS_1.0']
     X_sd_extval['Employed'] = sd_pre[['dm01_enroll__empl||3.0', 'dm01_enroll__empl||4.0']].max(axis=1)
@@ -33,7 +33,7 @@ def write_overlapping_characteristics(data_dir):
     cb_n = len(X_cb_extval)
       
     # Open file to write to. Write manually to allow strings
-    f = open(data_dir + "/" + "paper_overlapping_characteristics.csv", "w")
+    f = open(results_dir + "/" + "paper_overlapping_characteristics.csv", "w")
     f.write("Characteristic, STAR*D,, CAN-BIND,\n")
     
     
@@ -213,8 +213,6 @@ def write_overlapping_characteristics(data_dir):
     cb_br = X_cb_extval[col].std()
     write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f)
     
-
-
     # Consider some more, such as co-morbidites, or use of antidepressant in current
     
     # Probably also want some baseline numbers like baseline QIDS_C, QIDS_SR
@@ -249,14 +247,33 @@ def write_characteristic_cust(defin, sd, sd_br, cb, cb_br, f):
         # Write to file
         f.write(defin + "," + "{:.1f}".format(sd) + " ," + "{:.1f}".format(sd_br) + ", " + "{:.1f}".format(cb) + " ," + "{:.1f}".format(cb_br) + "\n" )
 
+def write_top_features(data_dir, results_dir):
+    top_chi_10 = [81,74,275,76,80,457,452,413,455,459]
+    top_chi_30 = [81,74,275,76,80,457,452,413,455,459,29,466,396,379,477,426,456,78,2,362,99,463,458,465,462,345,454,448,471,470]
+    
+    X_cb_extval = pd.read_csv(data_dir + "/1_Replication/" + "X_lvl2_rem_qids01__final.csv")
+    cols = list(X_cb_extval.columns)
+    
+    f = open(results_dir + "/" + "top_features.csv", "w")
+    f.write("Top 10 features using the chi-squared feature selection \n")
+    
+    for i in top_chi_30:
+        f.write(cols[i + 1] + ", " + str(i) + "\n") # Plus one as the first column was removed for running the ML
+    f.close()
 
+    
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
-        write_overlapping_characteristics(sys.argv[1])
+        data_dir = sys.argv[1]
+        
     if len(sys.argv) == 1:
-        write_overlapping_characteristics("./final_datasets/to_run_20200111/2_ExternalValidation")
+        data_dir = "./final_datasets/to_run_20201016/"
+        results_dir = "./final_datasets/results/"
+        write_overlapping_characteristics(data_dir, results_dir)
+        write_top_features(data_dir, results_dir)
     else:
         print("Enter valid argument\n"
-              "\t path: the path to a real directory\n")
+              "\t path: the path to a real directory containing the final datasets\n"
+               "\t path: the path to a real directory to put the output files ")
     

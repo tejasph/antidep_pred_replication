@@ -911,19 +911,12 @@ def generate_y(root_data_dir_path):
                     baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
                     y_wk8_response_qids01.loc[i, "subjectkey"] = id
                 
-                    if id == "NDAR_INVAA077HCU":
-                        print("Baseline for HCU is:  " + str(baseline))
-                    
                     # Grab the later days_baseline entries
                     subset = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
                     y_wk8_response_qids01.loc[i, "target"] = 0
                     for k, row in subset.iterrows():
-                        if id == "NDAR_INVAA077HCU":
-                            print("Finding these qstots:  " + str(row['qstot']))
                         #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
                         if row['qstot'] <= 0.5 * baseline:
-                            if id == "NDAR_INVAA077HCU":
-                                print("HCU was found to be a responder with qstot: " + str(row['qstot']))
                             y_wk8_response_qids01.loc[i, "target"] = 1
                             break
                 i += 1
