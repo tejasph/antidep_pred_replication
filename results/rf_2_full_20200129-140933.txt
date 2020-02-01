@@ -1,0 +1,32 @@
+MODEL RESULTS for run at: rf_2_full_20200129-140933.txt
+
+Model Parameters:-----------------------------------
+Model: rf
+Feature selection: full
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv
+2 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.6996, with Standard Deviation: 0.000397
+Mean balanced accuracy is: 0.7284, with Standard Deviation: 0.000433
+Mean sensitivty is: 0.7951, with Standard Deviation: 0.000192
+Mean specificty is: 0.6617, with Standard Deviation: 0.000673
+Mean precision is: 0.4749, with Standard Deviation: 0.000797
+Mean f1 is: 0.5938, with Standard Deviation: 0.0003
+
+Mean number of features used is: 480.0000, with Standard Deviation: 0.0000
+
+Raw results:----------------------------------------
+Accuracies
+[0.69920635 0.7       ]
+Balanced Accuracies
+[0.72883582 0.72797055]
+Sensitivites
+[0.79525227 0.79486791]
+Specificities
+[0.66241937 0.6610732 ]
+Precisions
+[0.47573773 0.47414306]
+F1s
+[0.59403445 0.59346842]

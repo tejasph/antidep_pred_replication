@@ -10,26 +10,26 @@ from utility import subsample
 from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-from sklearn.model_selection import KFold
+from sklearn import cross_validation
 
 
 def NNEnsemble():
     """ Train an ensemble of trees and report the accuracy as they did in the paper
     """
-    # read data and chop the header
-    pathData = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\X_lvl2_rem_qids01__final.csv'
-    pathLabel = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\y_lvl2_rem_qids01__final.csv'
+    pathData = '../data/canbind-clean-aggregated-data.with-id.csv'
+    pathLabel = '../data/targets.csv'
     # read data and chop the header
     X = np.genfromtxt(pathData, delimiter=',')
-    y = np.genfromtxt(pathLabel, delimiter=',')[1:,1]
-    X = X[1:,1:]
+    y = np.genfromtxt(pathLabel, delimiter=',')[:,1]
+    X = X[1:,]
+    X = X[:,2:]
     
     n,m = X.shape
-    kf = KFold(n_splits=10, shuffle=True)
+    kf = cross_validation.KFold(n, n_folds=10, shuffle=True)
 
     j=1
     accu = np.empty([10,], dtype=float)
-    for train_index, test_index in kf.split(X):
+    for train_index, test_index in kf:
         
         print("Fold:", j)
         X_train, X_test = X[train_index], X[test_index]

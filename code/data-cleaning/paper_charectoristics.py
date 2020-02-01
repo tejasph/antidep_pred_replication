@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+from statsmodels.stats.proportion import proportions_ztest
 
 # Analyses the data matrices to produce charectoristics of the study cohorts
 # Run supplying directory with the X and y matrices for the ext validation portion of the study
@@ -261,6 +262,12 @@ def write_top_features(data_dir, results_dir):
         f.write(cols[i + 1] + ", " + str(i) + "\n") # Plus one as the first column was removed for running the ML
     f.close()
 
+def z_tests(results_dir):
+    stat, pval = proportions_ztest([368, 344], [504, 491], 0.05, 'two-sided')
+    print('{0:0.3f}'.format(pval))
+    
+    #us 367.92 out of 504, accuracy 0.73
+    #them348.1 out of 490.6, best accuracy 0.70
     
 
 if __name__ == "__main__":
@@ -272,6 +279,7 @@ if __name__ == "__main__":
         results_dir = "./final_datasets/results/"
         write_overlapping_characteristics(data_dir, results_dir)
         write_top_features(data_dir, results_dir)
+        z_tests(results_dir)
     else:
         print("Enter valid argument\n"
               "\t path: the path to a real directory containing the final datasets\n"

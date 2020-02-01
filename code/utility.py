@@ -72,7 +72,7 @@ def subsample(X,t=30) :
     return trains, labels
 
 #print("Here's an example of using subsample, it has shape: " + str(subsample(X,0,10).shape))
-    
+
 def featureSelectionChi(X,y,n,k):
     """ ChiSquareMethod to select features
     Arguments:
@@ -100,11 +100,11 @@ def featureSelectionELAS(X,y,n):
         n: Top n features
     """
     # Use cross validation to selection best elasticnet model first
-    cv_model = ElasticNetCV(l1_ratio=[.1, .5, .7, .9, .95, .99, .995, 1], eps=0.001, n_alphas=100, fit_intercept=True, 
-                        normalize=True, precompute='auto', max_iter=300, tol=0.0001, cv=5, 
-                        copy_X=True, verbose=0, n_jobs=-1, positive=False, random_state=None, selection='cyclic')
+    cv_model = ElasticNetCV(l1_ratio=[.1, .5, .7, .9], eps=0.005, n_alphas=30, fit_intercept=True,
+                        normalize=True, precompute='auto', max_iter=300, tol=0.0001, cv=5,
+                        copy_X=True, verbose=0, n_jobs=-1, positive=False, random_state=None)
     cv_model.fit(X, y)
-    
+
     # Select best features according to absolute value of coefficients
     features = np.argsort(-np.abs(cv_model.coef_))
     #print(features[:n])
@@ -135,7 +135,8 @@ def drawROC(y_true,y_score):
     plt.ylabel("True Positive Rate")
     plt.plot(fpr, tpr)
     print("AUC:", auc(fpr, tpr))
-    
+    return auc(fpr, tpr)
+
 """
 TO DO: function to draw ROC
 """
