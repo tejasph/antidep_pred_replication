@@ -1,0 +1,216 @@
+MODEL RESULTS for run at: rf_2_elas_20200201-201321.txt
+
+Model Parameters:-----------------------------------
+Model: rf
+Feature selection: elas
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv
+2 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.7012, with Standard Deviation: 0.003571
+Mean balanced accuracy is: 0.7071, with Standard Deviation: 0.001177
+Mean sensitivty is: 0.7192, with Standard Deviation: 0.010396
+Mean specificty is: 0.6950, with Standard Deviation: 0.008043
+Mean precision is: 0.4777, with Standard Deviation: 0.003409
+Mean f1 is: 0.5716, with Standard Deviation: 0.0004
+Mean number of features used is: 31.0000, with Standard Deviation: 0.0000
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):
+By position in data matrix, 1 added to skip index=0 
+[306 313 120 261 458  64 290 294 159  26  27  62   2 283 215  16  43 221
+ 448  22 468 138  25 164  40 416  13 160 190  59]
+Raw results:----------------------------------------
+Accuracies
+[0.7047619  0.69761905]
+Balanced Accuracies
+[0.70595135 0.70830459]
+Sensitivites
+[0.70882902 0.72962188]
+Specificities
+[0.70307369 0.6869873 ]
+Precisions
+[0.48110033 0.47428267]
+F1s
+[0.57120342 0.57194636]
+Number of features used
+[31. 31.]
+Mean Feature importances Across Runs
+[,6.2506e-002,1.0523e-002,nan,6.0163e-001,5.4403e-002
+,5.0000e-002,2.0000e-001,nan,nan,nan
+,3.5000e-001,5.0000e-002,2.9484e-002,1.5000e-001,nan
+,1.7066e-002,nan,2.0000e-001,nan,nan
+,nan,2.1460e-002,5.0078e-002,nan,2.8001e-002
+,7.0797e-003,7.1284e-003,nan,nan,nan
+,nan,2.2500e-001,1.7041e-001,1.0000e-001,2.7000e+000
+,nan,nan,nan,4.2500e-001,2.8728e-002
+,nan,nan,1.7966e-002,nan,nan
+,1.2500e-001,nan,nan,nan,5.0000e-002
+,1.0000e-001,5.0000e-002,2.8582e-001,nan,nan
+,5.2200e-002,nan,nan,4.0141e-002,2.2699e-001
+,nan,9.8731e-003,1.6031e+000,5.6044e-005,1.5000e-001
+,5.0000e-002,8.2017e-001,nan,nan,nan
+,nan,nan,nan,5.0000e-002,1.5000e-001
+,1.0000e-001,3.5000e-001,nan,nan,nan
+,4.2500e-001,1.6728e-001,5.0000e-002,6.0000e-001,nan
+,nan,nan,3.5110e-001,1.1094e-001,1.0000e-001
+,7.0000e-001,nan,nan,nan,5.0000e-002
+,nan,nan,nan,nan,nan
+,nan,7.5000e-002,nan,nan,nan
+,nan,nan,nan,4.1275e-002,1.0691e-001
+,1.0000e-001,3.5500e+000,nan,nan,nan
+,1.2500e-001,nan,nan,nan,-5.0000e-002
+,1.0000e-001,nan,nan,nan,nan
+,nan,nan,nan,nan,nan
+,nan,nan,nan,nan,nan
+,nan,nan,2.4000e-002,2.0000e-001,4.0000e-001
+,1.0700e-001,nan,nan,2.5750e+000,nan
+,nan,nan,nan,nan,nan
+,nan,5.0000e-002,2.0000e-001,3.5000e-001,nan
+,nan,nan,1.2034e-001,4.5351e-003,2.9579e-002
+,1.3512e+000,nan,nan,2.8616e-002,nan
+,nan,nan,nan,nan,nan
+,nan,2.5000e-001,6.3999e-002,1.2253e-001,5.0000e-001
+,1.9500e+000,1.2469e-001,5.0000e-002,6.5000e-001,nan
+,nan,nan,nan,nan,nan
+,1.2500e-001,6.9375e-001,2.2256e-001,2.6000e+000,3.0840e-002
+,nan,2.0849e-001,3.7500e-001,1.4293e-001,1.2493e-001
+,4.6500e+000,nan,2.0640e-001,9.7992e-002,5.7434e-001
+,nan,7.4000e-002,nan,8.5000e-001,nan
+,5.0000e-001,2.2000e+000,nan,nan,nan
+,nan,nan,nan,2.2500e-001,1.0922e-002
+,nan,nan,nan,nan,nan
+,2.0738e-002,2.9801e-001,2.2500e-001,5.5500e+000,7.5000e-002
+,1.0475e-001,2.5000e-001,1.1250e+000,2.7749e+000,2.9500e+000
+,3.1000e+000,7.2500e-001,1.6599e+000,3.5000e-001,1.8250e+000
+,3.9775e-001,1.2222e-001,1.2500e+000,1.5250e+000,nan
+,nan,nan,nan,nan,nan
+,nan,nan,nan,nan,1.0101e-001
+,2.0071e-001,1.0000e-001,6.7500e-001,nan,nan
+,nan,nan,nan,nan,2.5000e-001
+,4.9144e-312,1.5000e-001,2.2500e-001,nan,nan
+,nan,5.5000e-001,4.5000e-001,1.3500e+000,2.4750e+000
+,nan,nan,1.1509e+000,5.5000e-001,7.5000e-001
+,1.5000e-001,5.2500e-001,nan,nan,nan
+,nan,nan,1.0903e-002,nan,5.0000e-002
+,3.0000e-001,2.5000e-001,nan,1.0066e-001,1.0544e-003
+,nan,2.0000e-001,4.0000e-001,2.5493e-003,nan
+,nan,nan,1.1046e-001,nan,1.0396e-001
+,3.0097e-001,nan,nan,nan,nan
+,-5.0000e-002,1.5000e-001,3.5194e-001,2.7500e-001,nan
+,nan,nan,-5.0000e-002,2.0008e-001,1.6821e-001
+,nan,nan,nan,nan,4.0138e-001
+,nan,nan,1.0041e-001,3.5000e-001,nan
+,2.5005e-001,1.5063e-001,1.0710e-001,1.5000e-001,1.0250e+000
+,nan,nan,nan,8.6983e-001,3.0000e-001
+,1.5000e-001,nan,2.2923e+001,6.7500e+000,4.2000e+000
+,5.2750e+000,1.6160e+000,2.4500e+000,1.7250e+000,1.7649e+000
+,7.0000e-001,2.0000e+000,4.2500e-001,4.2500e-001,5.0000e-002
+,1.3750e+000,nan,nan,nan,nan
+,nan,nan,5.0000e-002,nan,nan
+,nan,1.5000e-001,2.5000e-001,1.0572e-001,3.3097e-001
+,nan,nan,8.7345e-002,nan,nan
+,nan,2.5000e-001,6.0171e-002,nan,nan
+,nan,6.4301e-002,nan,nan,nan
+,nan,nan,4.5000e-001,4.5000e-001,5.1808e-002
+,3.2500e-001,5.7222e-001,2.0000e-001,4.8848e-001,nan
+,nan,nan,nan,nan,nan
+,5.3772e-002,2.7500e-001,3.5525e-001,1.5000e-001,nan
+,nan,6.5000e-001,8.1628e-002,nan,nan
+,nan,nan,nan,nan,nan
+,nan,nan,nan,nan,nan
+,2.8744e-002,5.2009e-002,4.0000e-001,3.1389e-001,7.5000e-001
+,5.7694e-001,4.2562e-002,nan,4.0000e-001,nan
+,nan,nan,nan,nan,nan
+,nan,nan,nan,nan,1.0000e-001
+,nan,nan,1.5297e-001,nan,nan
+,nan,nan,nan,nan,nan
+,1.0000e-001,5.0000e-002,2.1283e-002,1.1000e+000,nan
+,nan,nan,7.1694e-002,1.0000e-001,1.1500e+000
+,6.4000e-001,9.0972e-002,5.4058e-312,8.7500e-001,nan
+,nan,nan,nan,1.3738e-001,nan
+,3.0000e-001,nan,2.1711e-002,nan,9.2500e-001
+,nan,2.0000e-001,3.7500e-001,nan,nan
+,nan,8.5000e-001,9.2443e-002,1.2394e-001,1.5484e-001]
+Mean Feature importances std. deviation Across Runs
+[4.7701e-02 4.4434e-03        nan 4.0163e-01 4.5597e-02 5.0000e-02
+ 1.0000e-01        nan        nan        nan 3.5000e-01 5.0000e-02
+ 7.5060e-04 5.0000e-02        nan 1.5246e-03        nan 0.0000e+00
+        nan        nan        nan 1.2239e-03 4.9922e-02        nan
+ 2.3969e-03 3.1184e-04 3.1745e-04        nan        nan        nan
+        nan 1.2500e-01 1.2959e-01 1.0000e-01 2.4000e+00        nan
+        nan        nan 2.5000e-02 1.9619e-03        nan        nan
+ 8.4189e-04        nan        nan 1.7500e-01        nan        nan
+        nan 2.5000e-01 1.0000e-01 5.0000e-02 1.8582e-01        nan
+        nan 4.9577e-02        nan        nan 3.1656e-04 7.4789e-02
+        nan 6.6901e-04 1.4994e+00 1.9994e-01 1.5000e-01 5.0000e-02
+ 6.2017e-01        nan        nan        nan        nan        nan
+        nan 3.5000e-01 1.5000e-01 1.0000e-01 1.5000e-01        nan
+        nan        nan 2.2500e-01 1.3272e-01 5.0000e-02 5.0000e-01
+        nan        nan        nan 5.1105e-02 8.9063e-02 1.0000e-01
+ 3.0000e-01        nan        nan        nan 1.5000e-01        nan
+        nan        nan        nan        nan        nan 2.5000e-02
+        nan        nan        nan        nan        nan        nan
+ 1.5872e-01 9.3094e-02 1.0000e-01 3.2500e+00        nan        nan
+        nan 2.5000e-02        nan        nan        nan 1.5000e-01
+ 1.0000e-01        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan 1.7600e-01
+ 2.0000e-01 2.0000e-01 6.9979e-03        nan        nan 2.0750e+00
+        nan        nan        nan        nan        nan        nan
+        nan 2.5000e-01 2.0000e-01 1.5000e-01        nan        nan
+        nan 9.5813e-02 1.9546e-01 9.2150e-04 8.4884e-01        nan
+        nan 4.1065e-03        nan        nan        nan        nan
+        nan        nan        nan 1.5000e-01 4.9073e-02 7.7469e-02
+ 4.0000e-01 1.6500e+00 7.5309e-02 5.0000e-02 5.5000e-01        nan
+        nan        nan        nan        nan        nan 7.5000e-02
+ 5.9375e-01 1.7744e-01 2.4000e+00 2.5443e-02        nan 1.9546e-01
+ 2.7500e-01 4.2927e-02 7.5069e-02 4.5500e+00        nan 1.9360e-01
+ 1.0201e-01 1.7434e-01        nan 5.0805e-02        nan 7.5000e-01
+        nan 2.0000e-01 2.0000e+00        nan        nan        nan
+        nan        nan        nan 7.5000e-02 9.0459e-05        nan
+        nan        nan        nan        nan 7.0230e-04 9.8010e-02
+ 7.5000e-02 5.1500e+00 2.5000e-02 4.7500e-03 1.5000e-01 9.2500e-01
+ 2.3749e+00 2.6500e+00 2.7000e+00 6.2500e-01 1.3599e+00 1.5000e-01
+ 1.4250e+00 1.9775e-01 7.7778e-02 8.5000e-01 1.1250e+00        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan 2.9946e-01 7.0997e-04 0.0000e+00
+ 4.7500e-01        nan        nan        nan        nan        nan
+        nan 1.5000e-01 0.0000e+00 5.0000e-02 7.5000e-02        nan
+        nan        nan 2.5000e-01 2.5000e-01 9.5000e-01 2.0750e+00
+        nan        nan 8.5086e-01 3.5000e-01 4.5000e-01 1.5000e-01
+ 3.2500e-01        nan        nan        nan        nan        nan
+ 1.5477e-04        nan 2.5000e-01 0.0000e+00 1.5000e-01        nan
+ 9.9752e-02 2.5138e-04        nan 1.0000e-01 1.0000e-01 2.3536e-04
+        nan        nan        nan 9.7676e-02        nan 9.7798e-02
+ 1.0097e-01        nan        nan        nan        nan 1.5000e-01
+ 1.5000e-01 5.0711e-02 7.5000e-02        nan        nan        nan
+ 1.5000e-01 7.7332e-05 1.4627e-01        nan        nan        nan
+        nan 1.0138e-01        nan        nan 9.9616e-02 1.5000e-01
+        nan 5.0053e-02 1.4972e-01 9.2899e-02 1.5000e-01 6.2500e-01
+        nan        nan        nan 4.6983e-01 1.0000e-01 1.5000e-01
+        nan 2.2523e+01 6.3500e+00 3.9000e+00 4.8750e+00 1.6160e+00
+ 2.2500e+00 1.2250e+00 1.5649e+00 3.0000e-01 1.8000e+00 1.2500e-01
+ 2.2500e-01 5.0000e-02 9.7500e-01        nan        nan        nan
+        nan        nan        nan 1.5000e-01        nan        nan
+        nan 5.0000e-02 5.0000e-02 5.5811e-02 3.0967e-02        nan
+        nan 2.1910e-03        nan        nan        nan 1.5000e-01
+ 2.1468e-04        nan        nan        nan 4.7809e-04        nan
+        nan        nan        nan        nan 1.5000e-01 1.5000e-01
+ 1.5342e-02 2.2500e-01 2.7222e-01 1.0000e-01 3.8848e-01        nan
+        nan        nan        nan        nan        nan 1.4623e-01
+ 1.2500e-01 1.5525e-01 5.0000e-02        nan        nan 3.5000e-01
+ 4.5881e-02        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan 8.1749e-03 4.4242e-04 3.0000e-01 2.1389e-01 4.5000e-01
+ 3.7694e-01 8.7278e-03        nan 2.0000e-01        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan 0.0000e+00        nan        nan 5.2971e-02
+        nan        nan        nan        nan        nan        nan
+        nan 3.0000e-01 5.0000e-02 1.9240e-04 1.0000e+00        nan
+        nan        nan 2.2831e-01 1.0000e-01 1.0500e+00 4.4000e-01
+ 9.0278e-03 0.0000e+00 6.7500e-01        nan        nan        nan
+        nan 6.2622e-02        nan 0.0000e+00        nan 1.9886e-03
+        nan 9.2500e-01        nan 2.0000e-01 1.7500e-01        nan
+        nan        nan 6.5000e-01 5.7323e-02 7.6056e-02 2.0530e-02]

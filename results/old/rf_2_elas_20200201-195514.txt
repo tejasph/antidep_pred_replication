@@ -1,0 +1,37 @@
+MODEL RESULTS for run at: rf_2_elas_20200201-195514.txt
+
+Model Parameters:-----------------------------------
+Model: rf
+Feature selection: elas
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv
+2 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.7018, with Standard Deviation: 0.004167
+Mean balanced accuracy is: 0.7160, with Standard Deviation: 0.005501
+Mean sensitivty is: 0.7478, with Standard Deviation: 0.007512
+Mean specificty is: 0.6841, with Standard Deviation: 0.003489
+Mean precision is: 0.4773, with Standard Deviation: 0.004218
+Mean f1 is: 0.5815, with Standard Deviation: 0.0056
+Mean number of features used is: 30.9500, with Standard Deviation: 0.0000
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):By position in data matrix, 1 added to skip index=0[374 472 430 465 423 381 388 458 437 416 123 124 125 126 127 128 129 130
+ 131 132 133 134 135 136 137 138 139 140 142 143]
+Raw results:----------------------------------------
+Accuracies
+[0.70595238 0.69761905]
+Balanced Accuracies
+[0.72145118 0.71044981]
+Sensitivites
+[0.75533215 0.74030784]
+Specificities
+[0.68757021 0.68059177]
+Precisions
+[0.48150262 0.47306634]
+F1s
+[0.58710022 0.57588691]
+Number of features used
+[30.95 30.95]Mean Feature importances Across Runs
+nan

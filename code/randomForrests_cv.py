@@ -19,7 +19,6 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
     """
     ##pathData = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\X_lvl2_rem_qids01__final.csv'
     ##pathLabel = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\y_lvl2_rem_qids01__final.csv'
-    f = open(r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results\testresults.txt', 'w')
     # read data and chop the header
     X = np.genfromtxt(pathData, delimiter=',')
     y = np.genfromtxt(pathLabel, delimiter=',')[1:,1]
@@ -37,7 +36,8 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
     precision = np.empty([10,], dtype=float)
     f1 = np.empty([10,], dtype=float)
     features_n = np.empty([10,], dtype=float)
-    features_importance =  np.empty([10,], dtype=float)
+    feature_importances =  np.empty([10,m], dtype=float) #Store feature importances relative to the original ordering.
+
     
     for train_index, test_index in kf.split(X):
         print("Fold:", j)
@@ -51,12 +51,12 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
             features = featureSelectionELAS(X_train,y_train,31)
         elif f_select == "agglo":
             features,_ = featureSelectionAgglo(np.append(y_train.reshape(-1,1),X_train , axis=1),20)
-        elif f_select == "full":
+        elif f_select == "all":
             features = np.arange(m)
-        
+            
         # Array to store the importance of features, whether feature was used, and an int to stores number of features per classifier
-        featureimportance = np.zeros(len(features))
-        features_used = np.zeros(len(features))
+        feature_importance = np.zeros(len(features))
+        ##features_used = np.zeros(len(features))
         features_n_fold = 0
         
         # Subsampling data
@@ -64,8 +64,9 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
         training, label = subsample(X_combined, t=30)
  
         # Train an ensemble of 30 RF classifiers
-        clf = [None]*30
-        for i in range(30):
+        ensemble_n = 30
+        clf = [None]*ensemble_n
+        for i in range(ensemble_n):
             clf[i] = RandomForestClassifier(n_estimators=50, n_jobs = -1)
             clf[i].fit(training[i][:,features],label[i])
             #clf[i].fit(training[i],label[i])
@@ -74,34 +75,25 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
         n = X_test.shape[0]
         # calculting the average probabilty of each class, as well as feature use/importance
         pred_prob = np.zeros((n,2))
-        for i in range(30):
+        for i in range(ensemble_n):
             pred_prob += clf[i].predict_proba(X_test[:,features])
             #pred_prob += clf[i].predict_proba(X_test)
-            featureimportance += clf[i].feature_importances_
-            features_n_fold += clf[i].n_features_ 
-            features_used += features_used_in_rf(clf[i],  len(features))
+            feature_importance += clf[i].feature_importances_
+            ##print(np.count_nonzero(clf[i].feature_importances_))
+            ##print(np.count_nonzero(features_used_in_rf(clf[i],  len(features))))
+            features_n_fold += np.count_nonzero(clf[i].feature_importances_) 
+            #features_used += features_used_in_rf(clf[i],  len(features))
             
             #Testing
             if 1 == 2:
-                print(featureimportance)
                 indic, n_nodes_ptr = clf[i].decision_path(X_test[:,features])
                 #f.write(str(indic.todense().shape))
-                f.write(str(clf[i].estimators_[1].tree_.feature))
-                f.write("-------------------------------------------------------------------------")
                 #f.write(str(n_nodes_ptr))
                 #print(indic)
                 #print(n_nodes_ptr)
-                f.close()
                 raise ValueError("Testing complete")
             
-            
-        pred_prob = pred_prob/30
-        featureimportance = featureimportance/30
-        features_n[j-1] = features_n_fold/30
-        print("Elements non-zero per feature importance:")
-        print(np.count_nonzero(featureimportance))
-        print("Elements non-zero per feature used:")
-        print(np.count_nonzero(features_used))
+        pred_prob = pred_prob/ensemble_n
         ##print("Feature importance is:", featureimportance)
         # Pick the class with the greastest probability to be the prediction
         pred = np.argmax(pred_prob,axis=1)
@@ -115,6 +107,9 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
         sensitivity[j-1] = tp/(tp+fn)
         precision[j-1] = tp/(tp+fp)
         f1[j-1] = 2*precision[j-1]*sensitivity[j-1]/(precision[j-1]+sensitivity[j-1])
+        feature_importances[j-1,features] = feature_importance/ensemble_n
+        features_n[j-1] = features_n_fold/ensemble_n
+        ##print("Numnbers of features used: ", features_n_fold/30 )
         ##print("Specificity is:", specificity[j-1])
         ##print("Sensitivity is:", sensitivity[j-1])
         ##print("Precision is:", precision[j-1])
@@ -142,7 +137,7 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
     avg_prec = sum(precision)/10
     avg_f1 = sum(f1)/10
     avg_features_n = sum(features_n)/10
-    avg_feature_importance = sum(feature_importance)/10
+    avg_feature_importance = np.sum(feature_importances,axis=0)/10
     
     return(avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance)
     

@@ -5,33 +5,46 @@ Created on Wed Jan 29 10:20:32 2020
 @author: jjnun
 """
 import os
-from utility import subsample
-from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import balanced_accuracy_score
-from sklearn.model_selection import KFold
+import re
+##from utility import subsample
+##from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
+##from sklearn.ensemble import RandomForestClassifier
+##from sklearn.metrics import confusion_matrix
+##from sklearn.model_selection import train_test_split
+##from sklearn.metrics import balanced_accuracy_score
+##from sklearn.model_secv import RandomForrestEnsemble
+from scipy.stats import ttest_1samp
 import datetime
 import numpy as np
 from randomForrests_cv import RandomForrestEnsemble
 
 startTime = datetime.datetime.now()
 
-
 # Simplified imputation
     ##pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\532M_project\data\teyden-git\code\data-cleaning\final_datasets\to_run_experiment_simple_imput\X_lvl2_rem_qids01__final_simple_imputation.csv'
     ##pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\532M_project\data\teyden-git\code\data-cleaning\final_datasets\to_run_experiment_simple_imput\y_lvl2_rem_qids01__final_simple_imputation.csv'
-# Full features
-pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv'
-pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv'
+
+# Parameters
 pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
-runs = 2
-model = "rf" #many others
-f_select =  "full" #chi, elas
+runs = 100
+model = "rf_cv" #many others
+f_select =  "all" #chi, elas
 #f_select = "elas"
+#data = "full_trd"
+data = "ovlap_resp"
+#data = "ovlap_trd"
 
-
+if data == "full_trd":
+    # Full features, y is TRD, replicating Nie et al
+    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv'
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv'
+elif data == "ovlap_resp":
+    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\X_train_stard_extval.csv'
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv'
+elif data == "ovlap_trd":
+    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\X_overlap_trd.csv'
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\y_overlap_trd.csv'
+    
 # Create numpy arrays to store all the results
 accus = np.zeros(runs)
 bal_accus = np.zeros(runs)
@@ -44,33 +57,83 @@ feats = np.zeros(runs) # Average number of the average number of features used p
 
 
 for i in range(runs):
-        if model == "rf":    
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i] = RandomForrestEnsemble(pathData, pathLabel, f_select)
+        if model == "rf_cv":    
+            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt = RandomForrestEnsemble(pathData, pathLabel, f_select)
+            
+            if i == 0:
+                # Initialize impts now as number of features can change
+                ##print("Here are two lengths")
+                ##print(str(np.shape((impt))))
+                ##print(np.size(impt))
+                impts = np.empty([runs,np.size(impt)], dtype=float)
+            
+            impts[i,:] = impt
+            
         print("Finished run: " + str(i + 1) + " of " + str(runs) + "\n")
 
-filename = "{}_{}_{}_{}.txt".format(model, runs, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+# Process feature importance
+avg_impts = np.mean(impts, axis=0)
+std_impts = np.std(impts, axis=0)
+
+#print("Shape of avg_impts", np.shape(avg_impts))
+sorted_features = np.argsort(avg_impts)[::-1]
+top_30_features = sorted_features[0:30] #In descending importance, first is most important
+with open(pathData) as f:
+    feature_names = f.readline().split(',')
+
+# Write output file
+filename = "{}_{}_{}_{}_{}.txt".format(data, model, runs, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 f = open(os.path.join(pathResults, filename), 'w')
 
 f.write("MODEL RESULTS for run at: " + filename + "\n\n")
+
 f.write("Model Parameters:-----------------------------------\n")
 f.write("Model: " + model + "\n")
 f.write("Feature selection: " + f_select + "\n")
 f.write("X is: " + pathData + "\n")
 f.write("y is: " + pathLabel + "\n")
 f.write(str(runs) +" runs of 10-fold CV\n\n")
+
 f.write("Summary of Results:------------------------------------\n")
 f.write("Mean accuracy is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(accus), np.std(accus)))
 f.write("Mean balanced accuracy is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(bal_accus), np.std(bal_accus)))
+f.write("Mean AUC is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(aucs), np.std(aucs)))
 f.write("Mean sensitivty is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(senss), np.std(senss)))
 f.write("Mean specificty is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(specs), np.std(specs)))
 f.write("Mean precision is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(precs), np.std(precs)))
 f.write("Mean f1 is: {:.4f}, with Standard Deviation: {:.4f}\n".format(np.mean(f1s), np.std(f1s)))
-f.write("Mean number of features used is: {:.4f}, with Standard Deviation: {:.4f}\n\n".format(np.mean(feats), np.std(feats)))
+f.write("Mean number of features used is: {:.4f} of {:d}, with Standard Deviation: {:.4f}\n\n".format(np.mean(feats), np.size(avg_impts), np.std(feats)))
+
+f.write("Feature Importance And Use:---------------------------\n")
+f.write("Top 30 Features by importance, in descending order (1st most important):\n")
+f.write("By position in data matrix, 1 added to skip index=0 \n")
+##print("Here are the top 30 features...")
+##print(top_30_features + 1)
+f.write(str(top_30_features + 1) + "\n")
+for i in range(len(top_30_features)): f.write(feature_names[top_30_features[i] + 1] + "\n")
+f.write("\n")
+##f.write(str(feature_names[top_30_features + 1]) + "\n")
+
+f.write("Statistical Significance:----------------------------\n")
+if (data == "full_trd" or data =="ovlap_trd") and model == "rf_cv" and f_select == "all":
+  _,acc_pvalue = ttest_1samp(accus, 0.70)
+  f.write("P-value from one sided t-test vs Nie et al's 0.70 Accuracy: {:.6f}\n".format(acc_pvalue))
+  _,bal_pvalue = ttest_1samp(bal_accus, 0.70)
+  f.write("P-value from one sided t-test vs Nie et al's 0.70 Balanced Accuracy: {:.6f}\n".format(bal_pvalue))
+  _,auc_pvalue = ttest_1samp(aucs, 0.78)
+  f.write("P-value from one sided t-test vs Nie et al's 0.78 AUC: {:.6f}\n".format(auc_pvalue))
+  _,senss_pvalue = ttest_1samp(senss, 0.69)
+  f.write("P-value from one sided t-test vs Nie et al's 0.69 Sensitivity: {:.6f}\n".format(auc_pvalue))
+  _,specs_pvalue = ttest_1samp(specs, 0.71)
+  f.write("P-value from one sided t-test vs Nie et al's 0.71 Specificity: {:.6f}\n\n".format(auc_pvalue))  
+    
 f.write("Raw results:----------------------------------------\n")
 f.write("Accuracies\n")
 f.write(str(accus) + "\n")
 f.write("Balanced Accuracies\n")
 f.write(str(bal_accus) + "\n")
+f.write("AUCs\n")
+f.write(str(aucs) + "\n")
 f.write("Sensitivites\n")
 f.write(str(senss) + "\n")
 f.write("Specificities\n")
@@ -79,6 +142,12 @@ f.write("Precisions\n")
 f.write(str(precs) + "\n")
 f.write("F1s\n")
 f.write(str(f1s) + "\n")
+f.write("Number of features used\n")
+f.write(str(feats) + "\n")
+f.write("Mean Feature importances Across Runs\n")
+f.write(re.sub(r" +",r",",np.array_str(avg_impts,precision=4,max_line_width=100)) + "\n")
+f.write("Mean Feature importances std. deviation Across Runs\n")
+f.write(re.sub(r" +",r",",np.array_str(std_impts,precision=4,max_line_width=100)) + "\n")
 
 f.close()
 

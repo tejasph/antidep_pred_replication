@@ -1,0 +1,106 @@
+MODEL RESULTS for run at: ovlap_resp_rf_cv_10_all_20200202-092022.txt
+
+Model Parameters:-----------------------------------
+Model: rf_cv
+Feature selection: all
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\X_train_stard_extval.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv
+10 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.6728, with Standard Deviation: 0.001984
+Mean balanced accuracy is: 0.7015, with Standard Deviation: 0.001812
+Mean AUC is: 0.7803, with Standard Deviation: 0.001398
+Mean sensitivty is: 0.5354, with Standard Deviation: 0.002284
+Mean specificty is: 0.8675, with Standard Deviation: 0.003135
+Mean precision is: 0.8515, with Standard Deviation: 0.002980
+Mean f1 is: 0.6566, with Standard Deviation: 0.0021
+Mean number of features used is: 98.5350 of 100, with Standard Deviation: 0.0343
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):
+By position in data matrix, 1 added to skip index=0 
+[96 36  2 31 69 29 35  3  9 85 98 60 44 50 86 48 87 33 72 32 40  8 56 46
+ 52 34 71 73 43 10]
+imput_QIDS_SR_perc_change:::
+QIDS_OVERL_SEVTY_week2:::qids01_w2sr__qstot
+AGE:::interview_age
+PSYHIS_MDE_EP_DUR_MO:::phx01__episode_date
+QLESQA_TOT_QLESQB_TOT_merged:::
+PSYHIS_MDD_AGE:::phx01__dage
+QIDS_OVERL_SEVTY_baseline:::qids01_w0sr__qstot
+EDUC:::dm01_enroll__educat
+LAM_2_baseline:::wpai01__wpai_totalhrs
+SDS_1_1_baseline:::wsas01__wsas01
+imput_QIDS_SR_psychomot_domain_week2:::
+QIDS_SR_5_week2:::qids01_w2sr__vmdsd
+QIDS_SR_13_week2:::qids01_w2sr__vintr
+QIDS_SR_16_week2:::qids01_w2sr__vagit
+SDS_2_1_baseline:::wsas01__wsas03
+QIDS_SR_15_week2:::qids01_w2sr__vslow
+SDS_3_1_baseline:::wsas01__wsas02
+QIDS_ATYPICAL_baseline:::
+QLESQ_1A_12_baseline_QLESQ_1B_12_baseline_merged:::qlesq01__qlesq12
+PSYHIS_MDE_NUM:::phx01__epino
+QIDS_SR_11_week2:::qids01_w2sr__vvwsf
+HSHLD_INCOME:::dm01_w0__totincom
+QIDS_SR_3_week2:::qids01_w2sr__vemin
+QIDS_SR_14_week2:::qids01_w2sr__vengy
+QIDS_SR_1_week2:::qids01_w2sr__vsoin
+QIDS_ATYPICAL_week2:::
+QLESQ_1A_11_baseline_QLESQ_1B_11_baseline_merged:::qlesq01__qlesq11
+QLESQ_1A_13_baseline_QLESQ_1B_13_baseline_merged:::qlesq01__qlesq13
+QIDS_SR_13_baseline:::qids01_w0sr__vintr
+LAM_3_baseline:::wpai01__wpai02
+
+Raw results:----------------------------------------
+Accuracies
+[0.67360282 0.67492733 0.67459402 0.67196796 0.67096584 0.67195266
+ 0.67329465 0.66831465 0.67393614 0.67494153]
+Balanced Accuracies
+[0.70200509 0.70303285 0.7028788  0.70089948 0.70047174 0.70033291
+ 0.70196513 0.69695495 0.70312386 0.70293443]
+AUCs
+[0.7798311  0.78017158 0.77896325 0.78162607 0.7819555  0.78287485
+ 0.77842961 0.7786436  0.78055341 0.78001085]
+Sensitivites
+[0.5347009  0.53620267 0.5356278  0.53443941 0.53389493 0.53694701
+ 0.53370798 0.53254961 0.53492924 0.54124602]
+Specificities
+[0.86930927 0.86986303 0.87012979 0.86735955 0.86704854 0.86371882
+ 0.87022229 0.86136028 0.87131847 0.86462285]
+Precisions
+[0.85345844 0.85342352 0.85473969 0.85143893 0.849739   0.8473606
+ 0.8535528  0.84626963 0.85545203 0.84967754]
+F1s
+[0.65715095 0.65776646 0.65796821 0.65581889 0.65473307 0.65558949
+ 0.65619162 0.6525905  0.65750757 0.6609214 ]
+Number of features used
+[98.50333333 98.59       98.58333333 98.49666667 98.54666667 98.52333333
+ 98.50666667 98.50666667 98.51666667 98.57666667]
+Mean Feature importances Across Runs
+[3.1594e-03,2.9760e-02,1.8729e-02,4.7936e-03,2.8868e-03,2.7294e-03,1.2247e-03,1.3993e-02,1.8100e-02
+,1.0720e-02,7.3397e-04,2.3979e-03,3.7963e-05,1.7370e-04,0.0000e+00,1.6736e-03,2.5775e-04,8.3479e-04
+,2.2029e-03,1.5277e-03,1.3057e-03,3.2631e-03,2.1970e-03,4.3182e-03,3.6397e-03,2.5160e-03,1.1438e-03
+,4.2468e-03,2.5029e-02,3.8788e-03,2.7958e-02,1.4651e-02,1.5305e-02,1.2110e-02,2.3231e-02,4.5011e-02
+,8.2484e-03,1.0413e-02,1.0262e-02,1.4132e-02,7.1095e-03,6.7717e-03,1.0785e-02,1.6509e-02,9.2004e-03
+,1.3846e-02,8.2283e-03,1.5762e-02,8.7061e-03,1.6024e-02,9.4489e-03,1.2785e-02,8.3502e-03,1.0414e-02
+,9.5261e-03,1.3900e-02,6.5805e-03,5.4162e-03,7.7412e-03,1.6788e-02,7.5842e-03,7.2104e-03,6.1730e-03
+,3.6136e-03,7.0301e-03,6.3663e-03,5.5174e-03,3.7496e-03,2.5134e-02,1.0311e-02,1.1715e-02,1.4953e-02
+,1.1258e-02,7.6020e-03,8.0803e-03,1.0230e-02,7.6857e-03,1.0645e-02,9.0808e-03,9.3041e-03,1.0008e-02
+,9.3671e-03,7.7340e-03,1.0212e-02,1.8037e-02,1.5862e-02,1.5579e-02,3.8006e-03,3.8138e-03,9.9775e-03
+,9.4427e-03,5.6377e-03,7.4582e-03,6.0138e-03,4.4863e-03,7.9236e-02,8.2684e-03,1.6933e-02,5.3059e-03
+,6.8952e-03]
+Mean Feature importances std. deviation Across Runs
+[2.4202e-05,1.2271e-04,8.1574e-05,5.3092e-05,1.5177e-05,2.1427e-05,1.2683e-05,6.2791e-05,1.0892e-04
+,4.2668e-05,1.3053e-05,2.6848e-05,2.8418e-06,4.5499e-06,0.0000e+00,1.7675e-05,7.6856e-06,1.1837e-05
+,2.2150e-05,1.6300e-05,2.0534e-05,2.0284e-05,1.3739e-05,3.6200e-05,2.3026e-05,3.2031e-05,1.8720e-05
+,3.7565e-05,7.0831e-05,3.3694e-05,1.2476e-04,5.1915e-05,5.4576e-05,8.3320e-05,6.5487e-05,1.4707e-04
+,4.6577e-05,1.1218e-04,4.7354e-05,8.3237e-05,3.4289e-05,6.3962e-05,7.0397e-05,2.2890e-04,6.3226e-05
+,1.7356e-04,3.5043e-05,1.5753e-04,4.4481e-05,1.8548e-04,3.8533e-05,5.7546e-05,3.4165e-05,9.1028e-05
+,3.4886e-05,1.0778e-04,4.7545e-05,3.1828e-05,3.8948e-05,1.9212e-04,4.1441e-05,4.3916e-05,3.2287e-05
+,3.5889e-05,3.3535e-05,3.3706e-05,2.7191e-05,2.2104e-05,1.3937e-04,6.0499e-05,8.3297e-05,8.8292e-05
+,5.7318e-05,5.0345e-05,4.1025e-05,4.2340e-05,2.2368e-05,6.1513e-05,6.4489e-05,5.9736e-05,5.3065e-05
+,3.5212e-05,4.2163e-05,6.9923e-05,8.1336e-05,6.6415e-05,9.4574e-05,2.7247e-05,3.2484e-05,4.5055e-05
+,6.1347e-05,2.6539e-05,6.1446e-05,3.8800e-05,1.8113e-05,3.8187e-04,4.2782e-05,1.8369e-04,2.5155e-05
+,4.1406e-05]
