@@ -1,0 +1,65 @@
+MODEL RESULTS for run at: rf_cv_10_X_top30_resp_ovlap_fromovlap_y_ovlap_resp_all_20200205-2048.txt
+
+Model Parameters:-----------------------------------
+Model: rf_cv
+Feature selection: all
+X is: C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_top30/X_top30_resp_ovlap_fromovlap.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv
+10 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.6629, with Standard Deviation: 0.004202
+Mean balanced accuracy is: 0.6889, with Standard Deviation: 0.004321
+Mean AUC is: 0.7596, with Standard Deviation: 0.001649
+Mean sensitivty is: 0.5366, with Standard Deviation: 0.005345
+Mean specificty is: 0.8413, with Standard Deviation: 0.004363
+Mean precision is: 0.8282, with Standard Deviation: 0.004685
+Mean f1 is: 0.6504, with Standard Deviation: 0.0049
+Mean number of features used is: 16.0000 of 16, with Standard Deviation: 0.0000
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):
+By position in data matrix, 1 added to skip index=0 
+[ 7  3  5  6  4 14  1 15 16  2  8 11 10 12  9 13]
+QIDS_OVERL_SEVTY_week2:::qids01_w2sr__qstot
+AGE:::interview_age
+PSYHIS_MDE_EP_DUR_MO:::phx01__episode_date
+QIDS_OVERL_SEVTY_baseline:::qids01_w0sr__qstot
+PSYHIS_MDD_AGE:::phx01__dage
+QLESQA_TOT_QLESQB_TOT_merged:::
+EDUC:::dm01_enroll__educat
+LAM_2_baseline:::wpai01__wpai_totalhrs
+SDS_1_1_baseline:::wsas01__wsas01
+
+HSHLD_INCOME:::dm01_w0__totincom
+QIDS_SR_16_week2:::qids01_w2sr__vagit
+QIDS_SR_5_week2:::qids01_w2sr__vmdsd
+QIDS_SR_13_week2:::qids01_w2sr__vintr
+QIDS_SR_15_week2:::qids01_w2sr__vslow
+QIDS_SR_14_week2:::qids01_w2sr__vengy
+QIDS_SR_11_week2:::qids01_w2sr__vvwsf
+
+Statistical Significance:----------------------------
+Raw results:----------------------------------------
+Accuracies
+[0.65774048,0.66303193,0.655757,0.66404389,0.66502743,0.6650012,0.66038511,0.66004743,0.66732236,0.67029375]
+Balanced Accuracies
+[0.68436479,0.68880047,0.68126435,0.68969724,0.69144199,0.69130373,0.68599257,0.68631981,0.69400558,0.69623283]
+AUCs
+[0.75965602,0.75841341,0.75684845,0.76084126,0.76139217,0.76280208,0.75853177,0.75822999,0.76000876,0.75941785]
+Sensitivites
+[0.52676857,0.53692545,0.53035098,0.54007032,0.54043794,0.53840627,0.5353758,0.53140951,0.5408083,0.54518209]
+Specificities
+[0.84196102,0.8406755,0.83217772,0.83932416,0.84244605,0.8442012,0.83660934,0.84123011,0.84720286,0.84728357]
+Precisions
+[0.82640869,0.82877624,0.81944976,0.82604468,0.82945513,0.83058417,0.82420932,0.82685419,0.83294941,0.83753931]
+F1s
+[0.64289746,0.6506185,0.64294619,0.65263507,0.65323427,0.65216824,0.64826085,0.64685743,0.65488226,0.65915965]
+Number of features used
+[16.,16.,16.,16.,16.,16.,16.,16.,16.,16.]
+Mean Feature importances Across Runs
+[0.06,0.0432,0.1009,0.0839,0.0948,0.0947,0.1164,0.0382,0.032,0.0366,0.0376,0.0347,0.032,0.0827
+,0.0571,0.0553]
+Mean Feature importances std. deviation Across Runs
+[0.0001,0.0001,0.0002,0.0001,0.0002,0.0002,0.0003,0.0002,0.0003,0.0002,0.0002,0.0003,0.0002,0.0002
+,0.0002,0.0002]

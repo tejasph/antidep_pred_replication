@@ -31,19 +31,73 @@ model = "rf_cv" #many others
 f_select =  "all" #chi, elas
 #f_select = "elas"
 #data = "full_trd"
-data = "ovlap_resp"
+#data = "ovlap_resp"
+#data = "X_top30_trd"
+#data = "X_top10_trd"
+#data = "X_top30_resp"
+#data = "X_top10_resp"
+#data = "X_top30_resp_ovlap"
+#data = "X_top10_resp_ovlap"
+#data = "X_top30_resp_ovlap_fromovlap"
+#data = "X_top30_ovlap_trd"
+#data = "X_top10_ovlap_trd"
 #data = "ovlap_trd"
+data = "X_full_resp"
+#data = "X_ful_resp_trdcrit"
+#label = "y_all_trd"
+label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
+#label = "y_ful_resp_trdcrit"
 
-if data == "full_trd":
+if data == "X_full_trd":
     # Full features, y is TRD, replicating Nie et al
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv'
-    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv'
-elif data == "ovlap_resp":
+elif data == "X_ovlap_resp":
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\X_train_stard_extval.csv'
-    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv'
-elif data == "ovlap_trd":
+elif data == "X_ovlap_trd":
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\X_overlap_trd.csv'
+
+elif data == "X_top30_trd":
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_trd.csv"
+elif data == "X_top10_trd":    
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_trd.csv"
+elif data == "X_top30_ovlap_trd":
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_ovlap_trd.csv"
+elif data == "X_top10_ovlap_trd":
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_ovlap_trd.csv"
+
+
+elif data == "X_top30_resp":
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_resp.csv"
+elif data == "X_top10_resp":    
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_resp.csv"
+elif data == "X_top30_resp_ovlap":
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_resp_ovlap.csv"
+elif data == "X_top10_resp_ovlap":    
+    pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_resp_ovlap.csv"
+elif data == "X_top30_resp_ovlap_fromovlap":
+    # Same ish as the X_top30_resp_ovlap, but drawn from the overlapping and not full STAR*D dataset, so it's been through some conversions
+    pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_top30/X_top30_resp_ovlap_fromovlap.csv"
+
+
+elif data == "X_full_resp":
+    # Full features, for all those in the response y (n~3000)
+    pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/1a_ReplicationWithResponse/X_wk8_response_qids01__final.csv"    
+elif data == "X_ful_resp_trdcrit":
+    pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/X_full_resp_trdcrit.csv"    
+    
+    
+if label == "y_all_trd":
+    # All TRD y in the full STAR*D
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv'
+elif label == "y_ovlap_trd":
+    # STAR*D subjects who are in the overlapping dataset (so their data can be used) but pulled from the TRD Y matrix, has six less than the full y matrix
     pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\y_overlap_trd.csv'
+elif label == 'y_ovlap_resp':
+    # Y matrix for the overlapping dataset, with y as response as same in CANBIND    
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv'
+elif label == "y_ful_resp_trdcrit":
+    pathLabel = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/y_full_resp_trdcrit.csv"    
+    
     
 # Create numpy arrays to store all the results
 accus = np.zeros(runs)
@@ -82,7 +136,7 @@ with open(pathData) as f:
     feature_names = f.readline().split(',')
 
 # Write output file
-filename = "{}_{}_{}_{}_{}.txt".format(data, model, runs, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+filename = "{}_{}_{}_{}_{}_{}.txt".format(model, runs,data, label, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 f = open(os.path.join(pathResults, filename), 'w')
 
 f.write("MODEL RESULTS for run at: " + filename + "\n\n")
@@ -129,21 +183,21 @@ if (data == "full_trd" or data =="ovlap_trd") and model == "rf_cv" and f_select 
     
 f.write("Raw results:----------------------------------------\n")
 f.write("Accuracies\n")
-f.write(str(accus) + "\n")
+f.write(re.sub(r"\s+",r",",str(accus)) + "\n")
 f.write("Balanced Accuracies\n")
-f.write(str(bal_accus) + "\n")
+f.write(re.sub(r"\s+",r",",str(bal_accus)) + "\n")
 f.write("AUCs\n")
-f.write(str(aucs) + "\n")
+f.write(re.sub(r"\s+",r",",str(aucs)) + "\n")
 f.write("Sensitivites\n")
-f.write(str(senss) + "\n")
+f.write(re.sub(r"\s+",r",",str(senss)) + "\n")
 f.write("Specificities\n")
-f.write(str(specs) + "\n")
+f.write(re.sub(r"\s+",r",",str(specs)) + "\n")
 f.write("Precisions\n")
-f.write(str(precs) + "\n")
+f.write(re.sub(r"\s+",r",",str(precs)) + "\n")
 f.write("F1s\n")
-f.write(str(f1s) + "\n")
+f.write(re.sub(r"\s+",r",",str(f1s)) + "\n")
 f.write("Number of features used\n")
-f.write(str(feats) + "\n")
+f.write(re.sub(r"\s+",r",",str(feats)) + "\n")
 f.write("Mean Feature importances Across Runs\n")
 f.write(re.sub(r" +",r",",np.array_str(avg_impts,precision=4,max_line_width=100)) + "\n")
 f.write("Mean Feature importances std. deviation Across Runs\n")

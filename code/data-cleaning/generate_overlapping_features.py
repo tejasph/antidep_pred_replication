@@ -13,7 +13,7 @@ Q_DICT_S = dict(map(reversed, Q_DICT_C.items()))
 
 def convert_stard_to_overlapping(output_dir=""):
     if output_dir == "":
-        output_dir = "/Users/teyden/Downloads/stard_data/output_files" # TODO temporarily hardcode
+        output_dir = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets" # TODO temporarily hardcode
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
@@ -274,6 +274,8 @@ def check_missing_values(df):
     if nulls != 0:
         print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
+
+convert_stard_to_overlapping()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":

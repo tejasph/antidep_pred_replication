@@ -1,0 +1,50 @@
+MODEL RESULTS for run at: rf_cv_10_X_top10_ovlap_trd_y_all_trd_all_20200205-1316.txt
+
+Model Parameters:-----------------------------------
+Model: rf_cv
+Feature selection: all
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_ovlap_trd.csv
+y is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv
+10 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.6427, with Standard Deviation: 0.002879
+Mean balanced accuracy is: 0.6703, with Standard Deviation: 0.003414
+Mean AUC is: 0.7214, with Standard Deviation: 0.001909
+Mean sensitivty is: 0.7322, with Standard Deviation: 0.005916
+Mean specificty is: 0.6084, with Standard Deviation: 0.003413
+Mean precision is: 0.4186, with Standard Deviation: 0.002355
+Mean f1 is: 0.5314, with Standard Deviation: 0.0030
+Mean number of features used is: 3.0000 of 3, with Standard Deviation: 0.0000
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):
+By position in data matrix, 1 added to skip index=0 
+[3 1 2]
+qlesq01__totqlesq
+
+qids01_w2sr__qstot
+qids01_w2sr__vmdsd
+
+Statistical Significance:----------------------------
+Raw results:----------------------------------------
+Accuracies
+[0.64007937,0.64801587,0.64603175,0.64365079,0.64087302,0.64047619,0.63928571,0.63968254,0.6452381,0.64325397]
+Balanced Accuracies
+[0.66655536,0.67366107,0.67498457,0.66777771,0.66676485,0.66814951,0.66747649,0.66860444,0.67510366,0.67374741]
+AUCs
+[0.71952834,0.72296642,0.72103959,0.71864303,0.71910987,0.72176169,0.72151077,0.72264038,0.72537614,0.72126028]
+Sensitivites
+[0.72569387,0.73147982,0.73949408,0.72432289,0.72515732,0.73021536,0.7320396,0.73227413,0.74140201,0.73952676]
+Specificities
+[0.60741686,0.61584232,0.61047506,0.61123252,0.60837239,0.60608365,0.60291338,0.60493475,0.60880531,0.60796806]
+Precisions
+[0.41660752,0.42198725,0.42089717,0.4190746,0.41701339,0.41615172,0.41616769,0.41612508,0.42173094,0.42064303]
+F1s
+[0.52811296,0.5336554,0.53533903,0.53061045,0.52758526,0.5285202,0.53001382,0.52942198,0.53623973,0.53402598]
+Number of features used
+[3.,3.,3.,3.,3.,3.,3.,3.,3.,3.]
+Mean Feature importances Across Runs
+[0.3862,0.1103,0.5035]
+Mean Feature importances std. deviation Across Runs
+[0.0007,0.0005,0.0008]
