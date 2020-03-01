@@ -1,10 +1,10 @@
 import os
-import sys
 import csv
 import pandas as pd
+import re
 
 from canbind_globals import *
-from utils import *
+from utils import * #ORIGINAL_SCALE_FILENAMES
 
 # TODO ADD TESTS - SANITY CHECKS FOR DATA INTEGRITY BETWEEN UNPROCESSSED AND FINAL SET
 
@@ -56,13 +56,24 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
 
     for subdir, dirs, files in os.walk(root_dir):
         for filename in files:
-
             file_path = os.path.join(subdir, filename)
 
-            if filename.startswith("data_"):
+            if filename in ORIGINAL_SCALE_FILENAMES:
                 filenames.append(filename)
                 num_data_files += 1
-
+                
+                # Convert to csv if data file is an xlsx
+                root, ext = os.path.splitext(file_path)
+                if (ext == '.xlsx'):
+                    read_xlsx = pd.read_excel(file_path)
+                    # IPAQ File uses "EVENTME" instead of "EVENTNAME", so replace
+                    if "IPAQ" in filename:
+                        read_xlsx = read_xlsx.rename({'EVENTME' : 'EVENTNAME'}, axis='columns', errors='raise')
+                    file_path = root + '.csv'
+                    read_xlsx.to_csv(file_path, index = None, header=True)
+                elif (ext != '.csv'):
+                    raise Exception("Provided a data file that is neither an xlsx or csv")
+                
                 # Track counts and column names for sanity check
                 with open(file_path, 'rt') as csvfile:
                     col_names = []
@@ -154,32 +165,42 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = one_hot_encode(merged_df, COL_NAMES_ONE_HOT_ENCODE)
 
     # Finalize the blacklist, then do a final drop of columns (original ones before one-hot and blacklist columns)
+    add_columns_to_blacklist
     finalize_blacklist()
     merged_df.drop(COL_NAMES_BLACKLIST_UNIQS, axis=1, inplace=True)
 
-    # Create y target, eliminate invalid subjects in both X and y, convert responder/nonresponder string to binary
+    # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
     merged_df = get_valid_subjects(merged_df)
-    print(merged_df)
+    merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
+    ##print(merged_df)
     merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
-    print(merged_df)
-    targets = merged_df[[COL_NAME_PATIENT_ID, "RESPOND_WK8"]]
-    targets.to_csv(root_dir + "/canbind-targets.csv")
-    merged_df.drop(["RESPOND_WK8"], axis=1, inplace=True)
-
+    ##print(merged_df)
+    ##targets = merged_df[[COL_NAME_PATIENT_ID, "QIDS_RESP_WK8_week 2"]]
+    ##targets.to_csv(root_dir + "/canbind-targets.csv", index=False)
+    ##merged_df.drop(["QIDS_RESP_WK8"], axis=1, inplace=True)
+    
+    
+    
+    # Rename the column that will be used for the y value (target)
+    merged_df = merged_df.rename({"QIDS_RESP_WK8_week 2":"QIDS_RESP_WK8"},axis='columns',errors='raise')
+    # Replace "week 2" with "week2" in column names
+    merged_df = merged_df.rename(columns=lambda x: re.sub('week 2','week2',x))
     # Save the version containing NaN values
     merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks.csv")
 
+    ## Handle imputation with separate file
+    
     # Replace all NaN values with median for a column
-    merged_df_without_blanks = replace_nan_with_median(merged_df)
+    ##merged_df_without_blanks = replace_nan_with_median(merged_df)
 
     # Save the version without NaN values
-    merged_df_without_blanks.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.csv")
+    ##merged_df_without_blanks.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.csv")
 
     # Remove IDs and write to CSVs
-    merged_df.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.contains-blanks.csv")
-    merged_df_without_blanks.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.csv")
+    ##merged_df.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.contains-blanks.csv")
+    ##merged_df_without_blanks.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.csv")
 
     if verbose:
         UNIQ_COLUMNS = uniq_columns
@@ -550,6 +571,7 @@ def replace_target_col_values_to_be_refactored(df, replacement_maps):
 
 def finalize_blacklist():
     add_columns_to_blacklist(COL_NAMES_BLACKLIST_IPAQ)
+    add_columns_to_blacklist(COL_NAMES_BLACKLIST_QIDS)
     add_columns_to_blacklist(COL_NAMES_BLACKLIST_LEAPS)
     add_columns_to_blacklist(COL_NAMES_BLACKLIST_MINI)
     add_columns_to_blacklist(COL_NAMES_BLACKLIST_DEMO)
@@ -565,6 +587,8 @@ def collect_columns_to_extend(field):
     elif field.startswith("HCL_"):
         COL_NAMES_HCL_TO_CONVERT.append(field)
     elif field.startswith("GAD7_"):
+        COL_NAMES_GAD7_TO_CONVERT.append(field)
+    elif field.startswith("QIDS_"):
         COL_NAMES_GAD7_TO_CONVERT.append(field)
     elif field.startswith("QLESQ"):
         COL_NAMES_QLESQ_TO_CONVERT.append(field)
@@ -607,17 +631,21 @@ def print_info(merged_df, extra):
             print("\t", col_name, COLLISION_MANAGER[col_name])
 
 
-if __name__ == "__main__":
-    if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
-        aggregate_and_clean(sys.argv[1], verbose=False, extra=False)
+# if __name__ == "__main__":
+#     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
+#         aggregate_and_clean(sys.argv[1], verbose=False, extra=False)
 
-    elif len(sys.argv) == 3 and sys.argv[1] == "-v" and os.path.isdir(sys.argv[2]):
-        aggregate_and_clean(sys.argv[2], verbose=True, extra=False)
+#     elif len(sys.argv) == 3 and sys.argv[1] == "-v" and os.path.isdir(sys.argv[2]):
+#         aggregate_and_clean(sys.argv[2], verbose=True, extra=False)
 
-    elif len(sys.argv) == 3 and sys.argv[1] == "-v+" and os.path.isdir(sys.argv[2]):
-        aggregate_and_clean(sys.argv[2], verbose=True, extra=True)
+#     elif len(sys.argv) == 3 and sys.argv[1] == "-v+" and os.path.isdir(sys.argv[2]):
+#         aggregate_and_clean(sys.argv[2], verbose=True, extra=True)
+#     else:
+#         print("Enter valid arguments\n"
+#               "\t options: -v for verbose, -v+ for super verbose\n"
+#               "\t path: the path to a real directory\n")
 
-    else:
-        print("Enter valid arguments\n"
-              "\t options: -v for verbose, -v+ for super verbose\n"
-              "\t path: the path to a real directory\n")
+
+
+pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto\\'
+aggregate_and_clean(pathData, "-v")

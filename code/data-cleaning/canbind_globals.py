@@ -13,10 +13,12 @@ COLLISION_MANAGER = {}
 # Names of columns to filter in or out
 # TODO Note: for validation of data integrity, remove SUBJLABEL, EVENTNAME and VISITSTATUS to check against original CSVs
 COL_NAMES_BLACKLIST_COMMON = ["EVENTNAME", "VISITSTATUS", "COHORT_ID", "GROUP", "VISITDATE",
-                              "DOSAGE_ID", "RESPOND_WK16", "CHANGE_WK8", "CHANGE_WK16"]
+                              "DOSAGE_ID", "RESPOND_WK16", "CHANGE_WK8", "CHANGE_WK16", "REMISSION_WK8", 
+                              "REMISSION_WK16", "ARM"]
 COL_NAMES_BLACKLIST_IPAQ = ["IPAQ_1", "IPAQ_2", "IPAQ_2_HOUR", "IPAQ_2_MIN", "IPAQ_3", "IPAQ_4", "IPAQ_4_HOUR",
                             "IPAQ_4_MIN", "IPAQ_5", "IPAQ_6", "IPAQ_6_HOUR", "IPAQ_6_MIN", "IPAQ_7", "IPAQ_7_HOUR",
                             "IPAQ_7_MIN", "VIG_TOTAL_TR", "MODERATE_TOTAL_TR", "WALKING_TOTAL_TR"]
+COL_NAMES_BLACKLIST_QIDS = ["QIDS_RESP_WK8_baseline","QIDS_RESP_WK16_baseline","QIDS_RESP_WK16_week 2"]
 COL_NAMES_BLACKLIST_LEAPS = ["LAM_1", "LAM_1_CLASSIFICATION_NUM1", "LAM_1_CLASSIFICATION_LABEL1",
                              "LAM_1_CLASSIFICATION_NUM2", "LAM_1_CLASSIFICATION_LABEL2"]
 COL_NAMES_BLACKLIST_MINI = []
@@ -68,6 +70,10 @@ COL_NAMES_TO_DROP_FROM_EXTENSION = []
 EVENTNAME_WHITELIST_MADRS = ["baseline", "week 2"]
 COL_NAMES_MADRS_TO_CONVERT = [] # Include all
 
+# Names of QIDS columns to convert
+EVENTNAME_WHITELIST_QIDS = ["baseline", "week 2"]
+COL_NAMES_QIDS_TO_CONVERT = [] # Include all
+
 # Names of GAD-7 columns to convert
 EVENTNAME_WHITELIST_GAD7 = ["baseline", "week 2"]
 COL_NAMES_GAD7_TO_CONVERT = [] # Include all
@@ -78,7 +84,7 @@ COL_NAMES_HCL_TO_CONVERT = [] # Include all
 
 # Names of IPAQ columns to convert
 EVENTNAME_WHITELIST_IPAQ = ["screening"]
-COL_NAMES_IPAQ_TO_CONVERT = ["VIG_TOTAL", "MOD_TOTAL", "WALKING_TOTAL", "SITTING_AVERAGE", "MVPA", "MVPA_GROUP", "VIG_GROUP"]
+COL_NAMES_IPAQ_TO_CONVERT = ["VIG_TOTAL", "MOD_TOTAL", "WALKING_TOTAL", "SITTING_AVERAGE", "MVPA_GROUP", "VIG_GROUP", "MVPA"]
 
 # Names of LEAPS columns to convert
 EVENTNAME_WHITELIST_LEAPS = ["baseline"]
@@ -110,6 +116,7 @@ NEW_COL_NAMES_SHAPS = []
 ALTERNATIVE_EVENT_COLUMNS = ["HCL", "IPAQ"]
 
 COL_NAMES_TO_CONVERT = [("MADRS", EVENTNAME_WHITELIST_MADRS, COL_NAMES_MADRS_TO_CONVERT),
+                        ("QIDS", EVENTNAME_WHITELIST_QIDS, COL_NAMES_QIDS_TO_CONVERT),
                         ("GAD7", EVENTNAME_WHITELIST_GAD7, COL_NAMES_GAD7_TO_CONVERT),
                         ("IPAQ", EVENTNAME_WHITELIST_IPAQ, COL_NAMES_IPAQ_TO_CONVERT),
                         ("LEAPS", EVENTNAME_WHITELIST_LEAPS, COL_NAMES_LEAPS_TO_CONVERT),
@@ -230,16 +237,16 @@ EDUC_MAP = {
     }
 }
 TARGET_MAP = {
-    "col_names": ["RESPOND_WK8"],
+    "col_names": ["QIDS_RESP_WK8_week 2"],
     "values": {
-        "nonresponder": 0,
-        "responder": 1,
+        "NonResponder": 0,
+        "Responder": 1,
     }
 }
 BLANK_TO_ZERO_MAP = {
     "col_names": ["MINI_PD_TIME_CUR", "MINI_PD_TIME_LIFE", "MINI_MDE_TIME_CUR", "MINI_MDE_TIME_PAST",
                   "MINI_MDE_TIME_RECUR", "MINI_SUICDLTY_SCORE_RANGE", "VIG_TOTAL_screening", "MOD_TOTAL_screening",
-                  "WALKING_TOTAL_screening", "MVPA_screening", "SITTING_AVERAGE_screening","PSYHIS_MDD_PREV"],
+                  "WALKING_TOTAL_screening", "SITTING_AVERAGE_screening","PSYHIS_MDD_PREV", "MVPA_screening"],
     "values": {
         "": 0
     }
@@ -316,4 +323,23 @@ VALUE_CONVERSION_MAP_IMPUTE = {
 
 # JJ added this for new feature imputation
 NEW_FEATURES = []
+
+# Store actual filenames for data, as version of data now includes multiple copies and the like
+ORIGINAL_SCALE_FILENAMES = {
+    "data_CBN01_1_X03_CLIN_BMI_0001.csv",
+    "data_CBN01_DEMO_DATA_0002.csv",
+    "data_CBN01_GAD7_DATA_0001.csv",
+    "data_CBN01_HCL_DATA_121517.csv",
+    "CBN_IPAQ_TRUNCATION_180531.xlsx",
+    "data_CBN01_1_X03_CLIN_LEAPS_DATA_0001_REVIEW - VE copy.csv",
+    "data_CBN01_1_X03_CLIN_MADRS_DATA_0002.csv",
+    "data_CBN01_MINI_DATA_0002.csv",
+    "data_CBN01_PSYHIS_DATA_0002.csv",
+    "CBN01_QIDS_DATA_0002_20190911.csv",
+    "data_CBN01_QLESQ_DATA_forREVEIW.csv",
+    "data_CBN01_1_X03_CLIN_SDS_DATA_0001_REVIEW copy.csv",
+    "data_CBN01_1_A01_V01_CSV_SHAPS_DARS_DEMOG.csv"
+    }
+    
+
 
