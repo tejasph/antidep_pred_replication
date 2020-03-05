@@ -168,7 +168,9 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     add_columns_to_blacklist
     finalize_blacklist()
     merged_df.drop(COL_NAMES_BLACKLIST_UNIQS, axis=1, inplace=True)
-
+    
+    
+    
     # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
@@ -176,6 +178,14 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
+    
+    # Fix a value in the data that was messed up in a recent version (pt had age of 56, switched to 14 recently, so switched back)
+    if merged_df.at[68, 'AGE'] == 16:
+        merged_df.at[68, 'AGE'] = 56
+        print("Replaced misrecorded age")
+    
+    
+    
     ##print(merged_df)
     ##targets = merged_df[[COL_NAME_PATIENT_ID, "QIDS_RESP_WK8_week 2"]]
     ##targets.to_csv(root_dir + "/canbind-targets.csv", index=False)
@@ -648,4 +658,4 @@ def print_info(merged_df, extra):
 
 
 pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto\\'
-aggregate_and_clean(pathData, "-v")
+aggregate_and_clean(pathData, verbose=False)
