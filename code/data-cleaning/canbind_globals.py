@@ -50,6 +50,8 @@ COL_NAME_VISITSTATUS = "VISITSTATUS"
 
 # Names of whitelist values for the columns EVENTNAME and VISITSTATUS (IPAQ only), for keeping just the entries within week 2
 EVENTNAME_WHITELIST = ["screening", "baseline", "week 2"]
+YGEN_EVENTNAME_WHITELIST = ["screening", "baseline", "week 2", "week 8"]
+VENTNAME_WHITELIST = ["screening", "baseline", "week 2"]
 VISITSTATUS_WHITELIST = ["screening/baseline"]
 
 # Names of whitelist values for the column GROUP
@@ -72,6 +74,10 @@ COL_NAMES_MADRS_TO_CONVERT = [] # Include all
 
 # Names of QIDS columns to convert
 EVENTNAME_WHITELIST_QIDS = ["baseline", "week 2"]
+COL_NAMES_QIDS_TO_CONVERT = [] # Include all
+
+# Names of QIDS columns to convert for y geneation
+YGEN_EVENTNAME_WHITELIST_QIDS = ["baseline", "week 2", "week 8"]
 COL_NAMES_QIDS_TO_CONVERT = [] # Include all
 
 # Names of GAD-7 columns to convert
@@ -123,6 +129,16 @@ COL_NAMES_TO_CONVERT = [("MADRS", EVENTNAME_WHITELIST_MADRS, COL_NAMES_MADRS_TO_
                         ("HCL", EVENTNAME_WHITELIST_HCL, COL_NAMES_HCL_TO_CONVERT),
                         ("SDS", EVENTNAME_WHITELIST_SDS, COL_NAMES_SDS_TO_CONVERT),
                         ("QLESQ", EVENTNAME_WHITELIST_QLESQ, COL_NAMES_QLESQ_TO_CONVERT)]
+
+YGEN_COL_NAMES_TO_CONVERT = [("MADRS", EVENTNAME_WHITELIST_MADRS, COL_NAMES_MADRS_TO_CONVERT),
+                        ("QIDS", YGEN_EVENTNAME_WHITELIST_QIDS, COL_NAMES_QIDS_TO_CONVERT),
+                        ("GAD7", EVENTNAME_WHITELIST_GAD7, COL_NAMES_GAD7_TO_CONVERT),
+                        ("IPAQ", EVENTNAME_WHITELIST_IPAQ, COL_NAMES_IPAQ_TO_CONVERT),
+                        ("LEAPS", EVENTNAME_WHITELIST_LEAPS, COL_NAMES_LEAPS_TO_CONVERT),
+                        ("HCL", EVENTNAME_WHITELIST_HCL, COL_NAMES_HCL_TO_CONVERT),
+                        ("SDS", EVENTNAME_WHITELIST_SDS, COL_NAMES_SDS_TO_CONVERT),
+                        ("QLESQ", EVENTNAME_WHITELIST_QLESQ, COL_NAMES_QLESQ_TO_CONVERT)]
+
 
 #### LIST AND MAP MANAGERS FOR COLUMNS WITH DATA TO BE REPLACED
 
@@ -243,14 +259,14 @@ TARGET_MAP = {
         "Responder": 1,
     }
 }
-BLANK_TO_ZERO_MAP = {
-    "col_names": ["MINI_PD_TIME_CUR", "MINI_PD_TIME_LIFE", "MINI_MDE_TIME_CUR", "MINI_MDE_TIME_PAST",
-                  "MINI_MDE_TIME_RECUR", "MINI_SUICDLTY_SCORE_RANGE", "VIG_TOTAL_screening", "MOD_TOTAL_screening",
-                  "WALKING_TOTAL_screening", "SITTING_AVERAGE_screening","PSYHIS_MDD_PREV", "MVPA_screening"],
-    "values": {
-        "": 0
-    }
-}
+# BLANK_TO_ZERO_MAP = {
+#     "col_names": ["MINI_PD_TIME_CUR", "MINI_PD_TIME_LIFE", "MINI_MDE_TIME_CUR", "MINI_MDE_TIME_PAST",
+#                   "MINI_MDE_TIME_RECUR", "MINI_SUICDLTY_SCORE_RANGE", "VIG_TOTAL_screening", "MOD_TOTAL_screening",
+#                   "WALKING_TOTAL_screening", "SITTING_AVERAGE_screening","PSYHIS_MDD_PREV", "MVPA_screening"],
+#     "values": {
+#         "": 0
+#     }
+# }
 VALUE_REPLACEMENT_MAPS = [SEX_VALUES_MAP, MINI_LIFETIME_CURRENT_MAP, MINI_PAST_CURRENT_MAP, MINI_GENERALIZED_MAP,
                           MINI_RULEDOUT_MAP, YN_MAP, YESNO_MAP, IGNORE_MAP, NA_TO_BLANK_MAP, SDS_MAP, EDUC_MAP,
                           HANDEDNESS_MAP, MRTL_STATUS_MAP, MINI_PRMRY_DX_MAP]#, BLANK_TO_ZERO_MAP]
@@ -288,7 +304,12 @@ QLESQ_COL_MAPPING = {
 # JJ added following for the imputation step
 VALUE_CONVERSION_MAP_IMPUTE = {
     "blank_to_zero": {
-        "col_names": {'LAM_2_baseline','LAM_3_baseline','LAM_4_A_baseline','LAM_4_B_baseline','LAM_4_C_baseline','LAM_4_D_baseline','LAM_4_E_baseline','LAM_4_F_baseline','LAM_4_G_baseline','LAM_TOT_OVERALL_baseline','LAM_TOT_PRODUCT_baseline','LAM_TOT_ABSENT_baseline','SDS_1_1_baseline','QLESQ_1A_15_baseline', "PSYHIS_MDD_PREV"},
+        "col_names": {'LAM_2_baseline','LAM_3_baseline','LAM_4_A_baseline','LAM_4_B_baseline','LAM_4_C_baseline',
+                      'LAM_4_D_baseline','LAM_4_E_baseline','LAM_4_F_baseline','LAM_4_G_baseline','LAM_TOT_OVERALL_baseline',
+                      'LAM_TOT_PRODUCT_baseline','LAM_TOT_ABSENT_baseline','SDS_1_1_baseline','QLESQ_1A_15_baseline',
+                      "PSYHIS_MDD_PREV","MINI_PD_TIME_CUR", "MINI_PD_TIME_LIFE", "MINI_MDE_TIME_CUR", "MINI_MDE_TIME_PAST",
+                  "MINI_MDE_TIME_RECUR", "MINI_SUICDLTY_SCORE_RANGE", "VIG_TOTAL_screening", "MOD_TOTAL_screening",
+                  "WALKING_TOTAL_screening", "SITTING_AVERAGE_screening","PSYHIS_MDD_PREV", "MVPA_screening"},
         "conversion_map": {np.nan: 0}
     },
     "blank_to_one": {

@@ -1,9 +1,11 @@
 import os
 import csv
 import pandas as pd
+import numpy as np
 import re
+import sys
 
-from canbind_globals import *
+from canbind_globals import * #COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, EVENTNAME_WHITELIST
 from utils import * #ORIGINAL_SCALE_FILENAMES
 
 # TODO ADD TESTS - SANITY CHECKS FOR DATA INTEGRITY BETWEEN UNPROCESSSED AND FINAL SET
@@ -138,7 +140,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     # Filter out rows that are controls
     if COL_NAME_GROUP in merged_df:
         merged_df = merged_df.loc[~merged_df.GROUP.str.lower().isin(GROUP_WHITELIST)]
-
+    
     # Filter out rows that were recorded beyond Week 2
     if COL_NAME_EVENTNAME in merged_df:
         merged_df = merged_df.loc[merged_df.EVENTNAME.str.lower().isin(EVENTNAME_WHITELIST)]
@@ -169,8 +171,6 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     finalize_blacklist()
     merged_df.drop(COL_NAMES_BLACKLIST_UNIQS, axis=1, inplace=True)
     
-    
-    
     # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
@@ -184,12 +184,8 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
         merged_df.at[68, 'AGE'] = 56
         print("Replaced misrecorded age")
     
+
     
-    
-    ##print(merged_df)
-    ##targets = merged_df[[COL_NAME_PATIENT_ID, "QIDS_RESP_WK8_week 2"]]
-    ##targets.to_csv(root_dir + "/canbind-targets.csv", index=False)
-    ##merged_df.drop(["QIDS_RESP_WK8"], axis=1, inplace=True)
     
     
     
@@ -308,17 +304,18 @@ def aggregate_patient_rows(df):
 
         new_df = new_df.append(pd.DataFrame.from_items(agg_patient_vals))
 
-    print_progress_completion(aggregate_patient_rows, "aggregated groups of patient rows to a single row")
+    ##print_progress_completion(aggregate_patient_rows, "aggregated groups of patient rows to a single row")
     return new_df
 
 
-def aggregate_rows(df):
+def aggregate_rows(df, verbose=False):
     """
     Aggregates groups of patient rows corresponding to a single patient to a single row.
 
     :param df: the dataframe
     :return: a new dataframe consisting of one row per patient
     """
+
     new_df = pd.DataFrame()
     grouped = df.groupby([COL_NAME_PATIENT_ID])
     i = 0
@@ -333,7 +330,6 @@ def aggregate_rows(df):
         for column, values in group_of_rows_df.iteritems():
             if column == COL_NAME_PATIENT_ID:
                 continue
-
             column_collisions = []
             column_conversions = []
 
@@ -391,19 +387,19 @@ def aggregate_rows(df):
         new_df = new_df.append(pd.DataFrame.from_items(agg_patient_vals))
 
         if i % 100 == 0:
-            print("Batch: [%d] subjects have been aggregated thus far with [%d] total collisions" % (i, num_collisions))
+            if verbose: print("Batch: [%d] subjects have been aggregated thus far with [%d] total collisions" % (i, num_collisions))
         i += 1
 
     for col, collisionz in collisions.items():
         if len(collisionz) > 0:
-            print(col)
+            if verbose: print(col)
         for x in collisionz:
-            print("\t", x)
+            if verbose: print("\t", x)
     for col, conversionz in conversions.items():
         if len(conversionz) > 0:
-            print(col)
+            if verbose: print(col)
         for x in conversionz:
-            print("\t", x)
+            if verbose: print("\t", x)
 
     return new_df
 
@@ -443,7 +439,7 @@ def extend_columns_eventbased(orig_df):
     """
     global COL_NAMES_NEW_FROM_EXTENSION
     global COL_NAMES_TO_DROP_FROM_EXTENSION
-
+        
     # Create extra columns with name of event appended, initialized blank
     for scale_group in COL_NAMES_TO_CONVERT:
         scale_name = scale_group[0]
@@ -498,7 +494,7 @@ def merge_columns(df, column_mapping):
                 df.set_value(i, merged_col_name, val2)
             blacklist.extend([col1, col2])
     add_columns_to_blacklist(blacklist)
-    print_progress_completion(merge_columns, "merged QLESQ columns")
+    ##print_progress_completion(merge_columns, "merged QLESQ columns")
     return df
 
 def print_progress_completion(f, msg):
@@ -599,7 +595,7 @@ def collect_columns_to_extend(field):
     elif field.startswith("GAD7_"):
         COL_NAMES_GAD7_TO_CONVERT.append(field)
     elif field.startswith("QIDS_"):
-        COL_NAMES_GAD7_TO_CONVERT.append(field)
+        COL_NAMES_QIDS_TO_CONVERT.append(field)
     elif field.startswith("QLESQ"):
         COL_NAMES_QLESQ_TO_CONVERT.append(field)
 
@@ -639,7 +635,6 @@ def print_info(merged_df, extra):
     for col_name in COLLISION_MANAGER:
         if extra:
             print("\t", col_name, COLLISION_MANAGER[col_name])
-
 
 # if __name__ == "__main__":
 #     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
