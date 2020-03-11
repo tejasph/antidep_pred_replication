@@ -8,9 +8,15 @@ import numpy as np
 
 from utils import *
 
-old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind-clean-aggregated-data.with-id.contains-blanks-with-qidssr_TOREPLICATE.csv')
-new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind-clean-aggregated-data.with-id.contains-blanks.csv')
-
+# Raw before impute
+##old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind-clean-aggregated-data.with-id.contains-blanks-with-qidssr_TOREPLICATE.csv')
+##new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind-clean-aggregated-data.with-id.contains-blanks.csv')
+# Check impute
+#old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data/canbind_imputed.csv')
+#new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind_imputed.csv')
+# Check overlapping
+old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/X_test_cb_extval.csv')
+new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/X_test_cb_extval.csv')
 
 all_columns_found = True
 for col in old_canbind.columns:
@@ -43,9 +49,12 @@ for col in old_canbind.columns:
         all_columns_equal = False
 
 for i in range(len(old_canbind.index)):
-    col_test = 'QIDS_SR_6_week2'
+    col_test = 'QIDS_SR_6_week2:::qids01_w2sr__vapdc'
     if (old_canbind.replace(np.nan,0).at[i, col_test] != new_canbind.replace(np.nan,0).at[i, col_test]):
-        print("Error at index: " + str(i) + " of patient: " + str(old_canbind.at[i,"SUBJLABEL"]) + " with values : " + str(old_canbind.at[i, col_test]) + " " + str(new_canbind.at[i,col_test]))
+        print("Error with QIDS_SR_6_week2:::qids01_w2sr__vapdc at index: " + str(i) + " of patient: " + str(old_canbind.at[i,"SUBJLABEL:::subjectkey"]) + " with values : " + str(old_canbind.at[i, col_test]) + " " + str(new_canbind.at[i,col_test]))
+    col_test2 = 'imput_QIDS_SR_appetite_domain_week2:::'
+    if (old_canbind.replace(np.nan,0).at[i, col_test] != new_canbind.replace(np.nan,0).at[i, col_test]):
+        print("Error with imput_QIDS_SR_appetite_domain_week2::: at index: " + str(i) + " of patient: " + str(old_canbind.at[i,"SUBJLABEL:::subjectkey"]) + " with values : " + str(old_canbind.at[i, col_test]) + " " + str(new_canbind.at[i,col_test]))
 
 print("Columns equal in both?: " + str(all_columns_equal))
 print("Columns equal: " + str(cols_equal))

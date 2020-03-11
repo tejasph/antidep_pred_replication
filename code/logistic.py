@@ -10,21 +10,22 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 
 def logisticRegressionEnsemble():
     """ Train an ensemble of trees and report the accuracy as they did in the paper
     """
-    pathData = '../data/X_stard_overlapping_v2.csv'
-    pathLabel = '../data/y-stard-overlapping-targets.csv'
-    testData = '../data/X_canbind-overlapping.csv'
-    testLabel = '../data/y_canbind_targets.csv'
+    pathData = 'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/X_train_stard_extval.csv'
+    pathLabel = 'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/y_train_stard_extval.csv'
+    testData = 'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/X_test_cb_extval.csv'
+    testLabel = 'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/y_test_cb_extval.csv'
     # read data and chop the header
     X_train = np.genfromtxt(pathData, delimiter=',')[1:,1:]
-    y_train = np.genfromtxt(pathLabel, delimiter=',')[1:,2]
+    y_train = np.genfromtxt(pathLabel, delimiter=',')[1:,1]
     
     X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
-    y_test = np.genfromtxt(testLabel, delimiter=',')[1:,2]
+    y_test = np.genfromtxt(testLabel, delimiter=',')[1:,1]
     
     _,m = X_train.shape
     
@@ -74,9 +75,15 @@ def logisticRegressionEnsemble():
     
     # Report accuracy and draw ROC curve
     drawROC(y_test, y_score)
-    plt.savefig("../figs/logistic-Can.eps",format="eps")
-    np.savetxt("../figs/logistic-Can",y_score)
+    #plt.savefig("../figs/logistic-Can.eps",format="eps")
+    #np.savetxt("../figs/logistic-Can",y_score)
     score = sum(pred==y_test)/n
     print("Accuracy is:", score)
+    
+    tn, fp, fn, tp = confusion_matrix(y_test,pred).ravel()
+    print("TN is: " + str(tn/n))
+    print("FP is: " + str(fp/n))
+    print("FN is: " + str(fn/n))
+    print("TP IS: " + str(tp/n))
 
 logisticRegressionEnsemble()

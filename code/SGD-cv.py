@@ -58,7 +58,7 @@ def SGDEnsemble():
         # Pick the class with the greastest probability to be the prediction
         pred = np.argmax(pred_prob,axis=1)
         y_score = pred_prob[:,1]
-    
+        
         # Report accuracy and draw ROC curve
         drawROC(y_test, y_score)
         score = sum(pred==y_test)/n

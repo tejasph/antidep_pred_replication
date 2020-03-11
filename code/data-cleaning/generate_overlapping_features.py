@@ -8,6 +8,10 @@ from utils import *
 from overlapping_globals import HEADER_CONVERSION_DICT, CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP,NEW_FEATURES_CANBIND,QIDS_STARD_TO_CANBIND_DICT as Q_DICT_C
 from overlapping_globals import STARD_OVERLAPPING_VALUE_CONVERSION_MAP, STARD_TO_DROP
 
+"""
+Generates the overlapping datasets from the processed datasets, for canbind data, that's the product of canbind_imputer
+"""
+
 Q_DICT_S = dict(map(reversed, Q_DICT_C.items()))
 
 
@@ -100,7 +104,7 @@ def convert_stard_to_overlapping(output_dir=""):
 
 def convert_canbind_to_overlapping(output_dir=""):
     if output_dir == "":
-        output_dir = "/Users/teyden/Downloads/canbind-data-binned/output_files" # TODO temporarily hardcode
+        output_dir = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto" # TODO temporarily hardcode
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
@@ -275,7 +279,7 @@ def check_missing_values(df):
         print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
 
-convert_stard_to_overlapping()
+convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto")
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":

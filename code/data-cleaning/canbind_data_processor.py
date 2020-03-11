@@ -188,9 +188,9 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     
     
     
-    
-    # Rename the column that will be used for the y value (target)
-    merged_df = merged_df.rename({"QIDS_RESP_WK8_week 2":"QIDS_RESP_WK8"},axis='columns',errors='raise')
+    # Drop the columns that are used for y
+    merged_df = merged_df.drop(["QIDS_RESP_WK8_week 2"], axis=1)
+    ##merged_df = merged_df.rename({"QIDS_RESP_WK8_week 2":"QIDS_RESP_WK8"},axis='columns',errors='raise')
     # Replace "week 2" with "week2" in column names
     merged_df = merged_df.rename(columns=lambda x: re.sub('week 2','week2',x))
     # Save the version containing NaN values

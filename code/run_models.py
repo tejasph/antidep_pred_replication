@@ -26,12 +26,12 @@ startTime = datetime.datetime.now()
 
 # Parameters
 pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
-runs = 100
+runs = 10
 model = "rf_cv" #many others
 f_select =  "all" #chi, elas
 #f_select = "elas"
 #data = "full_trd"
-#data = "ovlap_resp"
+data = "X_ovlap_resp"
 #data = "X_top30_trd"
 #data = "X_top10_trd"
 #data = "X_top30_resp"
@@ -42,7 +42,7 @@ f_select =  "all" #chi, elas
 #data = "X_top30_ovlap_trd"
 #data = "X_top10_ovlap_trd"
 #data = "ovlap_trd"
-data = "X_full_resp"
+#data = "X_full_resp"
 #data = "X_ful_resp_trdcrit"
 #label = "y_all_trd"
 label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
@@ -107,13 +107,21 @@ senss = np.zeros(runs)
 specs = np.zeros(runs)
 precs = np.zeros(runs)
 f1s = np.zeros(runs)
+tps = np.zeros(runs)
+fps = np.zeros(runs)
+tns = np.zeros(runs)
+fns = np.zeros(runs)
 feats = np.zeros(runs) # Average number of the average number of features used per classifier trained
 
 
 for i in range(runs):
         if model == "rf_cv":    
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt = RandomForrestEnsemble(pathData, pathLabel, f_select)
-            
+            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RandomForrestEnsemble(pathData, pathLabel, f_select)
+            tps[i] = confus_mat['tp']
+            fps[i] = confus_mat['fp']
+            tns[i] = confus_mat['tn']
+            fns[i] = confus_mat['fn']
+
             if i == 0:
                 # Initialize impts now as number of features can change
                 ##print("Here are two lengths")
@@ -156,7 +164,14 @@ f.write("Mean sensitivty is: {:.4f}, with Standard Deviation: {:.6f}\n".format(n
 f.write("Mean specificty is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(specs), np.std(specs)))
 f.write("Mean precision is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(precs), np.std(precs)))
 f.write("Mean f1 is: {:.4f}, with Standard Deviation: {:.4f}\n".format(np.mean(f1s), np.std(f1s)))
+
+f.write("Mean true positive is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(tps), np.std(tps)))
+f.write("Mean false positive is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(fps), np.std(fps)))
+f.write("Mean true negative is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(tns), np.std(tns)))
+f.write("Mean false negative is: {:.4f}, with Standard Deviation: {:.6f}\n".format(np.mean(fns), np.std(fns)))
+
 f.write("Mean number of features used is: {:.4f} of {:d}, with Standard Deviation: {:.4f}\n\n".format(np.mean(feats), np.size(avg_impts), np.std(feats)))
+
 
 f.write("Feature Importance And Use:---------------------------\n")
 f.write("Top 30 Features by importance, in descending order (1st most important):\n")
