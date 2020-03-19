@@ -16,10 +16,7 @@ import re
 from scipy.stats import ttest_1samp
 import datetime
 import numpy as np
-##from randomForrests_cv import RandomForrestEnsemble
-from run_cv_model import RunCVModel
-from run_extval_model import RunExtValModel
-
+from randomForrests_cv import RandomForrestEnsemble
 
 startTime = datetime.datetime.now()
 
@@ -30,23 +27,11 @@ startTime = datetime.datetime.now()
 # Parameters
 pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
 runs = 10
-
-# Evaluation
-##evl = "cv"
-evl = "extval"
-
-# Model
-model = "rf"
-##model = "elnet"
-##model = "gbdt"
-##model = "l2logreg"
-##model = "xgbt"
-
-
+model = "rf_cv" #many others
 f_select =  "all" #chi, elas
 #f_select = "elas"
 #data = "full_trd"
-data = "X_ovlap_resp" # For external validation
+data = "X_ovlap_resp"
 #data = "X_top30_trd"
 #data = "X_top10_trd"
 #data = "X_top30_resp"
@@ -65,9 +50,9 @@ label = "y_ovlap_resp" # Keep the old name, it's just the y for the training dat
 
 if data == "X_full_trd":
     # Full features, y is TRD, replicating Nie et al
-    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\X_lvl2_rem_qids01__final.csv'
+    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\X_lvl2_rem_qids01__final.csv'
 elif data == "X_ovlap_resp":
-    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\2_ExternalValidation\X_train_stard_extval.csv'
+    pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\X_train_stard_extval.csv'
 elif data == "X_ovlap_trd":
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\X_overlap_trd.csv'
 
@@ -96,20 +81,20 @@ elif data == "X_top30_resp_ovlap_fromovlap":
 
 elif data == "X_full_resp":
     # Full features, for all those in the response y (n~3000)
-    pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/1a_ReplicationWithResponse/X_wk8_response_qids01__final.csv"    
+    pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/1a_ReplicationWithResponse/X_wk8_response_qids01__final.csv"    
 elif data == "X_ful_resp_trdcrit":
     pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/X_full_resp_trdcrit.csv"    
     
     
 if label == "y_all_trd":
     # All TRD y in the full STAR*D
-    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\y_lvl2_rem_qids01__final.csv'
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\1_Replication\y_lvl2_rem_qids01__final.csv'
 elif label == "y_ovlap_trd":
     # STAR*D subjects who are in the overlapping dataset (so their data can be used) but pulled from the TRD Y matrix, has six less than the full y matrix
     pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\y_overlap_trd.csv'
 elif label == 'y_ovlap_resp':
     # Y matrix for the overlapping dataset, with y as response as same in CANBIND    
-    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\2_ExternalValidation\y_train_stard_extval.csv'
+    pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20201016\2_ExternalValidation\y_train_stard_extval.csv'
 elif label == "y_ful_resp_trdcrit":
     pathLabel = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/y_full_resp_trdcrit.csv"    
     
@@ -130,21 +115,21 @@ feats = np.zeros(runs) # Average number of the average number of features used p
 
 
 for i in range(runs):
-        if evl == "cv":
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RunCVModel(pathData, pathLabel, f_select, model)
-        elif evl == "extval":
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RunExtValModel(pathData, pathLabel, f_select, model)
-            
-        tps[i] = confus_mat['tp']
-        fps[i] = confus_mat['fp']
-        tns[i] = confus_mat['tn']
-        fns[i] = confus_mat['fn']
+        if model == "rf_cv":    
+            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RandomForrestEnsemble(pathData, pathLabel, f_select)
+            tps[i] = confus_mat['tp']
+            fps[i] = confus_mat['fp']
+            tns[i] = confus_mat['tn']
+            fns[i] = confus_mat['fn']
 
-        if i == 0:
-            # Initialize impts now as number of features can change
-            impts = np.empty([runs,np.size(impt)], dtype=float)
+            if i == 0:
+                # Initialize impts now as number of features can change
+                ##print("Here are two lengths")
+                ##print(str(np.shape((impt))))
+                ##print(np.size(impt))
+                impts = np.empty([runs,np.size(impt)], dtype=float)
             
-        impts[i,:] = impt
+            impts[i,:] = impt
             
         print("Finished run: " + str(i + 1) + " of " + str(runs) + "\n")
 
@@ -159,13 +144,12 @@ with open(pathData) as f:
     feature_names = f.readline().split(',')
 
 # Write output file
-filename = "{}_{}_{}_{}_{}_{}_{}.txt".format(evl, model, runs,data, label, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+filename = "{}_{}_{}_{}_{}_{}.txt".format(model, runs,data, label, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 f = open(os.path.join(pathResults, filename), 'w')
 
 f.write("MODEL RESULTS for run at: " + filename + "\n\n")
 
 f.write("Model Parameters:-----------------------------------\n")
-f.write("Evaluation: " + evl + "\n")
 f.write("Model: " + model + "\n")
 f.write("Feature selection: " + f_select + "\n")
 f.write("X is: " + pathData + "\n")
@@ -194,13 +178,9 @@ f.write("Top 30 Features by importance, in descending order (1st most important)
 f.write("By position in data matrix, 1 added to skip index=0 \n")
 ##print("Here are the top 30 features...")
 ##print(top_30_features + 1)
-
-if np.sum(avg_impts) != 0:
-    f.write(str(top_30_features + 1) + "\n")
-    for i in range(len(top_30_features)): f.write(feature_names[top_30_features[i] + 1] + "\n")
-    f.write("\n")
-else:
-    f.write("Code does not support feature for this model at this time\n")
+f.write(str(top_30_features + 1) + "\n")
+for i in range(len(top_30_features)): f.write(feature_names[top_30_features[i] + 1] + "\n")
+f.write("\n")
 ##f.write(str(feature_names[top_30_features + 1]) + "\n")
 
 f.write("Statistical Significance:----------------------------\n")
