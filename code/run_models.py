@@ -17,8 +17,7 @@ from scipy.stats import ttest_1samp
 import datetime
 import numpy as np
 ##from randomForrests_cv import RandomForrestEnsemble
-from run_cv_model import RunCVModel
-from run_extval_model import RunExtValModel
+from run_model import RunModel
 
 
 startTime = datetime.datetime.now()
@@ -29,11 +28,11 @@ startTime = datetime.datetime.now()
 
 # Parameters
 pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
-runs = 10
+runs = 2
 
 # Evaluation
-##evl = "cv"
-evl = "extval"
+evl = "cv"
+#evl = "extval"
 
 # Model
 model = "rf"
@@ -45,8 +44,8 @@ model = "rf"
 
 f_select =  "all" #chi, elas
 #f_select = "elas"
-#data = "full_trd"
-data = "X_ovlap_resp" # For external validation
+data = "X_full_trd"
+#data = "X_ovlap_resp" # For external validation
 #data = "X_top30_trd"
 #data = "X_top10_trd"
 #data = "X_top30_resp"
@@ -59,8 +58,9 @@ data = "X_ovlap_resp" # For external validation
 #data = "ovlap_trd"
 #data = "X_full_resp"
 #data = "X_ful_resp_trdcrit"
-#label = "y_all_trd"
-label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
+
+label = "y_all_trd"
+#label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
 #label = "y_ful_resp_trdcrit"
 
 if data == "X_full_trd":
@@ -130,11 +130,9 @@ feats = np.zeros(runs) # Average number of the average number of features used p
 
 
 for i in range(runs):
-        if evl == "cv":
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RunCVModel(pathData, pathLabel, f_select, model)
-        elif evl == "extval":
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RunExtValModel(pathData, pathLabel, f_select, model)
-            
+        
+        accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat = RunModel(pathData, pathLabel, f_select, model, evl)
+   
         tps[i] = confus_mat['tp']
         fps[i] = confus_mat['fp']
         tns[i] = confus_mat['tn']

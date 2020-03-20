@@ -6,20 +6,26 @@ Yihan, John-Hose, Teyden
 
 from utility import subsample
 from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.metrics import confusion_matrix
+import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import KFold
 import numpy as np
 
 
-def RandomForrestEnsemble(pathData, pathLabel, f_select):
+def RunModel(pathData, pathLabel, f_select, model, evl):
     """ Train an ensemble of trees and report the accuracy as they did in the paper
     """
-    ##pathData = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\X_lvl2_rem_qids01__final.csv'
-    ##pathLabel = r'C:\Users\y374zhou\Documents\GitHub\antidep-project\code\data\y_lvl2_rem_qids01__final.csv'
+    testData = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/X_test_cb_extval.csv'
+    testLabel = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/y_test_cv_extval.csv'
+    
     # read data and chop the header
+    X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
+    y_test = np.genfromtxt(testLabel, delimiter=',')[1:,1]
+    
     X = np.genfromtxt(pathData, delimiter=',')
     y = np.genfromtxt(pathLabel, delimiter=',')[1:,1]
     X = X[1:,1:]
@@ -45,8 +51,15 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
     
     for train_index, test_index in kf.split(X):
         print("Fold:", j)
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+        
+        if evl == 'cv':
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+        elif evl == 'extval':
+            X_train, _ = X[train_index], X[test_index]
+            y_train, _ = y[train_index], y[test_index]
+        else:
+            Exception("Invalid evaluation type provided, must be cv or extval")
 
         # Feature selection
         if f_select == "chi":
@@ -60,7 +73,6 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
             
         # Array to store the importance of features, whether feature was used, and an int to stores number of features per classifier
         feature_importance = np.zeros(len(features))
-        ##features_used = np.zeros(len(features))
         features_n_fold = 0
         
         # Subsampling data
@@ -71,38 +83,63 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
         ensemble_n = 30
         clf = [None]*ensemble_n
         for i in range(ensemble_n):
-            clf[i] = RandomForestClassifier(n_estimators=50, n_jobs = -1)
-            clf[i].fit(training[i][:,features],label[i])
-            #clf[i].fit(training[i],label[i])
+            if model == "rf":
+                clf[i] = RandomForestClassifier(n_estimators=50, n_jobs = -1)
+                clf[i].fit(training[i][:,features],label[i])
+
+            elif model == "elnet":
+                clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=50, alpha=0.01, l1_ratio=0.15)
+                clf[i].fit(training[i][:,features],label[i])
+
+            elif model == "gbdt":
+                clf[i] = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=0)
+                clf[i].fit(training[i][:,features],label[i])
+
+            elif model == 'l2logreg':
+                clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5)
+                clf[i].fit(training[i][:,features],label[i])
+                
+            elif model == "xgbt":
+                param = {'nthread':5, 'booster': 'gbtree', 'max_depth':3, 'eta':0.1, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'lambda':0.5, 'lambda_bias': 0.5, 'subsample' : 1}
+                num_round = 5            
+                dtrain = xgb.DMatrix(training[i][:,features], label=label[i])
+                bst = xgb.train(param, dtrain, num_round)
+                clf[i] = bst
+
 
         # Prediction
         n = X_test.shape[0]
-        # calculting the average probabilty of each class, as well as feature use/importance
-        pred_prob = np.zeros((n,2))
-        for i in range(ensemble_n):
-            pred_prob += clf[i].predict_proba(X_test[:,features])
-            #pred_prob += clf[i].predict_proba(X_test)
-            feature_importance += clf[i].feature_importances_
-            ##print(np.count_nonzero(clf[i].feature_importances_))
-            ##print(np.count_nonzero(features_used_in_rf(clf[i],  len(features))))
-            features_n_fold += np.count_nonzero(clf[i].feature_importances_) 
-            #features_used += features_used_in_rf(clf[i],  len(features))
+        if model == "xgbt":
+            pred_prob = np.zeros((n,))
+            dtest = xgb.DMatrix(X_test[:,features], label=y_test)
+        else:
+            pred_prob = np.zeros((n,2))
             
-            #Testing
-            if 1 == 2:
-                indic, n_nodes_ptr = clf[i].decision_path(X_test[:,features])
-                #f.write(str(indic.todense().shape))
-                #f.write(str(n_nodes_ptr))
-                #print(indic)
-                #print(n_nodes_ptr)
-                raise ValueError("Testing complete")
+        # calculting the average probabilty of each class, as well as feature use/importance
+        for i in range(ensemble_n):
+            if model == "xgbt":
+                pred_prob += clf[0].predict(dtest)
+            else:
+                pred_prob += clf[i].predict_proba(X_test[:,features])
+            if model == "rf" or model == "gdbt":
+                # Feature Importance for tree-based methods in sklearn
+                feature_importance += clf[i].feature_importances_
+                features_n_fold += np.count_nonzero(clf[i].feature_importances_) 
+            elif model == "elnet" or model == "l2logreg":
+                # Feature importance for linear methods in sklearn                
+                feature_importance += clf[i].coef_.flatten()
+                features_n_fold += np.count_nonzero(clf[i].coef_) 
+                
             
         pred_prob = pred_prob/ensemble_n
-        ##print("Feature importance is:", featureimportance)
         # Pick the class with the greastest probability to be the prediction
-        pred = np.argmax(pred_prob,axis=1)
-        y_score = pred_prob[:,1]
-    
+        if model == "xgbt":
+            pred = (pred_prob>=0.5)
+            y_score = pred_prob
+        else:
+            pred = np.argmax(pred_prob,axis=1)
+            y_score = pred_prob[:,1]
+
         # Store performance metrics accuracy and draw ROC curve
         auc[j-1] = drawROC(y_test, y_score)
         bscore[j-1] = balanced_accuracy_score(y_test, pred)
@@ -155,25 +192,27 @@ def RandomForrestEnsemble(pathData, pathLabel, f_select):
     
     return(avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance, confus_mat)
     
-def features_used_in_rf(rf_clf, n_of_features):
-    """
-    Takes in a random forest classifier, the number of features for this model
-    
-    Returns an array as long as number of features, with how many times a feature was used as node in any 
-    of the decision trees in this random forest classifier
-    
-    Ordering of features is same as order in X
-    
-    Function currently unsed as checking for feature_importance_ non-zeros leads to what wanted to use this for anyways
-    
-    
-    """
-    features_used_in_rf = np.zeros(n_of_features)
-    
-    for tree in rf_clf:
-        for feature in tree.tree_.feature:
-            if feature != -2:
-                features_used_in_rf[feature] += 1
-            
-    return features_used_in_rf
+# =============================================================================
+# def features_used_in_rf(rf_clf, n_of_features):
+#     """
+#     Takes in a random forest classifier, the number of features for this model
+#     
+#     Returns an array as long as number of features, with how many times a feature was used as node in any 
+#     of the decision trees in this random forest classifier
+#     
+#     Ordering of features is same as order in X
+#     
+#     Function currently unsed as checking for feature_importance_ non-zeros leads to what wanted to use this for anyways
+#     
+#     
+#     """
+#     features_used_in_rf = np.zeros(n_of_features)
+#     
+#     for tree in rf_clf:
+#         for feature in tree.tree_.feature:
+#             if feature != -2:
+#                 features_used_in_rf[feature] += 1
+#             
+#     return features_used_in_rf
+# =============================================================================
     
