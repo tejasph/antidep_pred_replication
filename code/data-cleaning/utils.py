@@ -1,5 +1,5 @@
 import numpy as np
-
+from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION
 import stard_globals as stard_gls
 
 def is_empty_value(val):

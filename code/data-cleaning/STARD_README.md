@@ -1,4 +1,4 @@
-## Explanation of the processed data files
+## Explanation of the STAR*D processed data files
 
 #### Processing was broken up into 5 major steps, in this following order:
 

@@ -2,17 +2,10 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-from sklearn.metrics import confusion_matrix
-from collections import namedtuple
-
-import warnings
 
 from utils import *
-from canbind_globals import VALUE_CONVERSION_MAP_IMPUTE, NEW_FEATURES
+from canbind_globals import VALUE_CONVERSION_MAP_IMPUTE
 from stard_preprocessing_manager import replace_with_median, replace 
-#from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, BLACK_LIST_SCALES, SCALES, VALUE_CONVERSION_MAP, \
-#    VALUE_CONVERSION_MAP_IMPUTE, NEW_FEATURES
-
 """
 Takes in can_bind data matrix containing blanks (produced by canbind_data_processor), imputes the blanks, and then imputes new features
 """
@@ -43,25 +36,25 @@ def impute(data_dir):
                                  'SDS_2_1_baseline',
                                  'SDS_3_1_baseline',]
                     if np.isnan(row['SDS_TOT_baseline']):
-                        df.set_value(i, 'SDS_TOT_baseline', np.sum(row[col_names]))
+                        df.at[i, 'SDS_TOT_baseline'] =  np.sum(row[col_names])
         if 'SDS_FUNC_RESP_baseline' in row:
                     col_names = ['SDS_1_1_baseline',
                                  'SDS_2_1_baseline',
                                  'SDS_3_1_baseline',]
                     if np.isnan(row['SDS_FUNC_RESP_baseline']):
                         if (row['SDS_TOT_baseline'] <= 12) and (row[col_names] <= 4):
-                            df.set_value(i, 'SDS_FUNC_RESP_baseline', 1)
+                            df.at[i, 'SDS_FUNC_RESP_baseline'] = 1
                         else:
-                            df.set_value(i, 'SDS_FUNC_RESP_baseline', 0)
+                            df.at[i, 'SDS_FUNC_RESP_baseline'] = 0
         if 'SDS_FUNC_REMISS_baseline' in row:
                     col_names = ['SDS_1_1_baseline',
                                  'SDS_2_1_baseline',
                                  'SDS_3_1_baseline',]
                     if np.isnan(row['SDS_FUNC_REMISS_baseline']):
                         if (row['SDS_TOT_baseline'] <= 6) and (row[col_names] <= 2):
-                            df.set_value(i, 'SDS_FUNC_REMISS_baseline', 1)
+                            df.at[i, 'SDS_FUNC_REMISS_baseline'] = 1
                         else:
-                            df.set_value(i, 'SDS_FUNC_REMISS_baseline', 0)
+                            df.at[i, 'SDS_FUNC_REMISS_baseline'] = 0
         if 'MADRS_TOT_PRO_RATED_baseline' in row:
                     col_names = ['MADRS_APRNT_SDNS_baseline',
                                  'MADRS_CONC_DFCTY_baseline',
@@ -74,17 +67,17 @@ def impute(data_dir):
                                  'MADRS_RPTRD_SDNS_baseline',
                                  'MADRS_SUICDL_THTS_baseline',]
                     if np.isnan(row['MADRS_TOT_PRO_RATED_baseline']):
-                        df.set_value(i, 'MADRS_TOT_PRO_RATED_baseline', np.sum(row[col_names]))
+                        df.at[i, 'MADRS_TOT_PRO_RATED_baseline'] = np.sum(row[col_names])
                     	
     # Write output file
     output_file_name = data_dir + "/" + 'canbind_imputed.csv'
     df.to_csv(output_file_name)
     
 
-impute(r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto')
-
 if __name__ == "__main__":
     if len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         impute(sys.argv[1])
+    elif len(sys.argv) == 0:
+        impute(r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto')
     else:
         print("Enter valid path to the dir with canbind input file \n")
