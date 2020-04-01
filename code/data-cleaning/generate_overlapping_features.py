@@ -42,7 +42,7 @@ def convert_stard_to_overlapping(output_dir=""):
             for i, row in df.iterrows():
                 # phx01__alcoh set 1 if either 1
                 if row["phx01__alcoh||2.0"] == 1:
-                    df.set_value(i, "phx01__alcoh||1.0", 1)
+                    df.at[i, "phx01__alcoh||1.0"] = 1
                 # phx01__bulimia||2/5: set 1 if any of bulimia one-hots
                 bullemias = ['phx01__bulimia||3','phx01__bulimia||4']
                 set_if_found_in_others(i,row,'phx01__bulimia||2/5',bullemias,1, df)
@@ -60,21 +60,21 @@ def convert_stard_to_overlapping(output_dir=""):
                 #dm01_w0__totincom: Converts monthly usd old income to current CAD, and then categorizes per canbind     
                 totincom_convert = row["dm01_w0__totincom"]*12*1.25*1.19 #Converts to annual, then inflation, then USDtoCAD
                 if totincom_convert <10000:
-                    df.set_value(i, "dm01_w0__totincom", 1)
+                    df.at[i, "dm01_w0__totincom"] = 1
                 elif totincom_convert <25000:
-                    df.set_value(i, "dm01_w0__totincom", 2)
+                    df.at[i, "dm01_w0__totincom"] = 2
                 elif totincom_convert <50000:
-                    df.set_value(i, "dm01_w0__totincom", 3)
+                    df.at[i, "dm01_w0__totincom"] = 3
                 elif totincom_convert <75000:
-                    df.set_value(i, "dm01_w0__totincom", 4)
+                    df.at[i, "dm01_w0__totincom"] = 4
                 elif totincom_convert <100000:
-                    df.set_value(i, "dm01_w0__totincom", 5)
+                    df.at[i, "dm01_w0__totincom"] = 5
                 elif totincom_convert <150000:
-                    df.set_value(i, "dm01_w0__totincom", 6)
+                    df.at[i, "dm01_w0__totincom"] = 6
                 elif totincom_convert <200000:
-                    df.set_value(i, "dm01_w0__totincom", 7)
+                    df.at[i, "dm01_w0__totincom"] = 7
                 elif totincom_convert >=200000:
-                    df.set_value(i, "dm01_w0__totincom", 8)
+                    df.at[i, "dm01_w0__totincom"] = 8
                 
                 # Add in new features
                 add_new_imputed_features_stard(df, row, i) # fill in new features
@@ -108,9 +108,12 @@ def convert_canbind_to_overlapping(output_dir=""):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    # df = pd.read_csv(file_path)
     orig_df = pd.read_csv(output_dir + "/canbind_imputed.csv")
-    df = orig_df.drop(["Unnamed: 0"], axis=1)
+    # Drop index column in present
+    if "Unnamed: 0"in orig_df: 
+        df = orig_df.drop(["Unnamed: 0"], axis=1)
+    else:
+        df = orig_df
 
     # Take whitelist columns first
     df = df[CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]
@@ -133,15 +136,15 @@ def convert_canbind_to_overlapping(output_dir=""):
         elif case == "other":
             for i, row in df.iterrows():
                 if row["MINI_SBSTNC_DPNDC_NONALCHL_TIME"] == 1:
-                    df.set_value(i, "MINI_SBSTNC_ABUSE_NONALCHL_TIME", 1)
+                    df.at[i, "MINI_SBSTNC_ABUSE_NONALCHL_TIME"] = 1
                 if row["MINI_ALCHL_DPNDC_TIME"] == 1:
-                    df.set_value(i, "MINI_ALCHL_ABUSE_TIME", 1)
+                    df.at[i, "MINI_ALCHL_ABUSE_TIME"] = 1
                 if row["MINI_AN_TIME"] == 1:
-                    df.set_value(i, "MINI_AN_BINGE_TIME", 1)
+                    df.at[i, "MINI_AN_BINGE_TIME"] = 1
                 if (row['EMPLOY_STATUS_6.0'] == 1) or (row['EMPLOY_STATUS_3.0'] == 1):
-                    df.set_value(i, "EMPLOY_STATUS_1.0", 1)
+                    df.at[i, "EMPLOY_STATUS_1.0"] = 1
                 if row['EMPLOY_STATUS_4.0'] == 1:
-                    df.set_value(i, "EMPLOY_STATUS_2.0", 1)
+                    df.at[i, "EMPLOY_STATUS_2.0"] = 1
                 add_new_imputed_features_canbind(df, row, i) # fill in new features
     
     # Drop columns that were used for calcs above
@@ -161,11 +164,9 @@ def convert_canbind_to_overlapping(output_dir=""):
         if not (':::' in header):
             print('Warning! Likely unwanted column in output: ' + header)
     
-    
     # Sort and output
     df = df.reset_index(drop=True)
-    df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices
-    #df = df.sort_values(by=['SUBJLABEL:::subjectkey'])    
+    df = df.sort_index(axis=1) # Newly added, sorts columns alphabetically so same for both matrices   
     df = df.set_index(['SUBJLABEL:::subjectkey'])
     df.to_csv(output_dir + "/X_test_cb_extval.csv",index=True)
 
@@ -175,11 +176,11 @@ def add_new_imputed_features_canbind(df, row, i):
     # imput_anyanxiety
     imput_anyanxiety = ['MINI_PTSD_TIME', 'MINI_PD_DX', 'MINI_AGRPHOBIA_TIME', 'MINI_SOCL_PHOBIA_DX', 'MINI_GAD_TIME']
     val = 1 if sum(row[imput_anyanxiety] == 1) > 0 else 0
-    df.set_value(i, ':::imput_anyanxiety', val)
+    df.at[i, ':::imput_anyanxiety'] = val
         
     # imput_QIDS_SR_perc_change
     val = round((row[Q_DICT_C['qids01_w2sr__qstot']] - row[Q_DICT_C['qids01_w0sr__qstot']]) / row[Q_DICT_C['qids01_w0sr__qstot']] if row[Q_DICT_C['qids01_w0sr__qstot']] else 0, 3)
-    df.set_value(i, 'imput_QIDS_SR_perc_change:::', val)
+    df.at[i, 'imput_QIDS_SR_perc_change:::'] = val
     
     # Imputed new QIDS features
     for time in ['week0','week2']: 
@@ -187,38 +188,38 @@ def add_new_imputed_features_canbind(df, row, i):
         
         # imput_QIDS_SR_sleep_domain
         val = round(np.nanmax(list(row[['QIDS_SR_1_' + time2,'QIDS_SR_2_' + time2,'QIDS_SR_3_' + time2,'QIDS_SR_4_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_sleep_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_sleep_domain_' + time + ':::'] = val
 
         # imput_QIDS_SR_appetite_domain
         val = round(np.nanmax(list(row[['QIDS_SR_6_' + time2,'QIDS_SR_7_' + time2,'QIDS_SR_8_' + time2,'QIDS_SR_9_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_appetite_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_appetite_domain_' + time + ':::'] = val
         
         # imput_QIDS_SR_psychomot_domain
         val = round(np.nanmax(list(row[['QIDS_SR_15_' + time2,'QIDS_SR_16_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::'] = val
         
         # imput_QIDS_SR_overeating
         val = round(np.nanmax(list(row[['QIDS_SR_7_' + time2,'QIDS_SR_9_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_overeating_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_overeating_' + time + ':::'] = val
 
         # imput_QIDS_SR_insomnia
         val = round(np.nanmax(list(row[['QIDS_SR_1_' + time2,'QIDS_SR_2_' + time2,'QIDS_SR_3_' + time2]])))
-        df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_insomnia_' + time + ':::'] = val
 
 def add_new_imputed_features_stard(df, row, i):
     
     # imput_anyanxiety
     imput_anyanxiety = ['phx01__psd', 'phx01__pd_noag', 'phx01__pd_ag', 'phx01__soc_phob', 'phx01__gad_phx','phx01__specphob']
     val = 1 if sum(row[imput_anyanxiety] == 1) > 0 else 0
-    df.set_value(i, ':::imput_anyanxiety', val)
+    df.at[i, ':::imput_anyanxiety'] = val
         
     # imput_QIDS_SR_perc_change
     val = round((row['qids01_w2sr__qstot'] - row['qids01_w0sr__qstot']) / row['qids01_w0sr__qstot'] if row['qids01_w0sr__qstot'] else 0, 3)
-    df.set_value(i, 'imput_QIDS_SR_perc_change:::', val)
+    df.at[i, 'imput_QIDS_SR_perc_change:::'] = val
     
     # PSYHIS_MDD_PREV:::
     val = 1 if row['phx01__epino'] >= 2 else 0
-    df.set_value(i, 'PSYHIS_MDD_PREV:::', val)
+    df.at[i, 'PSYHIS_MDD_PREV:::'] = val
     
     # 'QLESQA_TOT_QLESQB_TOT_merged:::'
     val = 0
@@ -226,7 +227,7 @@ def add_new_imputed_features_stard(df, row, i):
         str_j = str(j)
         str_j = "0" + str_j if j < 10 else str_j
         val = val + row['qlesq01__qlesq' + str_j]
-    df.set_value(i, 'QLESQA_TOT_QLESQB_TOT_merged:::', val)
+    df.at[i, 'QLESQA_TOT_QLESQB_TOT_merged:::'] = val
     
     # Imputed new QIDS features
     for time in ['week0','week2']: 
@@ -235,27 +236,27 @@ def add_new_imputed_features_stard(df, row, i):
         
         # imput_QIDS_SR_sleep_domain
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2],Q_DICT_S['QIDS_SR_4_' + time2]]])))
-        df.set_value(i, 'imput_QIDS_SR_sleep_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_sleep_domain_' + time + ':::'] = val
 
         # imput_QIDS_SR_appetite_domain
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_6_' + time2],Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_8_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
-        df.set_value(i, 'imput_QIDS_SR_appetite_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_appetite_domain_' + time + ':::'] = val
         
         # imput_QIDS_SR_psychomot_domain
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_15_' + time2],Q_DICT_S['QIDS_SR_16_' + time2]]])))
-        df.set_value(i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_psychomot_domain_' + time + ':::'] = val
         
         # imput_QIDS_SR_overeating
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_7_' + time2],Q_DICT_S['QIDS_SR_9_' + time2]]])))
-        df.set_value(i, 'imput_QIDS_SR_overeating_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_overeating_' + time + ':::'] = val
 
         # imput_QIDS_SR_insomnia
         val = round(np.nanmax(list(row[[Q_DICT_S['QIDS_SR_1_' + time2],Q_DICT_S['QIDS_SR_2_' + time2],Q_DICT_S['QIDS_SR_3_' + time2]]])))
-        df.set_value(i, 'imput_QIDS_SR_insomnia_' + time + ':::', val)
+        df.at[i, 'imput_QIDS_SR_insomnia_' + time + ':::'] = val
         
         # imput_QIDS_SR_ATYPICAL
         val = round(np.sum(list(row[['qids01_' + time3 + 'sr__vhysm','qids01_' + time3 + 'sr__vapin', 'qids01_' + time3 + 'sr__vwtin', 'qids01_' + time3 + 'sr__vengy']])))
-        df.set_value(i, 'QIDS_ATYPICAL_' + time2 + ':::', val)
+        df.at[i, 'QIDS_ATYPICAL_' + time2 + ':::'] = val
 
 def set_if_found_in_others(i,row,to_set, others, val, df):
     """
@@ -267,7 +268,7 @@ def set_if_found_in_others(i,row,to_set, others, val, df):
     for c in others:
         other_val = int(row[c])
         if other_val ==1:
-            df.set_value(i, to_set, val)
+            df.at[i, to_set] = val
         elif other_val ==0:
             continue
         else:
@@ -279,7 +280,7 @@ def check_missing_values(df):
         print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
 
-convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto")
+convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_test")
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":

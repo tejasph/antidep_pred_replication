@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import sys
 
-from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAMES_WHITELIST_PSYHIS, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT, COL_NAMES_BLACKLIST_PSYHIS, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS
+from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAMES_WHITELIST_PSYHIS, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS
 from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION
 from canbind_utils import get_event_based_value, aggregate_rows, finalize_blacklist, one_hot_encode, merge_columns, add_columns_to_blacklist
 from canbind_utils import is_number, replace_target_col_values, replace_target_col_values_to_be_refactored, collect_columns_to_extend
@@ -21,8 +21,10 @@ This will output a single CSV file containing the y-matrix
 
 The method expects CSV files to be contained within their own subdirectories from the root directory, as is organized
 in the ZIP provided.
+
+TODO: Could eliminate most of this function as only the QIDS columns are really used, but code runs quick anyways
 """
-def ygen(root_dir):
+def ygen(root_dir, debug=False):
     global UNIQ_COLUMNS
     global COL_NAMES_CATEGORICAL
     global COL_NAMES_NA
@@ -31,9 +33,6 @@ def ygen(root_dir):
     global NUM_DATA_ROWS
     global NUM_DATA_COLUMNS
 
-    global COL_NAMES_BLACKLIST_PSYHIS
-    global COL_NAMES_BLACKLIST_DARS
-    global COL_NAMES_BLACKLIST_SHAPS
     global COL_NAMES_DARS_TO_CONVERT
 
     uniq_columns = {}
@@ -125,7 +124,7 @@ def ygen(root_dir):
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
 
     # Back up full merged file for debugging purposes
-    merged_df.to_csv(root_dir + "/merged-data.unprocessed_ygen.csv")
+    if debug: merged_df.to_csv(root_dir + "/merged-data.unprocessed_ygen.csv")
 
     #### FILTER ROWS AND COLUMNS ####
 
@@ -196,10 +195,10 @@ def ygen(root_dir):
     
     
     y_df = merged_df[['SUBJLABEL','QIDS_RESP_WK8']]
-    y_df.to_csv(root_dir + "/canbind-targets.csv", index=False)
+    y_df.to_csv(root_dir + "/canbind_targets.csv", index=False)
     
     # Save the version containing NaN values just for debugging, not otherwise used
-    merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks-ygen.csv")
+    if debug: merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks-ygen.csv")
 
 
 

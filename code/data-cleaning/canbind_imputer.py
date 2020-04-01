@@ -10,8 +10,7 @@ from stard_preprocessing_manager import replace_with_median, replace
 Takes in can_bind data matrix containing blanks (produced by canbind_data_processor), imputes the blanks, and then imputes new features
 """
 def impute(data_dir):
-    #input_file_name = data_dir + "/" + 'canbind-clean-aggregated-data.with-id.contains-blanks-with-qidssr.csv'
-    input_file_name = data_dir + "/" + 'canbind-clean-aggregated-data.with-id.contains-blanks.csv'
+    input_file_name = data_dir + "/" + '/canbind_clean_aggregated.csv'
     
     
     # Read in the csv file
@@ -71,7 +70,7 @@ def impute(data_dir):
                     	
     # Write output file
     output_file_name = data_dir + "/" + 'canbind_imputed.csv'
-    df.to_csv(output_file_name)
+    df.to_csv(output_file_name, index=False)
     
 
 if __name__ == "__main__":

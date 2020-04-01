@@ -5,9 +5,8 @@ import numpy as np
 import re
 import sys
 
-from canbind_globals import COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, EVENTNAME_WHITELIST, ORIGINAL_SCALE_FILENAMES, COL_NAMES_WHITELIST_PSYHIS, COL_NAMES_BLACKLIST_PSYHIS, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS
+from canbind_globals import COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, EVENTNAME_WHITELIST, ORIGINAL_SCALE_FILENAMES, COL_NAMES_WHITELIST_PSYHIS, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS
 from canbind_globals import COL_NAME_GROUP, GROUP_WHITELIST, VALUE_REPLACEMENT_MAPS, QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, COLLISION_MANAGER
-#from utils import ORIGINAL_SCALE_FILENAMES
 from canbind_imputer import impute
 from canbind_ygen import ygen
 from canbind_utils import aggregate_rows, finalize_blacklist, one_hot_encode, merge_columns, add_columns_to_blacklist
@@ -28,7 +27,7 @@ Example usages
         python canbind_preprocessing_manager.py -v+ /path/to/data/folders
 
 
-This will output a single CSV file containing the merged and clean data.
+This will output CSV files containing the merged and clean data.
 
 The method expects CSV files to be contained within their own subdirectories from the root directory, as is organized
 in the ZIP provided.
@@ -41,12 +40,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     global NUM_DATA_FILES
     global NUM_DATA_ROWS
     global NUM_DATA_COLUMNS
-
-    global COL_NAMES_BLACKLIST_PSYHIS
-    global COL_NAMES_BLACKLIST_DARS 
-    global COL_NAMES_BLACKLIST_SHAPS 
-    global COL_NAMES_DARS_TO_CONVERT
-
+    
     uniq_columns = {}
     col_names_categorical = {}
     col_names_na = {}
@@ -136,7 +130,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
 
     # Back up full merged file for debugging purposes
-    merged_df.to_csv(root_dir + "/merged-data.unprocessed.csv")
+    if verbose: merged_df.to_csv(root_dir + "/merged-data.unprocessed.csv")
 
     #### FILTER ROWS AND COLUMNS ####
 
@@ -174,11 +168,12 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     finalize_blacklist()
     merged_df.drop(COL_NAMES_BLACKLIST_UNIQS, axis=1, inplace=True)
     
-    # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
+    # Eliminate invalid subjects in both X and y (those who don't make it to week 8)
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
-    ##print(merged_df)
+    # Convert responder/nonresponder string to binary
     merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
+    # Sort by pt ID
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
     
@@ -186,30 +181,13 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     if merged_df.at[68, 'AGE'] == 16:
         merged_df.at[68, 'AGE'] = 56
         print("Replaced misrecorded age")
-    
-
-    
-    
-    
+        
     # Drop the columns that are used for y
     merged_df = merged_df.drop(["QIDS_RESP_WK8_week 2"], axis=1)
-    ##merged_df = merged_df.rename({"QIDS_RESP_WK8_week 2":"QIDS_RESP_WK8"},axis='columns',errors='raise')
     # Replace "week 2" with "week2" in column names
     merged_df = merged_df.rename(columns=lambda x: re.sub('week 2','week2',x))
-    # Save the version containing NaN values
-    merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks.csv")
-
-    ## Handle imputation with separate file
-    
-    # Replace all NaN values with median for a column
-    ##merged_df_without_blanks = replace_nan_with_median(merged_df)
-
-    # Save the version without NaN values
-    ##merged_df_without_blanks.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.csv")
-
-    # Remove IDs and write to CSVs
-    ##merged_df.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.contains-blanks.csv")
-    ##merged_df_without_blanks.drop([COL_NAME_PATIENT_ID], axis=1).to_csv(root_dir + "/canbind-clean-aggregated-data.csv")
+    # Write the data that has been cleaned and aggregated, contains blanks so needs imputation
+    merged_df.to_csv(root_dir + "/canbind_clean_aggregated.csv", index=False)
 
     if verbose:
         UNIQ_COLUMNS = uniq_columns
@@ -277,7 +255,7 @@ if __name__ == "__main__":
         impute(pathData)
     
     elif len(sys.argv) == 1:
-        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto\\'
+        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_test\\'
         aggregate_and_clean(pathData, verbose=False)
         ygen(pathData)
         impute(pathData)

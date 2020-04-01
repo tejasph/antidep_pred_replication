@@ -15,8 +15,8 @@ from utils import *
 #old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data/canbind_imputed.csv')
 #new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/canbind_imputed.csv')
 # Check overlapping
-old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20201016/2_ExternalValidation/X_test_cb_extval.csv')
-new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_full_auto/X_test_cb_extval.csv')
+old_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/X_test_cb_extval.csv')
+new_canbind = pd.read_csv(r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/canbind_data_test/X_test_cb_extval.csv')
 
 all_columns_found = True
 for col in old_canbind.columns:
