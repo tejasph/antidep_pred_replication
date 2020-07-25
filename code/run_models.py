@@ -63,7 +63,7 @@ data = "X_ful_resp_trdcrit"
 #label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
 label = "y_ful_resp_trdcrit" # Y for response, but using the TRD subject selection criteria 
 
-def run_models(runs, evl, model,f_select, data, label):
+def RunModels(runs, evl, model,f_select, data, label):
     
     if data == "X_full_trd":
         # Full features, y is TRD, replicating Nie et al
