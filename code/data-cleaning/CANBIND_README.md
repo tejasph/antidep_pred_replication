@@ -16,4 +16,3 @@
     - Makes the targets using the raw data 
 	--> canbind_targets.csv
 	
-The final data matrix can be found in aggregated_rows_scales (step 5). If debugging data values, I recommend to search in reverse, opening up the files from the previous step.

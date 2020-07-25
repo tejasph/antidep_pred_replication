@@ -28,7 +28,7 @@ startTime = datetime.datetime.now()
 
 # Parameters
 pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
-runs = 2
+runs = 100
 
 # Evaluation
 evl = "cv"
@@ -44,7 +44,7 @@ model = "rf"
 
 f_select =  "all" #chi, elas
 #f_select = "elas"
-data = "X_full_trd"
+#data = "X_full_trd"
 #data = "X_ovlap_resp" # For external validation
 #data = "X_top30_trd"
 #data = "X_top10_trd"
@@ -57,20 +57,21 @@ data = "X_full_trd"
 #data = "X_top10_ovlap_trd"
 #data = "ovlap_trd"
 #data = "X_full_resp"
-#data = "X_ful_resp_trdcrit"
+data = "X_ful_resp_trdcrit"
 
-label = "y_all_trd"
+#label = "y_all_trd"
 #label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
-#label = "y_ful_resp_trdcrit"
+label = "y_ful_resp_trdcrit" # Y for response, but using the TRD subject selection criteria 
 
 if data == "X_full_trd":
     # Full features, y is TRD, replicating Nie et al
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\X_lvl2_rem_qids01__final.csv'
 elif data == "X_ovlap_resp":
+    # Only features overlapping with CANBIND, with the response subject selection criteria
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\2_ExternalValidation\X_train_stard_extval.csv'
 elif data == "X_ovlap_trd":
+    # Only features overlapping with CANBIND, with the TRD subject selection criteria
     pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_overlapping_for_trd\X_overlap_trd.csv'
-
 elif data == "X_top30_trd":
     pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_trd.csv"
 elif data == "X_top10_trd":    
@@ -98,6 +99,7 @@ elif data == "X_full_resp":
     # Full features, for all those in the response y (n~3000)
     pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/1a_ReplicationWithResponse/X_wk8_response_qids01__final.csv"    
 elif data == "X_ful_resp_trdcrit":
+    # Full features, response subject selection, used for the TRD y label, but would be same as the full, response subject selection above.  
     pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/X_full_resp_trdcrit.csv"    
     
     
