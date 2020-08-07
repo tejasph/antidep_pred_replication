@@ -15,22 +15,16 @@ if __name__ == "__main__":
     
     # Table for investigating decreased performance of external validation
     # Output for the model change table, third row only changing the target
-    RunModels(2, "cv", "rf", "all", "X_ful_resp_trdcrit", "y_ful_resp_trdcrit")
+    ## RunModels(runs, "cv", "rf", "all", "X_ful_resp_trdcrit", "y_ful_resp_trdcrit")
     # Output for the model change table, fourth changing the target and inclusion criteria
-    RunModels(2, "cv", "rf", "all", "X_full_resp", "y_ovlap_resp")    
+    ## RunModels(runs, "cv", "rf", "all", "X_full_resp", "y_ovlap_resp")    
 
     
     # Replication table
-    for model in ['rf', 'gbdt', "l2logreg", "xgbt"]:
-        for f_select in ["all","chi", "elas"]:
+    for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
+        for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
             RunModels(runs, "cv", model, f_select, "X_full_trd", "y_all_trd")
         
-    
-
-
-    
-    
-    
     
     print("Ran all succesfully!")
     
