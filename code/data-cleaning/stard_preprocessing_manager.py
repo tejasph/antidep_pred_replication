@@ -482,7 +482,7 @@ def handle_replace_if_row_null(df, col_name):
             continue
         # But if there are non-empty values, then convert the col_name value to 0
         else:
-            df.at[i, col_name] == 0
+            df.at[i, col_name] = 0
     return df
 
 def aggregate_rows(root_data_dir_path):
@@ -629,11 +629,11 @@ def impute(root_data_dir_path):
                     else:
                         gender = gender_series.iloc[0]
                         if gender == "M":
-                            agg_df.at[i, 'gender||F'] == 0
-                            agg_df.at[i, 'gender||M'] == 1
+                            agg_df.at[i, 'gender||F'] = 0
+                            agg_df.at[i, 'gender||M'] = 1
                         elif gender == "F" or np.isnan(gender):
-                            agg_df.at[i, 'gender||F'] == 1
-                            agg_df.at[i, 'gender||M'] ==  0
+                            agg_df.at[i, 'gender||F'] = 1
+                            agg_df.at[i, 'gender||M'] =  0
             if 'interview_age' in row and np.isnan(row['interview_age']):
                 age_series = crs01_df.loc[crs01_df['subjectkey'] == row['subjectkey']]['interview_age']
                 if len(age_series) == 0:
@@ -643,45 +643,45 @@ def impute(root_data_dir_path):
                     age = age_series.iloc[0]
                     if np.isnan(age):
                         print("Age is null", row["subjectkey"])
-                        agg_df.at[i, 'interview_age'] ==  agg_df['interview_age'].median()
+                        agg_df.at[i, 'interview_age'] =  agg_df['interview_age'].median()
                     else:
-                        agg_df.at[i, 'interview_age'] ==  age
+                        agg_df.at[i, 'interview_age'] =  age
             if 'ucq01__ucq010' in row:
                 val = row['ucq01__ucq010']
                 #if row['ucq01__ucq010'] == 0:
                 #    val = 0
                 if np.isnan(row['ucq01__ucq020']):
-                    agg_df.at[i, 'ucq01__ucq020'] == val
+                    agg_df.at[i, 'ucq01__ucq020'] = val
                 if np.isnan(row['ucq01__ucq030']):
-                    agg_df.at[i, 'ucq01__ucq030'] ==  val
+                    agg_df.at[i, 'ucq01__ucq030'] =  val
             if 'wpai01__wpai01' in row:
                 if row['wpai01__wpai01'] == 1:
                     if np.isnan(row['dm01_w0__inc_curr']):
-                        agg_df.at[i, 'dm01_w0__inc_curr'] ==  1
+                        agg_df.at[i, 'dm01_w0__inc_curr'] =  1
                     if np.isnan(row['dm01_w0__mempl']):
-                        agg_df.at[i, 'dm01_w0__mempl'] == 2000
+                        agg_df.at[i, 'dm01_w0__mempl'] = 2000
                     if np.isnan(row['dm01_enroll__empl||1.0']):
-                        agg_df.at[i, 'dm01_enroll__empl||1.0'] ==  0
+                        agg_df.at[i, 'dm01_enroll__empl||1.0'] =  0
                     if np.isnan(row['dm01_enroll__empl||3.0']):
-                        agg_df.at[i, 'dm01_enroll__empl||3.0'] == 1
+                        agg_df.at[i, 'dm01_enroll__empl||3.0'] = 1
                     if np.isnan(row['dm01_enroll__privins||0.0']):
-                        agg_df.at[i, 'dm01_enroll__privins||0.0'] == 0
+                        agg_df.at[i, 'dm01_enroll__privins||0.0'] = 0
                     if np.isnan(row['dm01_enroll__privins||1.0']):
-                        agg_df.at[i, 'dm01_enroll__privins||1.0'] ==  1
+                        agg_df.at[i, 'dm01_enroll__privins||1.0'] =  1
 
                 elif row['wpai01__wpai01'] == 0 or np.isnan(row['wpai01__wpai01']):
                     if np.isnan(row['dm01_w0__inc_curr']):
-                        agg_df.at[i, 'dm01_w0__inc_curr'] == 0
+                        agg_df.at[i, 'dm01_w0__inc_curr'] = 0
                     if np.isnan(row['dm01_w0__mempl']):
-                        agg_df.at[i, 'dm01_w0__mempl'] ==  0
+                        agg_df.at[i, 'dm01_w0__mempl'] =  0
                     if np.isnan(row['dm01_enroll__empl||1.0']):
-                        agg_df.at[i, 'dm01_enroll__empl||1.0'] == 1
+                        agg_df.at[i, 'dm01_enroll__empl||1.0'] = 1
                     if np.isnan(row['dm01_enroll__privins||1.0']):
-                        agg_df.at[i, 'dm01_enroll__privins||1.0'] == 0
+                        agg_df.at[i, 'dm01_enroll__privins||1.0'] = 0
                     if np.isnan(row['dm01_enroll__empl||3.0']):
-                        agg_df.at[i, 'dm01_enroll__empl||3.0'] == 0
+                        agg_df.at[i, 'dm01_enroll__empl||3.0'] = 0
                     if np.isnan(row['dm01_enroll__privins||0.0']):
-                        agg_df.at[i, 'dm01_enroll__privins||0.0'] == 1    
+                        agg_df.at[i, 'dm01_enroll__privins||0.0'] = 1    
 
                 else:
                     # Above two scenarios should handle all, print message if wpai is something else
@@ -692,7 +692,7 @@ def impute(root_data_dir_path):
                     ##agg_df.set_value(i, 'dm01_enroll__privins||1.0', 0)
             if 'wsas01__totwsas' in row and np.isnan(row['wsas01__totwsas']):
                 col_names = ['wsas01__wsas01','wsas01__wsas02', 'wsas01__wsas03', 'wsas01__wsas04', 'wsas01__wsas05']
-                agg_df.at[i, 'wsas01__totwsas'] ==  np.sum(row[col_names])
+                agg_df.at[i, 'wsas01__totwsas'] = np.sum(row.reindex(col_names))
             if 'hrsd01__hdtot_r' in row and np.isnan(row['hrsd01__hdtot_r']):
                 col_names = ['hrsd01__hsoin',
                              'hrsd01__hmnin',
@@ -711,34 +711,32 @@ def impute(root_data_dir_path):
                              'hrsd01__hslow',
                              'hrsd01__hagit',
                              'hrsd01__hsex']
-                #test = row[col_names]
-                test = row.reindex([col_names])
-                print('we passed the test')
-                agg_df.at[i, 'hrsd01__hdtot_r'] == np.sum(row[col_names])
+
+                agg_df.at[i, 'hrsd01__hdtot_r'] = np.sum(row.reindex(col_names))
             if 'qids01_w0sr__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w0sr__vsoin", "qids01_w0sr__vmnin", "qids01_w0sr__vemin", "qids01_w0sr__vhysm"]])) \
                 + np.nanmax(list(row[["qids01_w0sr__vapdc", "qids01_w0sr__vapin", "qids01_w0sr__vwtdc", "qids01_w0sr__vwtin"]])) \
                 + np.nanmax(list(row[["qids01_w0sr__vslow", "qids01_w0sr__vagit"]])) \
                 + np.sum(row[["qids01_w0sr__vmdsd", "qids01_w0sr__vengy", "qids01_w0sr__vintr", "qids01_w0sr__vsuic", "qids01_w0sr__vvwsf", "qids01_w0sr__vcntr"]])
-                agg_df.at[i, 'qids01_w0sr__qstot'] ==  value
+                agg_df.at[i, 'qids01_w0sr__qstot'] =  value
             if 'qids01_w2sr__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w2sr__vsoin", "qids01_w2sr__vmnin", "qids01_w2sr__vemin", "qids01_w2sr__vhysm"]])) \
                 + np.nanmax(list(row[["qids01_w2sr__vapdc", "qids01_w2sr__vapin", "qids01_w2sr__vwtdc", "qids01_w2sr__vwtin"]])) \
                 + np.nanmax(list(row[["qids01_w2sr__vslow", "qids01_w2sr__vagit"]])) \
                 + np.sum(row[["qids01_w2sr__vmdsd", "qids01_w2sr__vengy", "qids01_w2sr__vintr", "qids01_w2sr__vsuic", "qids01_w2sr__vvwsf", "qids01_w2sr__vcntr"]])
-                agg_df.at[i, 'qids01_w2sr__qstot'] ==  value
+                agg_df.at[i, 'qids01_w2sr__qstot'] =  value
             if 'qids01_w0c__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w0c__vsoin", "qids01_w0c__vmnin", "qids01_w0c__vemin", "qids01_w0c__vhysm"]])) \
                 + np.nanmax(list(row[["qids01_w0c__vapdc", "qids01_w0c__vapin", "qids01_w0c__vwtdc", "qids01_w0c__vwtin"]])) \
                 + np.nanmax(list(row[["qids01_w0c__vslow", "qids01_w0c__vagit"]])) \
                 + np.sum(row[["qids01_w0c__vmdsd", "qids01_w0c__vengy", "qids01_w0c__vintr", "qids01_w0c__vsuic", "qids01_w0c__vvwsf", "qids01_w0c__vcntr"]])
-                agg_df.at[i, 'qids01_w0c__qstot'] ==  value
+                agg_df.at[i, 'qids01_w0c__qstot'] =  value
             if 'qids01_w2c__qstot' in row:
                 value = np.nanmax(list(row[["qids01_w2c__vsoin", "qids01_w2c__vmnin", "qids01_w2c__vemin", "qids01_w2c__vhysm"]])) \
                 + np.nanmax(list(row[["qids01_w2c__vapdc", "qids01_w2c__vapin", "qids01_w2c__vwtdc", "qids01_w2c__vwtin"]])) \
                 + np.nanmax(list(row[["qids01_w2c__vslow", "qids01_w2c__vagit"]])) \
                 + np.sum(row[["qids01_w2c__vmdsd", "qids01_w2c__vengy", "qids01_w2c__vintr", "qids01_w2c__vsuic", "qids01_w2c__vvwsf", "qids01_w2c__vcntr"]])
-                agg_df.at[i, 'qids01_w2c__qstot'] ==  value
+                agg_df.at[i, 'qids01_w2c__qstot'] =  value
 
             
         # Re-iterate through agg_df for imputation of the new features, so that "row" contains updated values, to fix imput_qidscpccg bug
@@ -759,45 +757,45 @@ def impute(root_data_dir_path):
 def add_new_imputed_features(df, row, i):
     imput_anyanxiety = ['phx01__psd', 'phx01__pd_ag', 'phx01__pd_noag', 'phx01__specphob', 'phx01__soc_phob', 'phx01__gad_phx']
     val = 1 if sum(row[imput_anyanxiety] == 1) > 0 else 0
-    df.at[i, 'imput_anyanxiety'] == val
+    df.at[i, 'imput_anyanxiety'] = val
 
     imput_bech = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng']
-    df.at[i, 'imput_bech'] == np.sum(row[imput_bech])
+    df.at[i, 'imput_bech'] = np.sum(row.reindex(imput_bech))
 
     imput_maier = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hagit']
-    df.at[i, 'imput_maier'] == np.sum(row[imput_maier])
+    df.at[i, 'imput_maier'] = np.sum(row.reindex(imput_maier))
 
     imput_santen = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hsuic']
-    df.at[i, 'imput_santen'] == np.sum(row[imput_santen])
+    df.at[i, 'imput_santen'] = np.sum(row.reindex(imput_santen))
 
     imput_gibbons = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hpanx', 'hrsd01__heng', 'hrsd01__hsuic', 'hrsd01__hagit', 'hrsd01__hsanx', 'hrsd01__hsex']
-    df.at[i, 'imput_gibbons'] == np.sum(row[imput_gibbons])
+    df.at[i, 'imput_gibbons'] = np.sum(row.reindex(imput_gibbons))
 
     imput_hamd7 = ['hrsd01__hmdsd', 'hrsd01__hvwsf', 'hrsd01__hintr', 'hrsd01__hpanx', 'hrsd01__hsanx', 'hrsd01__ hengy', 'hrsd01__hsuicide']
-    df.at[i, 'imput_hamd7'] == np.sum(row[imput_hamd7])
+    df.at[i, 'imput_hamd7'] = np.sum(row.reindex(imput_hamd7))
 
     imput_hamdret = ['hrsd01__hmdsd', 'hrsd01__hintr', 'hrsd01__hslow', 'hrsd01__hsex']
-    df.at[i, 'imput_hamdret'] == np.sum(row[imput_hamdret])
+    df.at[i, 'imput_hamdret'] = np.sum(row.reindex(imput_hamdret))
 
     imput_hamdanx = ['hrsd01__hpanx', 'hrsd01__hsanx', 'hrsd01__happt', 'hrsd01__hengy', 'hrsd01__hhypc']
-    df.at[i, 'imput_hamdanx'] == np.sum(row[imput_hamdanx])
+    df.at[i, 'imput_hamdanx'] = np.sum(row.reindex(imput_hamdanx))
 
     imput_hamdsle = ['hrsd01__hsoin', 'hrsd01__hmnin', 'hrsd01__hemin']
-    df.at[i, 'imput_hamdsle'] == np.sum(row[imput_hamdsle])
+    df.at[i, 'imput_hamdsle'] = np.sum(row.reindex(imput_hamdsle))
 
     imput_idsc5w0 = ['qids01_w0c__vmdsd', 'qids01_w0c__vintr', 'qids01_w0c__vengy', 'qids01_w0c__vvwsf', 'qids01_w0c__vslow']
-    val_imput_idsc5w0 = np.sum(row[imput_idsc5w0])
-    df.at[i, 'imput_idsc5w0'] == val_imput_idsc5w0
+    val_imput_idsc5w0 = np.sum(row.reindex(imput_idsc5w0))
+    df.at[i, 'imput_idsc5w0'] = val_imput_idsc5w0
 
     imput_idsc5w2 = ['qids01_w2c__vmdsd', 'qids01_w2c__vintr', 'qids01_w2c__vengy', 'qids01_w2c__vvwsf', 'qids01_w2c__vslow']
-    val_imput_idsc5w2 = np.sum(row[imput_idsc5w2])
-    df.at[i, 'imput_idsc5w2'] == val_imput_idsc5w2
+    val_imput_idsc5w2 = np.sum(row.reindex(imput_idsc5w2))
+    df.at[i, 'imput_idsc5w2'] = val_imput_idsc5w2
 
     val = round((val_imput_idsc5w2 - val_imput_idsc5w0) / val_imput_idsc5w0 if val_imput_idsc5w0 else 0, 3)
-    df.at[i, 'imput_idsc5pccg'] == val
+    df.at[i, 'imput_idsc5pccg'] = val
 
     val = round((row['qids01_w2c__qstot'] - row['qids01_w0c__qstot']) / row['qids01_w0c__qstot'] if row['qids01_w0c__qstot'] else 0, 3)
-    df.at[i, 'imput_qidscpccg'] == val
+    df.at[i, 'imput_qidscpccg'] = val
 
     return df
 
