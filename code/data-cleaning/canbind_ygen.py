@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 import sys
 
-from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAMES_WHITELIST_PSYHIS, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS
-from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION, YGEN_SCALE_FILENAMES, YGEN_REPLACEMENT_MAPS
-from canbind_utils import get_event_based_value, aggregate_rows, finalize_blacklist, one_hot_encode, merge_columns, add_columns_to_blacklist
+from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT
+from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION, YGEN_SCALE_FILENAMES, COL_NAMES_BLACKLIST_COMMON, COL_NAMES_BLACKLIST_QIDS
+from canbind_utils import get_event_based_value, aggregate_rows,  one_hot_encode, merge_columns, add_columns_to_blacklist
 from canbind_utils import is_number, replace_target_col_values, replace_target_col_values_to_be_refactored, collect_columns_to_extend
 from utils import get_valid_subjects
 """ 
@@ -22,10 +22,9 @@ This will output a single CSV file containing the y-matrix
 The method expects CSV files to be contained within their own subdirectories from the root directory, as is organized
 in the ZIP provided.
 
-TODO: Could eliminate most of this function as only the QIDS columns are really used, but code runs quick anyways
+TODO: took out most of the superflous code from canbind_preprocessing_manager, runs fast, but probably could still take out more. 
 """
 def ygen(root_dir, debug=False):
-    global UNIQ_COLUMNS
     global COL_NAMES_CATEGORICAL
     global COL_NAMES_NA
     global FILENAMES
@@ -33,9 +32,6 @@ def ygen(root_dir, debug=False):
     global NUM_DATA_ROWS
     global NUM_DATA_COLUMNS
 
-    global COL_NAMES_DARS_TO_CONVERT
-
-    uniq_columns = {}
     col_names_categorical = {}
     col_names_na = {}
 
@@ -55,18 +51,6 @@ def ygen(root_dir, debug=False):
                 filenames.append(filename)
                 num_data_files += 1
                 
-                # Convert to csv if data file is an xlsx
-                root, ext = os.path.splitext(file_path)
-                if (ext == '.xlsx'):
-                    read_xlsx = pd.read_excel(file_path)
-                    # IPAQ File uses "EVENTME" instead of "EVENTNAME", so replace
-                    if "IPAQ" in filename:
-                        read_xlsx = read_xlsx.rename({'EVENTME' : 'EVENTNAME'}, axis='columns', errors='raise')
-                    file_path = root + '.csv'
-                    read_xlsx.to_csv(file_path, index = None, header=True)
-                elif (ext != '.csv'):
-                    raise Exception("Provided a data file that is neither an xlsx or csv")
-                
                 # Track counts and column names for sanity check
                 with open(file_path, 'rt') as csvfile:
                     col_names = []
@@ -80,20 +64,6 @@ def ygen(root_dir, debug=False):
                             num_data_columns += len(row)
                             for field in row:
                                 field = field.upper()
-                                if field in uniq_columns:
-                                    uniq_columns[field] += 1
-                                else:
-                                    uniq_columns[field] = 1
-
-                                if field.startswith("DARS_"):
-                                    COL_NAMES_BLACKLIST_DARS.append(field)
-                                    continue
-                                if field.startswith("SHAPS_"):
-                                    COL_NAMES_BLACKLIST_SHAPS.append(field)
-                                    continue
-                                if field.startswith("PSYHIS_") and field not in COL_NAMES_WHITELIST_PSYHIS:
-                                    COL_NAMES_BLACKLIST_PSYHIS.append(field)
-                                    continue
 
                                 # Collect names of columns that will be extended with extra columns based on event value
                                 collect_columns_to_extend(field)
@@ -140,28 +110,21 @@ def ygen(root_dir, debug=False):
     #### CREATE NEW COLUMNS AND MERGE ROWS ####
 
     # Handle column extension based on EVENTNAME or VISITSTATUS
-    merged_df = extend_columns_eventbased(merged_df)
+    merged_df, extension_blacklist = extend_columns_eventbased(merged_df)
 
     # Collapse/merge patient rows
     merged_df = aggregate_rows(merged_df)
-
-    # Handle replacing values in specific columns, see @VALUE_REPLACEMENT_MAPS
-    merged_df = replace_target_col_values_to_be_refactored(merged_df, YGEN_REPLACEMENT_MAPS)
-
-    # Merge QLESQ columns
-    ##merged_df = merge_columns(merged_df, QLESQ_COL_MAPPING)
 
     # First replace empty strings with np.nan, as pandas knows to ignore creating one-hot columns for np.nan
     # This step is necessary for one-hot encoding and for replacing nan values with a median
     merged_df = merged_df.replace({"": np.nan})
 
-    # One-hot encode specific columns, see @COL_NAMES_ONE_HOT_ENCODE
-    ##merged_df = one_hot_encode(merged_df, COL_NAMES_ONE_HOT_ENCODE)
-
     # Finalize the blacklist, then do a final drop of columns (original ones before one-hot and blacklist columns)
-    merged_df.drop(['QIDS_RESP_WK8'], axis=1, inplace=True)
+    blacklist_ygen = COL_NAMES_BLACKLIST_QIDS
+    blacklist_ygen.extend(COL_NAMES_BLACKLIST_COMMON)
+    blacklist_ygen.extend(extension_blacklist)
+    merged_df.drop(blacklist_ygen, axis=1, inplace=True)
 
-    
     # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
@@ -169,26 +132,16 @@ def ygen(root_dir, debug=False):
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
     
-    # Fix a value in the data that was messed up in a recent version (pt had age of 56, switched to 14 recently, so switched back)
-    if merged_df.at[68, 'AGE'] == 16:
-        merged_df.at[68, 'AGE'] = 56
-        print("Replaced misrecorded age")
-        
     # Rename the column that will be used for the y value (target)
     merged_df = merged_df.rename({"QIDS_RESP_WK8_week 8":"QIDS_RESP_WK8"},axis='columns',errors='raise')
     merged_df['QIDS_REM_WK8'] = np.nan
     
-    ##qids_cols = [col for col in merged_df.columns if 'QIDS' in col]
-    ##print(qids_cols)
-    
     # Back up proceesed file before ygeneration
     if debug: merged_df.to_csv(root_dir + "/merged-data_processed_ygen.csv")
-    
     
     # Replace missing "QIDS_RESP_WK8" values by manually checking criteria
     for i, row in merged_df.iterrows():
         if "QIDS_RESP_WK8" in row:
-            print(row["QIDS_RESP_WK8"])
             if np.isnan(row["QIDS_RESP_WK8"]):
                 baseline_qids_sr = row['QIDS_OVERL_SEVTY_baseline']
                 week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
@@ -216,7 +169,7 @@ def extend_columns_eventbased(orig_df):
     :return: a new, modified dataframe
     """
     global COL_NAMES_NEW_FROM_EXTENSION
-    global COL_NAMES_TO_DROP_FROM_EXTENSION
+    extension_blacklist = []
         
     # Create extra columns with name of event appended, initialized blank
     for scale_group in YGEN_COL_NAMES_TO_CONVERT:
@@ -238,15 +191,15 @@ def extend_columns_eventbased(orig_df):
                 # Set the value for the new column
                 orig_df[new_col_name] = orig_df.apply(lambda row: get_event_based_value(row, event, col_name, scale_name), axis=1)
 
-        COL_NAMES_TO_DROP_FROM_EXTENSION.extend(col_names)
+        extension_blacklist.extend(col_names)
 
-    return orig_df
+    return orig_df, extension_blacklist
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data\\'
-        ygen(pathData, debug=True)
+        ygen(pathData, debug=False)
     elif len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         ygen(sys.argv[1])
     else:

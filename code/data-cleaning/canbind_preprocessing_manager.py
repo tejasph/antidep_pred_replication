@@ -54,7 +54,6 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = pd.DataFrame([])
 
     for subdir, dirs, files in os.walk(root_dir):
-        print(files)
         for filename in files:
             file_path = os.path.join(subdir, filename)
 
@@ -128,7 +127,6 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
                 merged_df = merged_df.append(df, sort=False)
 
     # Sort the rows by the patient identifier
-    print(merged_df)
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
 
     # Back up full merged file for debugging purposes
@@ -174,7 +172,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
     # Convert responder/nonresponder string to binary
-    merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
+    ##merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
     # Sort by pt ID
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
