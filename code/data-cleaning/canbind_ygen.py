@@ -4,10 +4,10 @@ import pandas as pd
 import numpy as np
 import sys
 
-from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT
-from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION, YGEN_SCALE_FILENAMES, COL_NAMES_BLACKLIST_COMMON, COL_NAMES_BLACKLIST_QIDS
-from canbind_utils import get_event_based_value, aggregate_rows,  one_hot_encode, merge_columns, add_columns_to_blacklist
-from canbind_utils import is_number, replace_target_col_values, replace_target_col_values_to_be_refactored, collect_columns_to_extend
+from canbind_globals import COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  TARGET_MAP, YGEN_COL_NAMES_TO_CONVERT
+from canbind_globals import YGEN_SCALE_FILENAMES, COL_NAMES_BLACKLIST_COMMON, COL_NAMES_BLACKLIST_QIDS
+from canbind_utils import get_event_based_value, aggregate_rows
+from canbind_utils import is_number, replace_target_col_values, collect_columns_to_extend
 from utils import get_valid_subjects
 """ 
 Generates a y-matrix from the CAN-BIND data. Similiar code to canbind_data_processor, separated to ensure no week8 contamination to data matrix
@@ -141,20 +141,35 @@ def ygen(root_dir, debug=False):
     
     # Replace missing "QIDS_RESP_WK8" values by manually checking criteria
     for i, row in merged_df.iterrows():
+        
+        baseline_qids_sr = row['QIDS_OVERL_SEVTY_baseline']
+        week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
+        week4_qids_sr = row['QIDS_OVERL_SEVTY_week 4']
+        week8_qids_sr = row['QIDS_OVERL_SEVTY_week 8']
+        
+        # Make qids-sr remission at 8 weeks from scratch
+        if any(j <= 5 for j in [week2_qids_sr, week4_qids_sr, week8_qids_sr]):
+            merged_df.at[i, 'QIDS_REM_WK8'] = 1
+        else:
+            merged_df.at[i, 'QIDS_REM_WK8'] = 0   
+            
+        # Fill in any missing qids-sr response at 8 weeks
         if "QIDS_RESP_WK8" in row:
             if np.isnan(row["QIDS_RESP_WK8"]):
-                baseline_qids_sr = row['QIDS_OVERL_SEVTY_baseline']
-                week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
-                week8_qids_sr = row['QIDS_OVERL_SEVTY_week 8']
                 
-                if week2_qids_sr <= baseline_qids_sr*0.50 or week8_qids_sr <= baseline_qids_sr*0.50:
+                
+                if any(i <= baseline_qids_sr*0.50 for i in [week2_qids_sr, week4_qids_sr, week8_qids_sr]):
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 1
                 else:
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 0
-    
+                        
+                
     
     y_wk8_resp = merged_df[['SUBJLABEL','QIDS_RESP_WK8']]
     y_wk8_resp.to_csv(root_dir + "/y_wk8_resp_canbind.csv", index=False)
+    
+    y_wk8_rem = merged_df[['SUBJLABEL','QIDS_REM_WK8']]
+    y_wk8_rem.to_csv(root_dir + "/y_wk8_rem_canbind.csv", index=False)
     
     # Save the version containing NaN values just for debugging, not otherwise used
     if debug: merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks-ygen.csv")
@@ -184,9 +199,6 @@ def extend_columns_eventbased(orig_df):
                     continue
 
                 new_col_name = col_name + "_" + event
-
-                # Add columns to this list
-                COL_NAMES_NEW_FROM_EXTENSION.append(new_col_name)
 
                 # Set the value for the new column
                 orig_df[new_col_name] = orig_df.apply(lambda row: get_event_based_value(row, event, col_name, scale_name), axis=1)

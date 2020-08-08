@@ -280,7 +280,7 @@ def check_missing_values(df):
         print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
 
-convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data")
+#convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data")
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":

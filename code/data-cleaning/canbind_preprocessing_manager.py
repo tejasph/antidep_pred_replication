@@ -6,12 +6,13 @@ import re
 import sys
 
 from canbind_globals import COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, EVENTNAME_WHITELIST, ORIGINAL_SCALE_FILENAMES, COL_NAMES_WHITELIST_PSYHIS, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS
-from canbind_globals import COL_NAME_GROUP, GROUP_WHITELIST, VALUE_REPLACEMENT_MAPS, QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, COLLISION_MANAGER
+from canbind_globals import COL_NAME_GROUP, GROUP_WHITELIST, VALUE_REPLACEMENT_MAPS, QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, COLLISION_MANAGER
 from canbind_imputer import impute
 from canbind_ygen import ygen
 from canbind_utils import aggregate_rows, finalize_blacklist, one_hot_encode, merge_columns, add_columns_to_blacklist
-from canbind_utils import is_number, replace_target_col_values, replace_target_col_values_to_be_refactored, collect_columns_to_extend, extend_columns_eventbased
+from canbind_utils import is_number, replace_target_col_values_to_be_refactored, collect_columns_to_extend, extend_columns_eventbased
 from utils import get_valid_subjects
+from generate_overlapping_features import convert_canbind_to_overlapping
 """ 
 Cleans and aggregates CAN-BIND data.
 
@@ -259,7 +260,7 @@ if __name__ == "__main__":
         aggregate_and_clean(pathData, verbose=False)
         ygen(pathData)
         impute(pathData)
-        
+        convert_canbind_to_overlapping(pathData)
     else:
         print("Enter valid arguments\n"
               "\t options: -v for verbose, -v+ for super verbose\n"
