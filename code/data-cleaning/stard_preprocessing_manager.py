@@ -586,32 +586,6 @@ def impute(root_data_dir_path):
         agg_df = replace(agg_df, list(blank_to_one_config["col_names"]), blank_to_one_config["conversion_map"])
         agg_df = replace(agg_df, list(blank_to_twenty_config["col_names"]), blank_to_twenty_config["conversion_map"])
 
-## JJN: Replaced qids handling by simply adding it to the median replacement, except for the a few special cases
-# =============================================================================
-#         # Handle qids variable replacement
-#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]):
-#             split_name = col_name.split("_")
-#             target_name = split_name[0] + "_w0sr__" + split_name[-1]
-#             blank_subset = agg_df[col_name].isnull()
-#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-# 
-#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]):
-#             split_name = col_name.split("_")
-#             target_name = split_name[0] + "_w0c__" + split_name[-1]
-#             blank_subset = agg_df[col_name].isnull()
-#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-# 
-#         for col_name in list(VALUE_CONVERSION_MAP_IMPUTE["qids_w2c_to_w2sr"]["col_names"]):
-#             split_name = col_name.split("_")
-#             target_name = split_name[0] + "_w2sr__" + split_name[-1]
-#             blank_subset = agg_df[col_name].isnull()
-#             agg_df.loc[blank_subset, col_name] = agg_df[blank_subset][target_name]
-#
-#
-#        # Replace remaining blanks with mode
-#        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0c_to_w0sr"]["col_names"]))
-#        agg_df = replace_with_mode(agg_df, list(VALUE_CONVERSION_MAP_IMPUTE["qids_w0sr_to_w0c"]["col_names"]))
-# =============================================================================
         crs01_df = pd.read_csv(root_data_dir_path + "/crs01.txt", sep="\t", skiprows=[1])
         crs01_df.loc[:, "interview_age"] = crs01_df["interview_age"].astype("float")
 
@@ -838,7 +812,6 @@ def generate_y(root_data_dir_path):
 
     print("\n--------------------------------7. Y MATRIX GENERATION-----------------------------------\n")
 
-#    y_lvl2_rem_ccv01 = pd.DataFrame()
     y_lvl2_rem_qids01 = pd.DataFrame()
     y_wk8_response_qids01 = pd.DataFrame()
     y_wk8_rem_qids_c = pd.DataFrame()
@@ -862,28 +835,10 @@ def generate_y(root_data_dir_path):
         print(LINE_BREAK)
         print("Handling scale = ", scale_name)
 
-# old y generation using ccv01
-# =============================================================================
-#         if scale_name == "ccv01":
-#             scale_df.loc[:, "days_baseline"] = scale_df["days_baseline"].astype("int")
-#             scale_df = scale_df.loc[scale_df['days_baseline'] > 21]
-#             i = 0
-#             for id, group in scale_df.groupby(['subjectkey']):
-#                 y_lvl2_rem_ccv01.loc[i, "subjectkey"] = id
-#                 subset = group[((group['level'] == "Level 1") | (group['level'] == "Level 2")) & (group['remsn'] == 1)]
-#                 if subset.shape[0] == 0:
-#                     y_lvl2_rem_ccv01.loc[i, "target"] = 0
-#                 else:
-#                     y_lvl2_rem_ccv01.loc[i, "target"] = 1
-#                 i += 1
-# =============================================================================
         # Reversed 0 and 1 from previous; 1 is now TRD, 0 is non-TRD, as we're predicting TRD. 
         if scale_name == "qids01":
             
-            #scale_df = scale_df.loc[scale_df['days_baseline'] > 21] This prevents the use of these anywhere below, so will wreck baseline for the other y.
             over21_df = scale_df.loc[scale_df['days_baseline'] > 21] # New, use this to check subjects remained 4 weeks. 
-            #print(over21_df['subjectkey'])
-            #print('NDAR_INVPN807XGG' in over21_df['subjectkey'].values)
             
             i = 0
             for id, group in scale_df.groupby(['subjectkey']):
@@ -998,10 +953,10 @@ def select_subjects(root_data_dir_path):
     
     ### Handle the week8 remission stuff
     y_wk8_rem_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_c" + CSV_SUFFIX)
-    X_wk8_rem_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_c, y_wk8_rem_qids_c)
+    X_wk8_rem_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_c, y_wk8_rem_qids_c, 'c')
     
     y_wk8_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_sr" + CSV_SUFFIX)
-    X_wk8_rem_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_sr, y_wk8_rem_qids_sr)
+    X_wk8_rem_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_sr, y_wk8_rem_qids_sr, 'sr')
     
     
     # Subset the y matrices so that they matches the X matrices
@@ -1034,74 +989,6 @@ def select_subjects(root_data_dir_path):
 
     print("Files written to: ", output_subject_selected_path)
 
-# =============================================================================
-#     
-#     
-#     
-#     # OLD---------------------------------------------------------
-#     X_lvl2_rem_qids01__stringent = orig_data_matrix
-#     X_lvl2_rem_qids01__less_stringent = orig_data_matrix
-#     X_wk8_response_qids01__stringent = orig_data_matrix
-#     X_wk8_response_qids01__less_stringent = orig_data_matrix
-#     
-# 
-#     # Select subjects from imputed (aggregated) data based on the y matrices
-# 
-#     ### Handle the level2 stuff
-#     y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
-#     output = handle_subject_selection_conditions(
-#         input_row_selected_dir_path,
-#         X_lvl2_rem_qids01__stringent,
-#         X_lvl2_rem_qids01__less_stringent,
-#         y_lvl2_rem_qids01
-#     )
-#     X_lvl2_rem_qids01__stringent = output[0]
-#     X_lvl2_rem_qids01__less_stringent = output[1]
-# 
-#     # Subset the y matrices so that it matches the X matrices
-#     y_lvl2_rem_qids01__stringent = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__stringent.subjectkey)]
-#     y_lvl2_rem_qids01__less_stringent= y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__less_stringent.subjectkey)]
-# 
-#     ### Handle the week8 stuff
-#     y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
-#     output = handle_subject_selection_conditions(
-#         input_row_selected_dir_path,
-#         X_wk8_response_qids01__stringent,
-#         X_wk8_response_qids01__less_stringent,
-#         y_wk8_response_qids01
-#     )
-#     X_wk8_response_qids01__stringent = output[0]
-#     X_wk8_response_qids01__less_stringent = output[1]
-# 
-#     # Subset the y matrices so that it matches the X matrices
-#     y_wk8_response_qids01__stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__stringent.subjectkey)]
-#     y_wk8_response_qids01__less_stringent = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__less_stringent.subjectkey)]
-# 
-#     # Output X matrices to CSV
-#     X_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
-#     X_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
-#     X_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
-#     X_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
-# 
-#     # Output y matrices to CSV
-#     y_lvl2_rem_qids01__stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX, index=False)
-#     y_lvl2_rem_qids01__less_stringent.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX, index=False)
-#     y_wk8_response_qids01__stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX, index=False)
-#     y_wk8_response_qids01__less_stringent.to_csv(output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX, index=False)
-# 
-#     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "X_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "X_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "y_lvl2_rem_qids01__less_stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__stringent" + CSV_SUFFIX)
-#     print("File has been written to:", output_subject_selected_path + "y_wk8_response_qids01__less_stringent" + CSV_SUFFIX)
-# 
-# =============================================================================
-
-
-
 def handle_subject_selection_conditions(input_row_selected_dir_path, X, y_df, qids_version):
     # New subject selection handling function, will select based on qids version ('sr' or 'c')
     
@@ -1119,77 +1006,6 @@ def handle_subject_selection_conditions(input_row_selected_dir_path, X, y_df, qi
 
     return X
 
-# def handle_subject_selection_conditions_lvl2_rem(input_row_selected_dir_path, X, y_df):
-#     # New subject selection handling function based off  old one, just for the lvl 2 remission (TRD)
-    
-#     # Select subjects with corresponding y values
-#     y = y_df.dropna(axis='rows') # Drop subjects lacking a y value
-#     X = X[X["subjectkey"].isin(y["subjectkey"])]
-    
-#     # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
-#     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
-#     X = X[X["subjectkey"].isin(file_ucq["subjectkey"])]
-    
-#     # Select subjects that have ucq entries, aka eliminate subjects that don't have week0 QIDS-C entries
-#     file_qids01_w0c = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
-#     X = X[X["subjectkey"].isin(file_qids01_w0c["subjectkey"])]
-
-#     return X
-
-# def handle_subject_selection_conditions_wk8_response(input_row_selected_dir_path, X, y_df):
-#     # New subject selection handling function based off  old one, just for the week 8 response
-#     # Select subjects with corresponding non-blank y values
-#     y = y_df.dropna(axis='rows') # Drop subjects lacking a y value
-#     X = X[X["subjectkey"].isin(y["subjectkey"])]
-    
-#     # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
-#     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
-#     X = X[X["subjectkey"].isin(file_ucq["subjectkey"])]
-    
-#     # Select subjects that have ucq entries, aka eliminate subjects that don't have week0 QIDS-SR entries
-#     file_qids01_w0sr = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
-#     X = X[X["subjectkey"].isin(file_qids01_w0sr["subjectkey"])]
-
-#     return X
-
-# =============================================================================
-# 
-# def handle_subject_selection_conditions(input_row_selected_dir_path, X_stringent, X_less_stringent, y_df):
-#     # Select subjects with corresponding y values
-#     X_stringent = X_stringent[X_stringent["subjectkey"].isin(y_df["subjectkey"])]
-#     X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(y_df["subjectkey"])]
-# 
-#     # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
-#     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
-#     X_stringent = X_stringent[X_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
-#     X_less_stringent = X_less_stringent[X_less_stringent["subjectkey"].isin(file_ucq["subjectkey"])]
-# 
-#     # Handle stringent qids condition
-#     file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
-#     file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
-#     file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
-#     file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
-# 
-#     condition_all = ((X_stringent.subjectkey.isin(file1.subjectkey))
-#                      & (X_stringent.subjectkey.isin(file2.subjectkey))
-#                      & (X_stringent.subjectkey.isin(file3.subjectkey))
-#                      & (X_stringent.subjectkey.isin(file4.subjectkey)))
-#     X_stringent = X_stringent[condition_all]
-# 
-#     # Handle less stringent qids condition
-#     file1 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0c" + CSV_SUFFIX)
-#     file2 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0sr" + CSV_SUFFIX)
-#     file3 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2c" + CSV_SUFFIX)
-#     file4 = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w2sr" + CSV_SUFFIX)
-# 
-#     condition_or = (
-#         ((X_less_stringent.subjectkey.isin(file1.subjectkey)) | (X_less_stringent.subjectkey.isin(file2.subjectkey)))
-#         & ((X_less_stringent.subjectkey.isin(file3.subjectkey)) | (X_less_stringent.subjectkey.isin(file4.subjectkey)))
-#     )
-#     X_less_stringent = X_less_stringent[condition_or]
-# 
-#     return (X_stringent, X_less_stringent)
-# =============================================================================
 
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
@@ -1255,3 +1071,8 @@ def get_row(scale_df, subjectkey):
                     | scale_df["unempl"].notnull()
                     | scale_df["otherinc"].notnull()
                     | scale_df["totincom"].notnull())]
+
+"""
+Run configuration:
+runfile('C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning/stard_preprocessing_manager.py', args='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/stard_data -a', wdir='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning')
+"""
