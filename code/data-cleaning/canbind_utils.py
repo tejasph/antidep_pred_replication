@@ -173,11 +173,13 @@ def replace_target_col_values_to_be_refactored(df, replacement_maps):
 
     # Hard-code replacing values with median for some columns
     col_name = "HSHLD_INCOME"
-    df[col_name] = df[col_name].replace("", np.nan)
-    df[col_name] = df[col_name].replace(9999, df[col_name].median()) 
-    df[col_name] = df[col_name].replace(9998, df[col_name].median())
+    if col_name in df.columns:
+        df[col_name] = df[col_name].replace("", np.nan)
+        df[col_name] = df[col_name].replace(9999, df[col_name].median()) 
+        df[col_name] = df[col_name].replace(9998, df[col_name].median())
     col_name = "EDUC"
-    df[col_name] = df[col_name].replace(9999, df[col_name].median())
+    if col_name in df.columns:
+        df[col_name] = df[col_name].replace(9999, df[col_name].median())
     return df
 
 def finalize_blacklist():

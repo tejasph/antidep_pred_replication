@@ -54,6 +54,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
     merged_df = pd.DataFrame([])
 
     for subdir, dirs, files in os.walk(root_dir):
+        print(files)
         for filename in files:
             file_path = os.path.join(subdir, filename)
 
@@ -127,6 +128,7 @@ def aggregate_and_clean(root_dir, verbose=False, extra=False):
                 merged_df = merged_df.append(df, sort=False)
 
     # Sort the rows by the patient identifier
+    print(merged_df)
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
 
     # Back up full merged file for debugging purposes
@@ -255,7 +257,7 @@ if __name__ == "__main__":
         impute(pathData)
     
     elif len(sys.argv) == 1:
-        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_test\\'
+        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data\\'
         aggregate_and_clean(pathData, verbose=False)
         ygen(pathData)
         impute(pathData)

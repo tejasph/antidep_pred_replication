@@ -5,7 +5,7 @@ import numpy as np
 import sys
 
 from canbind_globals import ORIGINAL_SCALE_FILENAMES, COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAMES_WHITELIST_PSYHIS, COL_NAME_GROUP, GROUP_WHITELIST, YGEN_EVENTNAME_WHITELIST,  QLESQ_COL_MAPPING, COL_NAMES_ONE_HOT_ENCODE, COL_NAMES_BLACKLIST_UNIQS, TARGET_MAP, VALUE_REPLACEMENT_MAPS, YGEN_COL_NAMES_TO_CONVERT, COL_NAMES_BLACKLIST_DARS, COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS
-from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION
+from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_TO_DROP_FROM_EXTENSION, YGEN_SCALE_FILENAMES, YGEN_REPLACEMENT_MAPS
 from canbind_utils import get_event_based_value, aggregate_rows, finalize_blacklist, one_hot_encode, merge_columns, add_columns_to_blacklist
 from canbind_utils import is_number, replace_target_col_values, replace_target_col_values_to_be_refactored, collect_columns_to_extend
 from utils import get_valid_subjects
@@ -51,7 +51,7 @@ def ygen(root_dir, debug=False):
         for filename in files:
             file_path = os.path.join(subdir, filename)
 
-            if filename in ORIGINAL_SCALE_FILENAMES:
+            if filename in YGEN_SCALE_FILENAMES:
                 filenames.append(filename)
                 num_data_files += 1
                 
@@ -135,6 +135,7 @@ def ygen(root_dir, debug=False):
     # Filter out rows that were recorded beyond Week 8
     if COL_NAME_EVENTNAME in merged_df:
         merged_df = merged_df.loc[merged_df.EVENTNAME.str.lower().isin(YGEN_EVENTNAME_WHITELIST)]
+        
 
     #### CREATE NEW COLUMNS AND MERGE ROWS ####
 
@@ -145,29 +146,25 @@ def ygen(root_dir, debug=False):
     merged_df = aggregate_rows(merged_df)
 
     # Handle replacing values in specific columns, see @VALUE_REPLACEMENT_MAPS
-    merged_df = replace_target_col_values_to_be_refactored(merged_df, VALUE_REPLACEMENT_MAPS)
+    merged_df = replace_target_col_values_to_be_refactored(merged_df, YGEN_REPLACEMENT_MAPS)
 
     # Merge QLESQ columns
-    merged_df = merge_columns(merged_df, QLESQ_COL_MAPPING)
+    ##merged_df = merge_columns(merged_df, QLESQ_COL_MAPPING)
 
     # First replace empty strings with np.nan, as pandas knows to ignore creating one-hot columns for np.nan
     # This step is necessary for one-hot encoding and for replacing nan values with a median
     merged_df = merged_df.replace({"": np.nan})
 
     # One-hot encode specific columns, see @COL_NAMES_ONE_HOT_ENCODE
-    merged_df = one_hot_encode(merged_df, COL_NAMES_ONE_HOT_ENCODE)
+    ##merged_df = one_hot_encode(merged_df, COL_NAMES_ONE_HOT_ENCODE)
 
     # Finalize the blacklist, then do a final drop of columns (original ones before one-hot and blacklist columns)
-    add_columns_to_blacklist
-    finalize_blacklist()
-    merged_df.drop(COL_NAMES_BLACKLIST_UNIQS, axis=1, inplace=True)
-    
-    
+    merged_df.drop(['QIDS_RESP_WK8'], axis=1, inplace=True)
+
     
     # Create y target, eliminate invalid subjects in both X and y (those who don't make it to week 8), convert responder/nonresponder string to binary
     merged_df = get_valid_subjects(merged_df)
     merged_df = merged_df.drop(["RESPOND_WK8"], axis=1)
-    ##print(merged_df)
     merged_df = replace_target_col_values(merged_df, [TARGET_MAP])
     merged_df = merged_df.sort_values(by=[COL_NAME_PATIENT_ID])
     merged_df = merged_df.reset_index(drop=True)
@@ -178,11 +175,20 @@ def ygen(root_dir, debug=False):
         print("Replaced misrecorded age")
         
     # Rename the column that will be used for the y value (target)
-    merged_df = merged_df.rename({"QIDS_RESP_WK8_week 2":"QIDS_RESP_WK8"},axis='columns',errors='raise')
+    merged_df = merged_df.rename({"QIDS_RESP_WK8_week 8":"QIDS_RESP_WK8"},axis='columns',errors='raise')
+    merged_df['QIDS_REM_WK8'] = np.nan
+    
+    ##qids_cols = [col for col in merged_df.columns if 'QIDS' in col]
+    ##print(qids_cols)
+    
+    # Back up proceesed file before ygeneration
+    if debug: merged_df.to_csv(root_dir + "/merged-data_processed_ygen.csv")
+    
     
     # Replace missing "QIDS_RESP_WK8" values by manually checking criteria
     for i, row in merged_df.iterrows():
         if "QIDS_RESP_WK8" in row:
+            print(row["QIDS_RESP_WK8"])
             if np.isnan(row["QIDS_RESP_WK8"]):
                 baseline_qids_sr = row['QIDS_OVERL_SEVTY_baseline']
                 week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
@@ -194,8 +200,8 @@ def ygen(root_dir, debug=False):
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 0
     
     
-    y_df = merged_df[['SUBJLABEL','QIDS_RESP_WK8']]
-    y_df.to_csv(root_dir + "/canbind_targets.csv", index=False)
+    y_wk8_resp = merged_df[['SUBJLABEL','QIDS_RESP_WK8']]
+    y_wk8_resp.to_csv(root_dir + "/y_wk8_resp_canbind.csv", index=False)
     
     # Save the version containing NaN values just for debugging, not otherwise used
     if debug: merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks-ygen.csv")
@@ -238,11 +244,11 @@ def extend_columns_eventbased(orig_df):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1 and os.path.isdir(sys.argv[1]):
+    if len(sys.argv) == 1:
+        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data\\'
+        ygen(pathData, debug=True)
+    elif len(sys.argv) == 2 and os.path.isdir(sys.argv[1]):
         ygen(sys.argv[1])
-    elif len(sys.argv) == 0:
-        pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\canbind_data_full_auto\\'
-        ygen(pathData, verbose=False)
     else:
         print("Enter valid arguments\n"
                "\t path: the path to a real directory\n")
