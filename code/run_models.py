@@ -82,8 +82,6 @@ def RunModels(runs, evl, model,f_select, data, label):
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_ovlap_trd.csv"
     elif data == "X_top10_ovlap_trd":
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top10_ovlap_trd.csv"
-    
-    
     elif data == "X_top30_resp":
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_top30\X_top30_resp.csv"
     elif data == "X_top10_resp":    
@@ -103,7 +101,12 @@ def RunModels(runs, evl, model,f_select, data, label):
     elif data == "X_ful_resp_trdcrit":
         # Full features, response subject selection, used for the TRD y label, but would be same as the full, response subject selection above.  
         pathData = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/X_full_resp_trdcrit.csv"    
-        
+    elif data == "X_full_rem_qids_sr":
+        # Full features, for remissions at week 8 according to qids-sr
+        pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200808\1_Replication\X_wk8_rem_qids_sr__final.csv"
+    elif data == "X_full_rem_qids_c":
+        # Full features, for remissions at week 8 according to qids-c
+        pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200808\1_Replication\X_wk8_rem_qids_c__final.csv"
         
     if label == "y_all_trd":
         # All TRD y in the full STAR*D
@@ -116,6 +119,12 @@ def RunModels(runs, evl, model,f_select, data, label):
         pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\data\final_datasets\to_run_20200311\2_ExternalValidation\y_train_stard_extval.csv'
     elif label == "y_ful_resp_trdcrit":
         pathLabel = r"C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_overlapping_for_trd/y_full_resp_trdcrit.csv"    
+    elif label == "y_full_rem_qids_sr":
+        # Targets for remissions at week 8 according to qids-sr
+        pathLabel = r"C:/Users/jjnun\Documents/Sync\Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200808/1_Replication/y_wk8_rem_qids_sr__final.csv"
+    elif label == "y_full_rem_qids_c":
+        # Targets for remissions at week 8 according to qids-c
+        pathLabel = r"C:/Users/jjnun\Documents/Sync\Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200808/1_Replication/y_wk8_rem_qids_c__final.csv"
         
         
     # Create numpy arrays to store all the results

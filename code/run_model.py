@@ -19,8 +19,8 @@ import numpy as np
 def RunModel(pathData, pathLabel, f_select, model, evl):
     """ Train an ensemble of trees and report the accuracy as they did in the paper
     """
-    testData = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/X_test_cb_extval.csv'
-    testLabel = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/y_test_cv_extval.csv'
+    testData = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/X_test_cb_extval.csv'
+    testLabel = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/y_test_cv_extval.csv'
     
     # read data and chop the header
     X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]

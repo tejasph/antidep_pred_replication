@@ -7,8 +7,6 @@ Was thinking of making it parralel, but the ML models already run in parralel so
 there is no point
 """
 
-
-
 if __name__ == "__main__":
     runs = 100
     
@@ -19,11 +17,15 @@ if __name__ == "__main__":
     # Output for the model change table, fourth changing the target and inclusion criteria
     ## RunModels(runs, "cv", "rf", "all", "X_full_resp", "y_ovlap_resp")    
 
+    # Output for the model change table, changings to week 8 qids c and sr remission
+    RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_c", "y_full_rem_qids_c")  
+    RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_sr", "y_full_rem_qids_sr")  
+
     
     # Replication table
-    for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
-        for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
-            RunModels(runs, "cv", model, f_select, "X_full_trd", "y_all_trd")
+    ##for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
+    ##    for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
+    ##        RunModels(runs, "cv", model, f_select, "X_full_trd", "y_all_trd")
         
     
     print("Ran all succesfully!")
