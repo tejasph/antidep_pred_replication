@@ -18,8 +18,8 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_full_resp", "y_ovlap_resp")    
 
     # Output for the model change table, changings to week 8 qids c and sr remission
-    RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_c", "y_full_rem_qids_c")  
-    RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_sr", "y_full_rem_qids_sr")  
+    ## RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_c", "y_full_rem_qids_c")  
+    ## RunModels(runs, "cv", "rf", "all", "X_full_rem_qids_sr", "y_full_rem_qids_sr")  
 
     
     # Replication table

@@ -27,7 +27,7 @@ startTime = datetime.datetime.now()
     ##pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\532M_project\data\teyden-git\code\data-cleaning\final_datasets\to_run_experiment_simple_imput\y_lvl2_rem_qids01__final_simple_imputation.csv'
 
 # Parameters
-pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND Replication\teyden-git\results'    
+pathResults = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\results'    
 runs = 100
 
 # Evaluation
