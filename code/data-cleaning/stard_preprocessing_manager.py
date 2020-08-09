@@ -812,8 +812,10 @@ def generate_y(root_data_dir_path):
 
     print("\n--------------------------------7. Y MATRIX GENERATION-----------------------------------\n")
 
-    y_lvl2_rem_qids01 = pd.DataFrame()
-    y_wk8_response_qids01 = pd.DataFrame()
+    #y_lvl2_rem_qids_c = pd.DataFrame()
+    #y_lvl2_rem_qids_sr = pd.DataFrame()
+    #y_wk8_resp_qids_c = pd.DataFrame()
+    #y_wk8_resp_qids_sr = pd.DataFrame()
     y_wk8_rem_qids_c = pd.DataFrame()
     y_wk8_rem_qids_sr = pd.DataFrame()
 
@@ -840,44 +842,67 @@ def generate_y(root_data_dir_path):
             
             over21_df = scale_df.loc[scale_df['days_baseline'] > 21] # New, use this to check subjects remained 4 weeks. 
             
-            i = 0
-            for id, group in scale_df.groupby(['subjectkey']):
-                if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
-                    y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
-                    subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
-                    # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
-                    # do not remit in Level 1 and then drop out
-                    if subset.shape[0] > 0:
-                        y_lvl2_rem_qids01.loc[i, "target"] = 1
+            for vers in ['c', 'sr']:
+                y_lvl2_rem_qids01 = pd.DataFrame()
+                y_wk8_resp_qids01 = pd.DataFrame()
                 
-                    # Assign 0 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
-                    subset_rems = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
-                    if subset_rems.shape[0] > 0:
-                        y_lvl2_rem_qids01.loc[i, "target"] = 0
-
+                if vers == 'c': 
+                    version_form = 'Clinician'
+                elif vers == 'sr': 
+                    version_form = 'Self Rating'
+                else:
+                    Exception()
+                
+                i = 0
+                for id, group in scale_df.groupby(['subjectkey']):
+                    if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
+                        y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
+                        subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
+                        # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
+                        # do not remit in Level 1 and then drop out
+                        if subset.shape[0] > 0:
+                            y_lvl2_rem_qids01.loc[i, "target"] = 1
+                    
+                        # Assign 0 to all subjects who achieve QIDS-C remission in Levels 1,2,2.1
+                        subset_rems = group[(group['version_form'] == version_form) & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
+                        if subset_rems.shape[0] > 0:
+                            y_lvl2_rem_qids01.loc[i, "target"] = 0
+    
+                        i += 1
+    
+                # Create CAN-BIND overlapping targets with QIDS-SR remission
+                i = 0
+                for id, group in scale_df.groupby(['subjectkey']):
+                    if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
+                        # Grab the baseline entry
+                        subset = group[(group['version_form'] == version_form)]
+                        if subset.shape[0] == 0:
+                            continue
+    
+                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                        y_wk8_resp_qids01.loc[i, "subjectkey"] = id
+                    
+                        # Grab the later days_baseline entries
+                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
+                        y_wk8_resp_qids01.loc[i, "target"] = 0
+                        for k, row in subset.iterrows():
+                            #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
+                            if row['qstot'] <= 0.5 * baseline:
+                                y_wk8_resp_qids01.loc[i, "target"] = 1
+                                break
                     i += 1
-
-            # Create CAN-BIND overlapping targets with QIDS-SR remission
-            i = 0
-            for id, group in scale_df.groupby(['subjectkey']):
-                if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
-                    # Grab the baseline entry
-                    subset = group[(group['version_form'] == "Self Rating")]
-                    if subset.shape[0] == 0:
-                        continue
-
-                    baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
-                    y_wk8_response_qids01.loc[i, "subjectkey"] = id
                 
-                    # Grab the later days_baseline entries
-                    subset = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
-                    y_wk8_response_qids01.loc[i, "target"] = 0
-                    for k, row in subset.iterrows():
-                        #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
-                        if row['qstot'] <= 0.5 * baseline:
-                            y_wk8_response_qids01.loc[i, "target"] = 1
-                            break
-                i += 1
+                if vers == 'c': 
+                    y_lvl2_rem_qids_c = y_lvl2_rem_qids01
+                    y_wk8_resp_qids_c = y_wk8_resp_qids01
+    
+                elif vers == 'sr': 
+                    y_lvl2_rem_qids_sr = y_lvl2_rem_qids01
+                    y_wk8_resp_qids_sr = y_wk8_resp_qids01
+                else:
+                    Exception()
+                    
+                    
                 
             # Create targets from both QIDS-C and QIDS-SR for week 8 remissions (qids_tot <= 5)
             i = 0
@@ -904,12 +929,12 @@ def generate_y(root_data_dir_path):
 
                     i += 1
             
-            
-                
-                
+    y_lvl2_rem_qids_c.to_csv(output_y_dir_path + "y_lvl2_rem_qids_c" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids_sr.to_csv(output_y_dir_path + "y_lvl2_rem_qids_sr" + CSV_SUFFIX, index=False)
 
-    y_lvl2_rem_qids01.to_csv(output_y_dir_path + "y_lvl2_rem_qids01" + CSV_SUFFIX, index=False)
-    y_wk8_response_qids01.to_csv(output_y_dir_path + "y_wk8_response_qids01" + CSV_SUFFIX, index=False)
+    y_wk8_resp_qids_c.to_csv(output_y_dir_path + "y_wk8_resp_qids_c" + CSV_SUFFIX, index=False)
+    y_wk8_resp_qids_sr.to_csv(output_y_dir_path + "y_wk8_resp_qids_sr" + CSV_SUFFIX, index=False)
+    
     y_wk8_rem_qids_c.to_csv(output_y_dir_path + "y_wk8_rem_qids_c" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_sr.to_csv(output_y_dir_path + "y_wk8_rem_qids_sr" + CSV_SUFFIX, index=False)
 
@@ -933,57 +958,70 @@ def select_subjects(root_data_dir_path):
     orig_data_matrix = pd.read_csv(input_imputed_dir_path + "/rs__cs__ohe__vc__ag__im__stard_data_matrix.csv")
 
     # New final X matrices
-    X_lvl2_rem_qids01 = orig_data_matrix
-    X_wk8_response_qids01 = orig_data_matrix
-    X_wk8_rem_qids_c = orig_data_matrix
-    X_wk8_rem_qids_sr = orig_data_matrix
+    X_nolvl1drop_qids_c = orig_data_matrix
+    X_nolvl1drop_qids_sr = orig_data_matrix
+    X_tillwk4_qids_c = orig_data_matrix
+    X_tillwk4_qids_sr = orig_data_matrix
     
     # Select subjects from imputed (aggregated) data based on the y matrices
 
-    ### Handle the level2 stuff
-    y_lvl2_rem_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids01" + CSV_SUFFIX)
-    X_lvl2_rem_qids01__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_lvl2_rem_qids01, y_lvl2_rem_qids01, 'c')
+    ### Handle the TRD stuff
     
-    # Subset the y matrices so that it matches the X matrices
-    y_lvl2_rem_qids01__final = y_lvl2_rem_qids01[y_lvl2_rem_qids01.subjectkey.isin(X_lvl2_rem_qids01__final.subjectkey)]
+    y_lvl2_rem_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids_c" + CSV_SUFFIX)
+    y_lvl2_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids_sr" + CSV_SUFFIX)
+    
+    X_nolvl1drop_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_nolvl1drop_qids_c, y_lvl2_rem_qids_c, 'c')
+    X_nolvl1drop_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_nolvl1drop_qids_sr, y_lvl2_rem_qids_sr, 'sr')
 
-    ### Handle the week8 response stuff
-    y_wk8_response_qids01 = pd.read_csv(input_y_generation_dir_path + "/y_wk8_response_qids01" + CSV_SUFFIX)
-    X_wk8_response_qids01__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_response_qids01, y_wk8_response_qids01, 'sr')
-    
-    ### Handle the week8 remission stuff
+    # Subset the y matrices so that it matches the X matrices
+    y_lvl2_rem_qids_c__final = y_lvl2_rem_qids_c[y_lvl2_rem_qids_c.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
+    y_lvl2_rem_qids_sr__final = y_lvl2_rem_qids_sr[y_lvl2_rem_qids_sr.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
+        
+    # Handle the week8 response stuff
+    y_wk8_resp_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_c" + CSV_SUFFIX)
+    y_wk8_resp_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_sr" + CSV_SUFFIX)
+
+    # Handle the week8 remission stuff
     y_wk8_rem_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_c" + CSV_SUFFIX)
-    X_wk8_rem_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_c, y_wk8_rem_qids_c, 'c')
-    
-    y_wk8_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_sr" + CSV_SUFFIX)
-    X_wk8_rem_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_wk8_rem_qids_sr, y_wk8_rem_qids_sr, 'sr')
-    
+    y_wk8_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_sr" + CSV_SUFFIX)    
+
+    # Handle the X matrices of subjects who stayed until week 4
+    # These use one of the y's, but it doesn't matter as only uses for subject selection which is same between those y matrices
+    X_tillwk4_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_tillwk4_qids_c, y_wk8_rem_qids_c, 'c')
+    X_tillwk4_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_tillwk4_qids_sr, y_wk8_rem_qids_sr, 'sr')    
+
     
     # Subset the y matrices so that they matches the X matrices
-    y_wk8_response_qids01__final = y_wk8_response_qids01[y_wk8_response_qids01.subjectkey.isin(X_wk8_response_qids01__final.subjectkey)]
-    y_wk8_rem_qids_c__final = y_wk8_rem_qids_c[y_wk8_rem_qids_c.subjectkey.isin(X_wk8_rem_qids_c__final.subjectkey)]
-    y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr[y_wk8_rem_qids_sr.subjectkey.isin(X_wk8_rem_qids_sr__final.subjectkey)]
+    y_wk8_resp_qids_c__final = y_wk8_resp_qids_c[y_wk8_resp_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
+    y_wk8_resp_qids_sr__final = y_wk8_resp_qids_sr[y_wk8_resp_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
+
+    y_wk8_rem_qids_c__final = y_wk8_rem_qids_c[y_wk8_rem_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
+    y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr[y_wk8_rem_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
 
     # Sort both X and y matrices by 'subject' to make sure they match; y should already be sorted by this
-    X_lvl2_rem_qids01__final = X_lvl2_rem_qids01__final.sort_values(by=['subjectkey'])
-    X_wk8_response_qids01__final = X_wk8_response_qids01__final.sort_values(by=['subjectkey'])
-    X_wk8_rem_qids_c__final = X_wk8_rem_qids_c__final.sort_values(by=['subjectkey'])
-    X_wk8_rem_qids_sr__final = X_wk8_rem_qids_sr__final.sort_values(by=['subjectkey'])
+    X_nolvl1drop_qids_c__final = X_nolvl1drop_qids_c__final.sort_values(by=['subjectkey'])
+    X_nolvl1drop_qids_sr__final = X_nolvl1drop_qids_sr__final.sort_values(by=['subjectkey'])
+    X_tillwk4_qids_c__final = X_tillwk4_qids_c__final.sort_values(by=['subjectkey'])
+    X_tillwk4_qids_sr__final = X_tillwk4_qids_sr__final.sort_values(by=['subjectkey'])
     
-    y_lvl2_rem_qids01__final = y_lvl2_rem_qids01__final.sort_values(by=['subjectkey'])
-    y_wk8_response_qids01__final = y_wk8_response_qids01__final.sort_values(by=['subjectkey'])
+    y_lvl2_rem_qids_c__final = y_lvl2_rem_qids_c__final.sort_values(by=['subjectkey'])
+    y_lvl2_rem_qids_sr__final = y_lvl2_rem_qids_sr__final.sort_values(by=['subjectkey'])    
+    y_wk8_resp_qids_c__final = y_wk8_resp_qids_c__final.sort_values(by=['subjectkey'])
+    y_wk8_resp_qids_sr__final = y_wk8_resp_qids_sr__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr__final.sort_values(by=['subjectkey'])
 
     # Output X matrices to CSV
-    X_lvl2_rem_qids01__final.to_csv(output_subject_selected_path + "X_lvl2_rem_qids01__final" + CSV_SUFFIX, index=False)
-    X_wk8_response_qids01__final.to_csv(output_subject_selected_path + "X_wk8_response_qids01__final" + CSV_SUFFIX, index=False)
-    X_wk8_rem_qids_c__final.to_csv(output_subject_selected_path + "X_wk8_rem_qids_c__final" + CSV_SUFFIX, index=False)
-    X_wk8_rem_qids_sr__final.to_csv(output_subject_selected_path + "X_wk8_rem_qids_sr__final" + CSV_SUFFIX, index=False)
+    X_nolvl1drop_qids_c__final.to_csv(output_subject_selected_path + "X_nolvl1drop_qids_c__final" + CSV_SUFFIX, index=False)
+    X_nolvl1drop_qids_sr__final.to_csv(output_subject_selected_path + "X_nolvl1drop_qids_sr__final" + CSV_SUFFIX, index=False)
+    X_tillwk4_qids_c__final.to_csv(output_subject_selected_path + "X_tillwk4_qids_c__final" + CSV_SUFFIX, index=False)
+    X_tillwk4_qids_sr__final.to_csv(output_subject_selected_path + "X_tillwk4_qids_sr__final" + CSV_SUFFIX, index=False)
 
     # Output y matrices to CSV
-    y_lvl2_rem_qids01__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids01__final" + CSV_SUFFIX, index=False)
-    y_wk8_response_qids01__final.to_csv(output_subject_selected_path + "y_wk8_response_qids01__final" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids_c__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids_c__final" + CSV_SUFFIX, index=False)
+    y_lvl2_rem_qids_sr__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids_sr__final" + CSV_SUFFIX, index=False)
+    y_wk8_resp_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_resp_qids_c__final" + CSV_SUFFIX, index=False)
+    y_wk8_resp_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_resp_qids_sr__final" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_c__final" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_sr__final" + CSV_SUFFIX, index=False)
 
@@ -996,11 +1034,11 @@ def handle_subject_selection_conditions(input_row_selected_dir_path, X, y_df, qi
     y = y_df.dropna(axis='rows') # Drop subjects lacking a y value
     X = X[X["subjectkey"].isin(y["subjectkey"])]
     
-    # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries
+    # Select subjects that have ucq entries, aka eliminate subjects that don't have ucq entries, as a proxy for the small amount of subjects missing most patients. 
     file_ucq = pd.read_csv(input_row_selected_dir_path + "/rs__ucq01" + CSV_SUFFIX)
     X = X[X["subjectkey"].isin(file_ucq["subjectkey"])]
     
-    # Select subjects that have ucq entries, aka eliminate subjects that don't have week0 QIDS entries from either QIDS-C or QIDS-SR
+    # Eliminate subjects that don't have week0 QIDS entries from either QIDS-C or QIDS-SR
     file_qids01_w0c = pd.read_csv(input_row_selected_dir_path + "/rs__qids01_w0" + qids_version + CSV_SUFFIX)
     X = X[X["subjectkey"].isin(file_qids01_w0c["subjectkey"])]
 
