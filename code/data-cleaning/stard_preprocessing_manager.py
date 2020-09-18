@@ -845,6 +845,7 @@ def generate_y(root_data_dir_path):
             for vers in ['c', 'sr']:
                 y_lvl2_rem_qids01 = pd.DataFrame()
                 y_wk8_resp_qids01 = pd.DataFrame()
+                y_lvl2_rem_qids01_tillwk4 = pd.DataFrame()
                 
                 if vers == 'c': 
                     version_form = 'Clinician'
@@ -857,6 +858,8 @@ def generate_y(root_data_dir_path):
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
                         y_lvl2_rem_qids01.loc[i, "subjectkey"] = id
+                        y_lvl2_rem_qids01_tillwk4.loc[i, "subjectkey"] = id # Second version that assigns TRD to dropouts, not used by Nie et al
+                        y_lvl2_rem_qids01_tillwk4.loc[i, "target"] = 1 # Default these all to TRD
                         subset = group[(group['level'] == "Level 2") | (group['level'] == "Level 2.1")]
                         # Assign 1 to all subjects who make it to Level 2 or 2.1. This will allow exclusion of patients who
                         # do not remit in Level 1 and then drop out
@@ -867,6 +870,7 @@ def generate_y(root_data_dir_path):
                         subset_rems = group[(group['version_form'] == version_form) & (group['qstot'] <= 5) & ((group['level'] == "Level 1" ) | (group['level'] == "Level 2" ) | (group['level'] == "Level 2.1" ) )]
                         if subset_rems.shape[0] > 0:
                             y_lvl2_rem_qids01.loc[i, "target"] = 0
+                            y_lvl2_rem_qids01_tillwk4.loc[i, "target"] = 0
     
                         i += 1
     
@@ -894,6 +898,7 @@ def generate_y(root_data_dir_path):
                 
                 if vers == 'c': 
                     y_lvl2_rem_qids_c = y_lvl2_rem_qids01
+                    y_lvl2_rem_qids_tillwk4_c = y_lvl2_rem_qids01_tillwk4
                     y_wk8_resp_qids_c = y_wk8_resp_qids01
     
                 elif vers == 'sr': 
@@ -932,6 +937,8 @@ def generate_y(root_data_dir_path):
     y_lvl2_rem_qids_c.to_csv(output_y_dir_path + "y_lvl2_rem_qids_c" + CSV_SUFFIX, index=False)
     y_lvl2_rem_qids_sr.to_csv(output_y_dir_path + "y_lvl2_rem_qids_sr" + CSV_SUFFIX, index=False)
 
+    y_lvl2_rem_qids_tillwk4_c.to_csv(output_y_dir_path + "y_lvl2_rem_qids_tillwk4_c" + CSV_SUFFIX, index=False)
+    
     y_wk8_resp_qids_c.to_csv(output_y_dir_path + "y_wk8_resp_qids_c" + CSV_SUFFIX, index=False)
     y_wk8_resp_qids_sr.to_csv(output_y_dir_path + "y_wk8_resp_qids_sr" + CSV_SUFFIX, index=False)
     
@@ -969,14 +976,19 @@ def select_subjects(root_data_dir_path):
     
     y_lvl2_rem_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids_c" + CSV_SUFFIX)
     y_lvl2_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids_sr" + CSV_SUFFIX)
+
+    y_lvl2_rem_qids_tillwk4_c = pd.read_csv(input_y_generation_dir_path + "/y_lvl2_rem_qids_tillwk4_c" + CSV_SUFFIX)
     
     X_nolvl1drop_qids_c__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_nolvl1drop_qids_c, y_lvl2_rem_qids_c, 'c')
     X_nolvl1drop_qids_sr__final = handle_subject_selection_conditions(input_row_selected_dir_path, X_nolvl1drop_qids_sr, y_lvl2_rem_qids_sr, 'sr')
 
+
+
     # Subset the y matrices so that it matches the X matrices
     y_lvl2_rem_qids_c__final = y_lvl2_rem_qids_c[y_lvl2_rem_qids_c.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
     y_lvl2_rem_qids_sr__final = y_lvl2_rem_qids_sr[y_lvl2_rem_qids_sr.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
-        
+    
+    
     # Handle the week8 response stuff
     y_wk8_resp_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_c" + CSV_SUFFIX)
     y_wk8_resp_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_sr" + CSV_SUFFIX)
@@ -998,6 +1010,9 @@ def select_subjects(root_data_dir_path):
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c[y_wk8_rem_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr[y_wk8_rem_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
 
+    # Also do a form of the lvl 2 remission (TRD) to match the week 4 inclusion criteria
+    y_lvl2_rem_qids_c_tillwk4__final = y_lvl2_rem_qids_tillwk4_c[y_lvl2_rem_qids_tillwk4_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
+
     # Sort both X and y matrices by 'subject' to make sure they match; y should already be sorted by this
     X_nolvl1drop_qids_c__final = X_nolvl1drop_qids_c__final.sort_values(by=['subjectkey'])
     X_nolvl1drop_qids_sr__final = X_nolvl1drop_qids_sr__final.sort_values(by=['subjectkey'])
@@ -1010,6 +1025,15 @@ def select_subjects(root_data_dir_path):
     y_wk8_resp_qids_sr__final = y_wk8_resp_qids_sr__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr__final.sort_values(by=['subjectkey'])
+    
+    y_lvl2_rem_qids_c_tillwk4__final = y_lvl2_rem_qids_c_tillwk4__final.sort_values(by=['subjectkey'])
+    
+    # Make two new y matrices to evaluate performance if a different inclusion is used
+    y_wk8_resp_qids_sr_nolvl1drop = y_wk8_resp_qids_sr__final[y_wk8_resp_qids_sr__final.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
+    y_wk8_resp_qids_c_nolvl1drop = y_wk8_resp_qids_c__final[y_wk8_resp_qids_c__final.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
+    
+
+    
 
     # Output X matrices to CSV
     X_nolvl1drop_qids_c__final.to_csv(output_subject_selected_path + "X_nolvl1drop_qids_c__final" + CSV_SUFFIX, index=False)
@@ -1025,6 +1049,11 @@ def select_subjects(root_data_dir_path):
     y_wk8_rem_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_c__final" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_sr__final" + CSV_SUFFIX, index=False)
 
+    y_lvl2_rem_qids_c_tillwk4__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids_c_tillwk4__final" + CSV_SUFFIX, index=False)
+    
+    y_wk8_resp_qids_sr_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_qids_sr_nolvl1drop" + CSV_SUFFIX, index=False)
+    y_wk8_resp_qids_c_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_qids_c_nolvl1drop" + CSV_SUFFIX, index=False)
+    
     print("Files written to: ", output_subject_selected_path)
 
 def handle_subject_selection_conditions(input_row_selected_dir_path, X, y_df, qids_version):

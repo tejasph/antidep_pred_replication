@@ -19,9 +19,19 @@ import numpy as np
 def RunModel(pathData, pathLabel, f_select, model, evl):
     """ Train an ensemble of trees and report the accuracy as they did in the paper
     """
-    testData = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/X_test_cb_extval.csv'
-    testLabel = r'C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200311/2_ExternalValidation/y_test_cv_extval.csv'
-    
+    if evl == "extval_resp":
+        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
+        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_resp_canbind.csv'
+    elif evl == "extval_rem":
+        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
+        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_rem_canbind.csv'
+    elif evl == "extval_rem_randomized": # A control to make sure our extval_rem results are robust, with the targets scrambled randomly
+        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
+        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_rem_canbind_randomized.csv'  
+    else: # Still set them though they won't be used
+        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
+        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_resp_canbind.csv'
+ 
     # read data and chop the header
     X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
     y_test = np.genfromtxt(testLabel, delimiter=',')[1:,1]
@@ -55,7 +65,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
         if evl == 'cv':
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
-        elif evl == 'extval':
+        elif evl == 'extval_resp' or evl == 'extval_rem' or 'extval_rem_randomized':
             X_train, _ = X[train_index], X[test_index]
             y_train, _ = y[train_index], y[test_index]
         else:
