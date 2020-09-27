@@ -39,8 +39,8 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
 
     # Output to try cv on combind stard and canbind datasets
-    RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_resp_qids_sr_stard_and_cb") 
-    RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_rem_qids_sr_stard_and_cb") 
+    ## RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_resp_qids_sr_stard_and_cb") 
+    ## RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_rem_qids_sr_stard_and_cb") 
 
     # Output for the external validations
     ## RunModels(runs, "extval_resp", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  # X_ovlap_resp is misnamed, simply the subjects who stay till 4 weeks and have qids sr at baseline
@@ -61,6 +61,14 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_ful_resp_trdcrit", "y_wk8_resp_qids_sr_nolvl1drop")
     ## RunModels(runs, "cv", "rf", "all", "X_full_trd", "y_wk8_resp_qids_c_nolvl1drop")
 
+    # Missing gbdt with elas for some reason
+    ## RunModels(runs, "cv", 'gbdt', 'elas', "X_full_trd", "y_all_trd")
+    
+    # Elastic Net model 
+    #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
+    
+    #l2logreg model
+    #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
     
     
     # Replication table
