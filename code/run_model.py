@@ -7,7 +7,7 @@ Yihan, John-Hose, Teyden
 from utility import subsample
 from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.linear_model import SGDClassifier, LogisticRegression, ElasticNet
 from sklearn.metrics import confusion_matrix
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
@@ -98,7 +98,10 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == "elnet":
-                clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=50, alpha=0.01, l1_ratio=0.15)
+                #clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=50, alpha=0.01, l1_ratio=0.15)
+                #clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=10000,l1_ratio=0.5)
+                #clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=10000, alpha=0.01, l1_ratio=0.5)
+                clf[i] = ElasticNet(max_iter=10000, alpha=0.01, l1_ratio=0.5)
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == "gbdt":
@@ -106,7 +109,9 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == 'l2logreg':
-                clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5)
+#               clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5) Joeys
+                #clf[i] = SGDClassifier(loss='log', penalty='l2', max_iter=10000)#, alpha=0.01)#, alpha=0.01)
+                clf[i] = LogisticRegression(penalty='l2',solver='saga',max_iter=10000)
                 clf[i].fit(training[i][:,features],label[i])
                 
             elif model == "xgbt":

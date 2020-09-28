@@ -8,7 +8,7 @@ there is no point
 """
 
 if __name__ == "__main__":
-    runs = 100
+    runs = 10
     
     
     # Table for investigating decreased performance of external validation
@@ -65,11 +65,12 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", 'gbdt', 'elas', "X_full_trd", "y_all_trd")
     
     # Elastic Net model 
-    #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
+    RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
     
     #l2logreg model
-    #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
-    
+    #RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
+    #RunModels(runs, "cv", 'l2logreg', 'chi', "X_full_trd", "y_all_trd")
+    #RunModels(runs, "cv", 'l2logreg', 'elas', "X_full_trd", "y_all_trd")
     
     # Replication table
     ##for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
