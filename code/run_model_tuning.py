@@ -100,7 +100,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
             elif model == "elnet":
                 #clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=50, alpha=0.01, l1_ratio=0.15)
                 #clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=10000,l1_ratio=0.5)
-                clf[i] = SGDClassifier(loss='log', penalty='elasticnet', l1_ratio=0.67, alpha=0.1, max_iter=10000, power_t=0.01)
+                clf[i] = SGDClassifier(loss='log', penalty='elasticnet', l1_ratio=0.67, alpha=0.1, max_iter=10000, power_t=0.01) #max_iter=10000, alpha=0.01, )
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == "gbdt":
@@ -110,8 +110,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
             elif model == 'l2logreg':
 #               clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5) Joeys
                 #clf[i] = SGDClassifier(loss='log', penalty='l2', max_iter=10000)#, alpha=0.01)#, alpha=0.01)
-                #clf[i] = LogisticRegression(penalty='l2',solver='saga',max_iter=10000)
-                clf[i] = LogisticRegression(penalty='l2',solver='lbfgs', max_iter=10000, C=0.092)
+                clf[i] = LogisticRegression(penalty='l2',solver='saga',max_iter=10000)
                 clf[i].fit(training[i][:,features],label[i])
                 
             elif model == "xgbt":
@@ -230,3 +229,10 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
 #             
 #     return features_used_in_rf
 # =============================================================================
+
+pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\X_lvl2_rem_qids01__final.csv'
+pathLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\y_lvl2_rem_qids01__final.csv'
+
+avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance, confus_mat = RunModel(pathData, pathLabel, 'all', 'elnet', 'cv')
+print(f'Balanced accuracy: {avg_bal_acc:.3f} vs Joey 0.73')
+print(f'AUC: {avg_auc:.3f} vs Joey 0.79' )

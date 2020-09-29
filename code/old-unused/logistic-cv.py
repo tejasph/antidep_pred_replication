@@ -36,9 +36,9 @@ def logisticRegressionEnsemble():
         y_train, y_test = y[train_index], y[test_index]
         # Feature selection
         #features = featureSelectionChi(X_train,y_train,30,50)
-        features = featureSelectionELAS(X_train,y_train,31)
+        #features = featureSelectionELAS(X_train,y_train,31)
         #features,_ = featureSelectionAgglo(np.append(y_train.reshape(-1,1),X_train , axis=1),10)
-        #features = np.arange(m)
+        features = np.arange(m)
 
         # Subsampling data
         X_combined = np.append(y_train.reshape(-1,1),X_train,axis=1)

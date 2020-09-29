@@ -51,9 +51,9 @@ def logisticRegressionEnsemble():
         # Train an ensemble of 30 decision trees
         clf = [None]*30
         for i in range(30):
-            #clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5)
+            clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5)
             #clf[i] = LogisticRegression(penalty='l2',solver='saga',max_iter=10000)#l1_ratio=0.5) BA 0.66 AUC 0.72
-            clf[i] = SGDClassifier(loss='log', penalty='l2', max_iter=10000, alpha=0.01)#, alpha=0.01)
+            #clf[i] = SGDClassifier(loss='log', penalty='l2', max_iter=10000, alpha=0.01)#, alpha=0.01)
             clf[i].fit(training[i][:,features],label[i])
 
         # Prediction

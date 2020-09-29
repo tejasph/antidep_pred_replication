@@ -8,7 +8,7 @@ there is no point
 """
 
 if __name__ == "__main__":
-    runs = 10
+    runs = 100
     
     
     # Table for investigating decreased performance of external validation
@@ -61,16 +61,17 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_ful_resp_trdcrit", "y_wk8_resp_qids_sr_nolvl1drop")
     ## RunModels(runs, "cv", "rf", "all", "X_full_trd", "y_wk8_resp_qids_c_nolvl1drop")
 
-    # Missing gbdt with elas for some reason
-    ## RunModels(runs, "cv", 'gbdt', 'elas', "X_full_trd", "y_all_trd")
+    # Missing xgbt with elas for some reason
+    ##RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
     
     # Elastic Net model 
-    RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
+    #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
     
     #l2logreg model
-    #RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
-    #RunModels(runs, "cv", 'l2logreg', 'chi', "X_full_trd", "y_all_trd")
-    #RunModels(runs, "cv", 'l2logreg', 'elas', "X_full_trd", "y_all_trd")
+    ##RunModels(runs, "cv", 'l2logreg', 'elas', "X_full_trd", "y_all_trd")
+    ##RunModels(runs, "cv", 'l2logreg', 'chi', "X_full_trd", "y_all_trd")
+    RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
+    
     
     # Replication table
     ##for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
