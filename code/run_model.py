@@ -115,13 +115,14 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
                 clf[i].fit(training[i][:,features],label[i])
                 
             elif model == "xgbt":
-                param = {'nthread':5, 'booster': 'gbtree', 'max_depth':3, 'eta':0.1, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'lambda':0.5, 'lambda_bias': 0.5, 'subsample' : 1}
+                param = {'nthread':5, 'booster': 'gbtree', 'max_depth':3, 'eta':0.1, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'lambda':0.5, 'lambda_bias': 0.5, 'subsample' : 1} # Original tuning by Joey
+                #param = {'nthread':5, 'booster': 'gbtree', 'max_depth':6, 'learning_rate':0.05, 'n_estimators': 500, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'reg_alpha':10,'reg_lambda':9, 'subsample' : 0.5} # Some extra tuning, didn't help
+
                 num_round = 5            
                 dtrain = xgb.DMatrix(training[i][:,features], label=label[i])
                 bst = xgb.train(param, dtrain, num_round)
                 clf[i] = bst
-
-
+                
         # Prediction
         n = X_test.shape[0]
         if model == "xgbt":

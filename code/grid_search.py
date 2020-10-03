@@ -40,10 +40,12 @@ print(f'The best alpha {grid.best_estimator_.alpha}')
 print(f'The best power_t {grid.best_estimator_.power_t}')
 """
 
-model = LogisticRegression(penalty='l2',solver='lbfgs', max_iter=10000)
+"""
+model = LogisticRegression(penalty='l2',solver='lbfgs')
 grid = GridSearchCV(estimator=model, n_jobs=6, scoring='balanced_accuracy', param_grid={
-    'C': [p/1000 for p in range(90, 120, 1)]})
-    # 'max_iter': [1000, 10000, 20000]})
+    'tol' : [0.1, 0.01, 0.001, 'none'],
+    'max_iter': [10000, 20000, 100000]})
+    #'C': [p/1000 for p in range(90, 120, 1)]})
     #'solver': ['lbfgs', saga, liblinear]})
 
 grid.fit(X,y)
@@ -51,5 +53,40 @@ print(grid)
 # summarize the results of the grid search
 print(f'The best balanced accuracy: {grid.best_score_:.4f}')
 print(f'The best max_iter {grid.best_estimator_.max_iter}')
-print(f'The best C {grid.best_estimator_.C}')
-print(f'The best solver {grid.best_estimator_.solver}')
+print(f'The best tol {grid.best_estimator_.tol}')
+#print(f'The best C {grid.best_estimator_.C}')
+#print(f'The best solver {grid.best_estimator_.solver}')
+"""
+xgb_model = xgb.XGBClassifier()
+grid = GridSearchCV(xgb_model, n_jobs=1, 
+                   scoring='balanced_accuracy',
+                   param_grid={
+                       'nthread':[15], #when use hyperthread, xgboost may become slower
+                       'objective':['binary:logistic'],
+                       'booster' : ['gbtree'],
+                       'learning_rate': [0.05], #so called `eta` value
+                       'max_depth': [6],
+                       'min_child_weight': [11],
+                       'silent': [1],
+                       'subsample': [0.5],
+                       'colsample_bytree': [0.8],
+                       'n_estimators': [500], #number of trees, change it to 1000 for better results
+                       'missing':[-999],
+                       'seed': [1337],
+                       'reg_lambda':[6,7,8,9,10,11,12,13,14,15],
+                       'reg_alpha':[6,7,8,9,10,11,12,13,14,15]})
+                  
+#param = {'nthread':5, 'booster': 'gbtree', 'max_depth':3, 'eta':0.1, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'lambda':0.5, 'lambda_bias': 0.5, 'subsample' : 1}
+
+
+grid.fit(X,y)
+print(grid)
+# summarize the results of the grid search
+print(f'The best balanced accuracy: {grid.best_score_:.4f} trying to be 0.70')
+print(f'The best learning_rate {grid.best_estimator_.learning_rate}')
+print(f'The best max_depth {grid.best_estimator_.max_depth}')
+print(f'The best colsample_bytree {grid.best_estimator_.colsample_bytree}')
+print(f'The best n_estimators {grid.best_estimator_.n_estimators}')
+print(f'The best subsample {grid.best_estimator_.subsample}')
+print(f'The best alpha {grid.best_estimator_.reg_alpha}')
+print(f'The best lambda {grid.best_estimator_.reg_lambda}')

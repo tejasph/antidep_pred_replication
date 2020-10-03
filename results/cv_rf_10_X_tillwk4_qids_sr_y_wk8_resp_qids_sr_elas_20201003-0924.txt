@@ -1,0 +1,194 @@
+MODEL RESULTS for run at: cv_rf_10_X_tillwk4_qids_sr_y_wk8_resp_qids_sr_elas_20201003-0924.txt
+
+Model Parameters:-----------------------------------
+Evaluation: cv
+Model: rf
+Feature selection: elas
+X is: C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_tillwk4_qids_sr__final.csv
+y is: C:/Users/jjnun\Documents/Sync\Research/1_CANBIND_Replication/teyden-git/data/final_datasets/to_run_20200809/y_wk8_resp_qids_sr__final.csv
+10 runs of 10-fold CV
+
+Summary of Results:------------------------------------
+Mean accuracy is: 0.6537, with Standard Deviation: 0.004681
+Mean balanced accuracy is: 0.6750, with Standard Deviation: 0.005756
+Mean AUC is: 0.7322, with Standard Deviation: 0.004490
+Mean sensitivty is: 0.5496, with Standard Deviation: 0.005776
+Mean specificty is: 0.8003, with Standard Deviation: 0.011842
+Mean precision is: 0.7962, with Standard Deviation: 0.009251
+Mean f1 is: 0.6495, with Standard Deviation: 0.0046
+Mean true positive is: 0.3222, with Standard Deviation: 0.003405
+Mean false positive is: 0.0826, with Standard Deviation: 0.004823
+Mean true negative is: 0.3314, with Standard Deviation: 0.004822
+Mean false negative is: 0.2638, with Standard Deviation: 0.003406
+Mean number of features used is: 30.5977 of 480, with Standard Deviation: 0.0555
+
+Feature Importance And Use:---------------------------
+Top 30 Features by importance, in descending order (1st most important):
+By position in data matrix, 1 added to skip index=0 
+[240 239 206 211 212 213 216 217 222 223 224 225 226 227 229 230 231 236
+ 237 204 199 198 187 171 176 177 178 180 181 182]
+pdsq01__emanx
+pdsq01__empty
+pdsq01__peslp
+pdsq01__imspy
+pdsq01__imdgr
+pdsq01__impwr
+pdsq01__fravd
+pdsq01__frfar
+pdsq01__frcar
+pdsq01__fralo
+pdsq01__fropn
+pdsq01__franx
+pdsq01__frsit
+pdsq01__emwry
+pdsq01__ematn
+pdsq01__emsoc
+pdsq01__emavd
+pdsq01__emstp
+pdsq01__emqst
+pdsq01__pechr
+pdsq01__anrsn
+pdsq01__anshk
+pdsq01__ebwgh
+pdsq01__tefsh
+pdsq01__tegrd
+pdsq01__tejmp
+pdsq01__ebnge
+pdsq01__ebfl
+pdsq01__ebhgy
+pdsq01__ebaln
+
+Statistical Significance:----------------------------
+Raw results:----------------------------------------
+Accuracies
+[0.65907919,0.65473849,0.65311674,0.65904422,0.64518392,0.64517518,0.65442594,0.6570662,0.65343256,0.65544445]
+Balanced Accuracies
+[0.6802151,0.67497756,0.67474064,0.68198574,0.66331709,0.66522416,0.67694913,0.67718412,0.67717477,0.67814213]
+AUCs
+[0.73492759,0.73316811,0.73768503,0.73181697,0.72483079,0.72278209,0.7340399,0.73592019,0.73277037,0.73375184]
+Sensitivites
+[0.5577297,0.55738299,0.54825184,0.54816842,0.54807101,0.54603141,0.54980521,0.55698287,0.5390543,0.54488517]
+Specificities
+[0.8027005,0.79257213,0.80122945,0.81580306,0.77856318,0.7844169,0.80409306,0.79738536,0.81529523,0.81139909]
+Precisions
+[0.79932733,0.79340413,0.79556924,0.80899926,0.77711351,0.78370755,0.79928319,0.79521711,0.80546659,0.80377473]
+F1s
+[0.65636068,0.6536057,0.64833606,0.65262119,0.64205776,0.64302582,0.65042396,0.654253,0.64557712,0.6488986,]
+Number of features used
+[30.67666667,30.65333333,30.64333333,30.51666667,30.6,30.52666667,30.52666667,30.63333333,30.62666667,30.57333333]
+Mean Feature importances Across Runs
+[,nan,nan,nan,nan,nan,2.6776e-02,1.0000e-01,nan
+,nan,nan,nan,nan,nan,6.0000e-02,nan,nan
+,nan,nan,nan,6.5556e-03,2.2288e-02,nan,nan,nan
+,2.5228e-02,2.2311e-02,1.0000e-02,3.5500e-01,3.3750e-02,2.0000e-02,9.0000e-02,4.0000e-02
+,4.6724e-02,4.0000e-02,4.0500e-01,1.5000e-02,1.0000e-02,5.0387e-02,nan,nan
+,nan,2.7000e-01,nan,nan,nan,3.6852e-04,nan,nan
+,2.3100e-01,nan,nan,nan,2.4734e-02,nan,nan,2.0000e-01
+,nan,nan,nan,nan,nan,nan,1.3000e-01,nan
+,nan,3.1172e-02,2.2541e-02,nan,4.0000e-02,8.6500e-01,nan,nan
+,nan,3.0940e-01,nan,3.0214e-02,6.8913e-01,nan,nan,nan
+,1.4000e-01,5.0000e-03,1.0000e-02,2.1500e-01,nan,nan,nan,nan
+,nan,nan,7.0000e-02,nan,nan,nan,8.8750e-02,nan
+,2.0000e-02,1.0500e-01,nan,nan,nan,nan,nan,nan
+,5.0000e-02,nan,nan,nan,-2.0000e-02,2.0000e-02,4.0000e-02,9.0000e-02
+,1.6304e-02,nan,nan,1.5000e-02,3.1420e-02,1.0000e-02,6.6000e-01,1.0000e-02
+,2.0000e-02,4.0000e-02,1.1125e-01,4.4791e-02,2.0000e-02,2.3139e+00,1.0000e-02,2.0000e-02
+,3.0000e-02,1.7000e-01,2.8207e-02,1.0000e-02,1.7900e+00,nan,nan,nan
+,8.0590e-03,1.2355e-02,3.0000e-02,4.6000e-01,nan,nan,nan,3.5599e-02
+,3.1490e-02,3.0000e-02,4.3000e-01,nan,nan,nan,5.8500e-01,4.1748e-02
+,3.0000e-02,2.8741e-02,1.2000e-01,5.1884e-02,4.0000e-02,2.4540e-02,5.6698e-02,3.0000e-02
+,4.0000e-01,nan,nan,nan,6.3500e-01,2.1975e-02,3.0000e-02,3.1000e-01
+,nan,nan,nan,2.3711e-01,4.3200e-02,3.1126e-02,1.0000e-01,nan
+,nan,nan,8.6845e-02,nan,nan,nan,-2.0000e-02,2.0000e-02
+,1.7693e-02,8.5676e-02,nan,nan,nan,nan,nan,nan
+,2.0000e-02,nan,nan,nan,nan,nan,nan,1.9500e-01
+,5.0000e-03,1.0000e-02,6.0000e-02,nan,1.5348e-02,nan,3.3959e-01,4.1653e-02
+,4.0000e-02,2.6156e-01,nan,nan,nan,4.8997e-03,1.0237e-02,nan
+,nan,2.0000e-02,1.0000e-02,3.0000e-02,1.2682e-01,nan,nan,nan
+,nan,nan,nan,5.0000e-02,nan,nan,nan,-1.0000e-02
+,2.0000e-02,3.0000e-02,3.1500e-01,nan,nan,nan,nan,nan
+,nan,2.0000e-02,nan,nan,nan,nan,nan,nan
+,1.3799e-02,nan,nan,3.1873e-02,nan,nan,nan,3.3000e-01
+,1.1352e-02,1.0226e-02,5.0000e-02,nan,nan,nan,2.0000e-01,1.0000e-02
+,1.8634e-02,2.0000e-02,nan,nan,nan,1.4021e-01,2.0000e-02,2.0000e-02
+,9.0000e-02,3.5000e-02,3.5000e-02,5.0000e-02,5.1665e-02,nan,nan,nan
+,-7.2672e-03,2.0028e-02,1.0109e-02,4.5000e-02,nan,nan,nan,-1.0000e-02
+,3.0000e-02,4.0026e-02,4.0966e-02,nan,nan,7.0571e-04,nan,nan
+,nan,1.3976e-01,nan,nan,8.6640e-03,nan,nan,nan
+,5.5000e-02,nan,nan,nan,nan,nan,nan,3.0019e-02
+,4.0000e-02,1.0410e-01,3.5000e-02,2.2268e-04,nan,nan,3.3000e-01,1.7262e-03
+,4.4500e-01,5.4978e-02,2.7320e-02,1.9754e+01,1.0317e-02,2.0500e-01,1.4812e-02,4.5009e-02
+,1.2950e+00,4.5000e-02,1.2715e+01,1.0000e-02,1.1113e-01,1.4821e-02,6.5000e-02,4.1425e-01
+,5.5000e-02,2.7628e+00,3.0000e-02,1.2500e-01,2.4669e-02,5.0000e-02,3.7000e-01,4.0000e-02
+,4.5000e-02,2.0000e-02,2.2625e+01,nan,nan,nan,-2.0000e-02,3.0000e-02
+,2.0905e-02,4.5000e-02,nan,nan,nan,nan,4.3742e-02,nan
+,1.2599e-02,nan,1.1420e-01,nan,5.1842e-02,4.0000e-02,4.0000e-02,4.7759e-02
+,nan,nan,nan,1.0000e-02,2.0000e-02,4.5000e-02,7.0000e-02,nan
+,nan,nan,1.0000e-01,2.0000e-02,2.1500e-01,1.7968e-01,1.0500e-01,8.6300e+00
+,1.2542e-01,5.5000e-02,1.3911e-02,1.0500e-01,2.9887e-01,3.5835e-02,nan,nan
+,5.3215e-02,nan,4.5579e-02,5.0472e-02,6.1006e-02,8.2000e-01,1.0600e+00,9.5000e-02
+,2.2604e-02,9.0000e-02,1.9500e-01,2.5000e-02,2.3000e-01,2.4000e-01,2.2770e+01,3.1528e-02
+,1.4456e-01,3.0238e-01,nan,nan,nan,1.5000e-01,8.0000e-02,2.0296e-02
+,2.2760e-01,1.4875e-01,3.2528e-02,1.1000e-01,nan,nan,nan,4.2506e-01
+,nan,nan,nan,nan,nan,nan,3.7862e-01,nan
+,nan,nan,nan,nan,nan,3.8881e-01,nan,nan
+,nan,nan,nan,nan,1.0556e+01,nan,nan,1.7671e-01
+,nan,nan,nan,4.5201e-01,nan,nan,nan,nan
+,nan,nan,8.3753e-01,nan,nan,nan,nan,nan
+,nan,1.5000e-01,nan,nan,nan,6.5538e+02,1.1001e-01,1.0006e-02
+,2.0972e+04,nan,nan,nan,1.8001e-01,3.2120e-02,1.3361e-01,1.3716e-01]
+Mean Feature importances std. deviation Across Runs
+[,nan,nan,nan,nan,nan,6.0526e-02,2.3664e-01,nan,nan
+,nan,nan,nan,nan,1.2000e-01,nan,nan,nan,nan
+,nan,4.8267e-04,8.3677e-04,nan,nan,nan,1.1668e-01,5.9629e-02,3.0000e-02
+,9.0179e-01,6.3258e-02,6.0000e-02,2.3854e-01,5.3852e-02,7.7827e-02,9.1652e-02,8.6616e-01,3.2016e-02
+,3.0000e-02,1.2026e-01,nan,nan,nan,6.5429e-01,nan,nan,nan
+,4.5007e-05,nan,nan,5.6018e-01,nan,nan,nan,1.4739e-03,nan
+,nan,4.1713e-01,nan,nan,nan,nan,nan,nan,2.0025e-01
+,nan,nan,6.4358e-02,2.9612e-02,nan,8.0000e-02,2.4133e+00,nan,nan
+,nan,8.9407e-01,nan,8.9931e-02,1.7769e+00,nan,nan,nan,3.9799e-01
+,1.5000e-02,3.0000e-02,3.9246e-01,nan,nan,nan,nan,nan,nan
+,1.1874e-01,nan,nan,nan,2.2669e-01,nan,4.0000e-02,1.6800e-01,nan
+,nan,nan,nan,nan,nan,6.7082e-02,nan,nan,nan
+,9.7980e-02,4.0000e-02,8.0000e-02,1.4457e-01,2.8176e-02,nan,nan,9.5000e-02,6.3505e-02
+,3.0000e-02,1.5416e+00,3.0000e-02,4.0000e-02,8.0000e-02,1.8032e-01,7.8648e-02,6.0000e-02,5.5329e+00
+,3.0000e-02,6.0000e-02,6.4031e-02,3.7094e-01,3.9289e-02,3.0000e-02,5.1714e+00,nan,nan
+,nan,7.8860e-02,3.0047e-02,6.4031e-02,1.3139e+00,nan,nan,nan,1.2305e-01
+,6.3487e-02,9.0000e-02,1.0946e+00,nan,nan,nan,1.6721e+00,7.9295e-02,6.4031e-02
+,3.9917e-02,2.6758e-01,1.0170e-01,1.2000e-01,6.5639e-04,1.0029e-01,6.4031e-02,8.9107e-01,nan
+,nan,nan,1.5802e+00,3.9447e-02,6.4031e-02,8.0181e-01,nan,nan,nan
+,5.9318e-01,7.8969e-02,6.3531e-02,1.7889e-01,nan,nan,nan,2.2614e-01,nan
+,nan,nan,6.0000e-02,4.0000e-02,2.9422e-02,1.6716e-01,nan,nan,nan
+,nan,nan,nan,1.0770e-01,nan,nan,nan,nan,nan
+,nan,5.3125e-01,1.5000e-02,3.0000e-02,1.2000e-01,nan,4.3443e-04,nan,9.2233e-01
+,9.1062e-02,8.0000e-02,6.4937e-01,nan,nan,nan,4.1179e-04,2.5379e-04,nan
+,nan,1.1662e-01,3.0000e-02,6.4031e-02,3.4538e-01,nan,nan,nan,nan
+,nan,nan,1.5000e-01,nan,nan,nan,7.0000e-02,4.0000e-02,6.4031e-02
+,8.3068e-01,nan,nan,nan,nan,nan,nan,9.7980e-02,nan
+,nan,nan,nan,nan,nan,2.9713e-02,nan,nan,6.4246e-02
+,nan,nan,nan,9.9303e-01,2.9601e-02,2.9932e-02,9.2195e-02,nan,nan
+,nan,5.4589e-01,3.0000e-02,2.9795e-02,4.0000e-02,nan,nan,nan,4.5863e-01
+,6.0000e-02,6.0000e-02,1.8138e-01,6.3443e-02,6.3443e-02,1.0247e-01,1.1983e-01,nan,nan
+,nan,7.0000e-02,4.0024e-02,7.9340e-04,7.8899e-02,nan,nan,nan,7.0000e-02
+,6.4031e-02,8.0012e-02,5.5842e-02,nan,nan,9.6419e-05,nan,nan,nan
+,4.1439e-01,nan,nan,2.4470e-04,nan,nan,nan,1.8228e-01,nan
+,nan,nan,nan,nan,nan,1.0999e-01,9.1652e-02,2.7947e-01,4.5000e-02
+,1.7081e-05,nan,nan,9.6130e-01,4.4765e-04,1.2366e+00,7.8900e-02,6.5768e-02,5.9162e+01
+,3.0083e-02,5.0222e-01,3.1815e-02,7.8893e-02,3.8684e+00,7.2284e-02,3.8011e+01,3.0000e-02,2.3804e-01
+,3.1824e-02,1.0500e-01,1.0989e+00,9.0692e-02,8.2219e+00,6.4031e-02,1.9138e-01,4.0118e-02,1.0247e-01
+,1.0441e+00,6.6332e-02,7.8899e-02,4.0000e-02,6.7792e+01,nan,nan,nan,6.0000e-02
+,6.4031e-02,3.9570e-02,6.5000e-02,nan,nan,nan,nan,4.9374e-03,nan
+,8.1202e-02,nan,6.4597e-02,nan,3.1137e-02,6.6332e-02,6.6332e-02,1.0956e-03,nan
+,nan,nan,9.4340e-02,4.0000e-02,1.0595e-01,1.0770e-01,nan,nan,nan
+,2.1909e-01,4.0000e-02,3.4789e-01,2.7496e-01,1.3124e-01,2.5657e+01,2.3658e-01,1.0595e-01,3.0975e-02
+,1.1500e-01,4.7189e-01,2.6673e-03,nan,nan,1.1558e-03,nan,8.6071e-04,9.9341e-04
+,1.1953e-01,2.4268e+00,2.9813e+00,1.2339e-01,3.9457e-02,1.1358e-01,3.7713e-01,4.0311e-02,3.8743e-01
+,3.2924e-01,6.7910e+01,6.3477e-02,2.3074e-01,4.2734e-01,nan,nan,nan,2.5397e-01
+,1.2490e-01,3.9862e-02,4.1411e-01,2.3079e-01,8.9475e-02,1.4457e-01,nan,nan,nan
+,7.8469e-01,nan,nan,nan,nan,nan,nan,4.8042e-01,nan
+,nan,nan,nan,nan,nan,5.9422e-01,nan,nan,nan
+,nan,nan,nan,3.0952e+01,nan,nan,3.3613e-01,nan,nan
+,nan,7.5680e-01,nan,nan,nan,nan,nan,nan,1.1411e+00
+,nan,nan,nan,nan,nan,nan,3.9051e-01,nan,nan
+,nan,1.3107e+03,1.9723e-01,2.9998e-02,4.1943e+04,nan,nan,nan,2.8914e-01
+,4.4869e-02,4.0101e-03,9.3234e-03]

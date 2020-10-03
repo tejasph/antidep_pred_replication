@@ -42,7 +42,7 @@ model = "rf"
 ##model = "xgbt"
 
 
-f_select =  "all" #chi, elas
+#f_select =  "all" #chi, elas
 #f_select = "elas"
 #data = "X_full_trd"
 #data = "X_ovlap_resp" # For external validation
@@ -57,20 +57,19 @@ f_select =  "all" #chi, elas
 #data = "X_top10_ovlap_trd"
 #data = "ovlap_trd"
 #data = "X_full_resp"
-data = "X_ful_resp_trdcrit"
+#data = "X_ful_resp_trdcrit"
 
 #label = "y_all_trd"
 #label = "y_ovlap_resp" # Keep the old name, it's just the y for the training data for ext val
-label = "y_ful_resp_trdcrit" # Y for response, but using the TRD subject selection criteria 
+#label = "y_ful_resp_trdcrit" # Y for response, but using the TRD subject selection criteria 
 
-def RunModels(runs, evl, model,f_select, data, label):
-    
+def RunModels(runs, evl, model,f_select, data, label):    
     data_dir = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\\"
     
     if data == "X_full_trd":
         # Full features, y is TRD, replicating Nie et al
         pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200311\1_Replication\X_lvl2_rem_qids01__final.csv'
-    elif data == "X_ovlap_resp" or "X_ovlap_tillwk4_sr":
+    elif (data == "X_ovlap_resp") or (data == "X_ovlap_tillwk4_sr"):
         # Only features overlapping with CANBIND, with the week 4 subject selection criteria, having qids sr values in week0
         pathData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_train_stard_extval.csv'
     elif data == "X_ovlap_trd":
@@ -107,9 +106,9 @@ def RunModels(runs, evl, model,f_select, data, label):
         # Full features, all subjects who last until week 4, and have baseline QIDS-C. (For remissions/responses at week 8 according to qids-c)
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_tillwk4_qids_c__final.csv"
     elif data == "X_tillwk4_qids_sr":
-        # Full features, all subjects who last until week 4, and have baseline QIDS-SR. (For remissions/responses at week 8 according to qids-c)
+        # Full features, all subjects who last until week 4, and have baseline QIDS-SR. (For remissions/responses at week 8 according to qids-sr)
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_tillwk4_qids_sr__final.csv"
-    elif data == "X_nolvl1drop_qids_sr__final":
+    elif data == "X_nolvl1drop_qids_sr":
         # X for TRD, no level 1 drop, and requires initial QIDS-SR
         pathData = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_nolvl1drop_qids_sr__final.csv"
     elif data == "X_nolvl1drop_qids_c__final":
@@ -168,8 +167,6 @@ def RunModels(runs, evl, model,f_select, data, label):
     elif label == "y_wk8_resp_qids_c_nolvl1drop":    
         # qids c response, but only for subjects within the nolvl1drop dataset
         pathLabel = r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_resp_qids_c_nolvl1drop.csv"
-    
-    
         
     # Create numpy arrays to store all the results
     accus = np.zeros(runs)

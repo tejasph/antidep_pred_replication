@@ -2,9 +2,6 @@ from run_models import RunModels
 
 """
 Top level function to run models. 
-Was not used for all results
-Was thinking of making it parralel, but the ML models already run in parralel so 
-there is no point
 """
 
 if __name__ == "__main__":
@@ -12,9 +9,6 @@ if __name__ == "__main__":
     
     
     # Table for investigating decreased performance of external validation
-    # Output for the model change table, third row only changing the target
-    ## RunModels(runs, "cv", "rf", "all", "X_ful_resp_trdcrit", "y_ful_resp_trdcrit")
-    # Output for the model change table, fourth changing the target and inclusion criteria
     ## RunModels(runs, "cv", "rf", "all", "X_full_resp", "y_ovlap_resp")    
 
     # Output for the model change table, changings to week 8 qids c and sr remission
@@ -37,11 +31,33 @@ if __name__ == "__main__":
     # Output for the model change table, more QIDS-SR remission
     ## RunModels(runs, "cv", "rf", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr") 
     ## RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
+    
+    ##RunModels(runs, "cv", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    
+    ## Table 6
+    ##RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_c", "y_wk8_resp_qids_c")  
+    ##RunModels(runs, "cv", "rf", "all", "X_nolvl1drop_qids_sr", "y_wk8_resp_qids_sr_nolvl1drop")
+    RunModels(runs, "cv", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_resp_qids_sr_stard_and_cb") 
 
-    # Output to try cv on combind stard and canbind datasets
+    ## ? Extra for Table 6
+    ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
+    ##RunModels(runs, "cv", "l2logreg", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
+    
+    ## ? New version of Table 6
+    ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
+
+    
+    # Output to try cv on combined stard and canbind datasets
     ## RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_resp_qids_sr_stard_and_cb") 
     ## RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_rem_qids_sr_stard_and_cb") 
-
+    
     # Output for the external validations
     ## RunModels(runs, "extval_resp", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  # X_ovlap_resp is misnamed, simply the subjects who stay till 4 weeks and have qids sr at baseline
     ## RunModels(runs, "extval_rem", "rf", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
@@ -62,7 +78,9 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_full_trd", "y_wk8_resp_qids_c_nolvl1drop")
 
     # Missing xgbt with elas for some reason
-    ##RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
+    ## RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
+    ## RunModels(runs, "cv", 'xgbt', 'chi', "X_full_trd", "y_all_trd")
+    ## RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
     
     # Elastic Net model 
     #RunModels(runs, "cv", 'elnet', 'all', "X_full_trd", "y_all_trd")
@@ -70,7 +88,7 @@ if __name__ == "__main__":
     #l2logreg model
     ##RunModels(runs, "cv", 'l2logreg', 'elas', "X_full_trd", "y_all_trd")
     ##RunModels(runs, "cv", 'l2logreg', 'chi', "X_full_trd", "y_all_trd")
-    RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
+    ##RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
     
     
     # Replication table
