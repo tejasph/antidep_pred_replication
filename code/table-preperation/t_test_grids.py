@@ -5,7 +5,7 @@ Created on Fri Sep 18 10:14:57 2020
 @author: jjnun
 """
 from scipy.stats import ttest_ind
-from result_dicts import TABLE3_BACCS, TABLE3_AUCS, TABLE4_BACCS, TABLE4_AUCS
+from result_dicts import TABLE3_BACCS, TABLE3_AUCS, TABLE4_BACCS, TABLE4_AUCS, TABLE5_BACCS, TABLE5_AUCS
 
 def write_t_test_grid(output_dir, baccs, aucs):
     output_path = output_dir + 't_test_grid.csv'
@@ -35,7 +35,11 @@ def write_t_test_grid(output_dir, baccs, aucs):
 
 table3_path = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table3_Replication/'
 table4_path = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table4_ExternalValidation/'
+table5_path = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table5_Comparing/'
+
+
 
 write_t_test_grid(table3_path, TABLE3_BACCS, TABLE3_AUCS)
 write_t_test_grid(table4_path, TABLE4_BACCS, TABLE4_AUCS)
+write_t_test_grid(table5_path, TABLE5_BACCS, TABLE5_AUCS)
 

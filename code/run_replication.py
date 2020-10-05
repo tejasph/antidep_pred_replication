@@ -39,12 +39,12 @@ if __name__ == "__main__":
     ##RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
     ##RunModels(runs, "cv", "rf", "all", "X_tillwk4_qids_c", "y_wk8_resp_qids_c")  
     ##RunModels(runs, "cv", "rf", "all", "X_nolvl1drop_qids_sr", "y_wk8_resp_qids_sr_nolvl1drop")
-    RunModels(runs, "cv", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr") 
     ##RunModels(runs, "cv", "rf", "all", "X_overlap_stard_and_cb", "y_wk8_resp_qids_sr_stard_and_cb") 
 
     ## ? Extra for Table 6
     ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
-    ##RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
     ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     ##RunModels(runs, "cv", "l2logreg", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     

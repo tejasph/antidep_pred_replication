@@ -9,7 +9,9 @@ import os
 import re
 
 ##output_dir = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table3_Replication/'
-output_dir = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table4_ExternalValidation/'
+##output_dir = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table4_ExternalValidation/'
+output_dir = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\Paper Submission\DataForFigures\Table5_Comparing/'
+
 mean_re = re.compile('is: 0\.\d{1,4}')
 mean_re = re.compile('a')
 sd_re = re.compile('Deviation: 0\.\d{1,4}')
