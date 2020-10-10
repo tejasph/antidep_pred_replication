@@ -79,8 +79,8 @@ if __name__ == "__main__":
 
     # Missing xgbt with elas for some reason
 
-    ## RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
-    RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
+    RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
+    ## RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'chi', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
     

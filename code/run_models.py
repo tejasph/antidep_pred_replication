@@ -246,7 +246,7 @@ def RunModels(runs, evl, model,f_select, data, label):
     f.write("By position in data matrix, 1 added to skip index=0 \n")
     #print("Here are the top 30 features...")
     #print(top_30_features + 1)
-    print(f'here are the importance of features: {avg_impts}')
+    ##print(f'here are the importance of features: {avg_impts}')
     
     if np.sum(avg_impts) != 0:
         f.write(str(top_30_features + 1) + "\n")

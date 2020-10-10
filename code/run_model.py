@@ -3,7 +3,7 @@
 CPSC 532M project
 Yihan, John-Hose, Teyden
 """
-
+import re
 from utility import subsample
 from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -135,6 +135,9 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
         for i in range(ensemble_n):
             if model == "xgbt":
                 pred_prob += clf[0].predict(dtest)
+                feature_importance += xgbt_feature_importance(len(features), clf[0])
+                ##print(f'Here is the get_score {clf[0].get_score(importance_type="gain")}')
+                ##print(f'Here is trying feature important {clf[0].feature_importances_}')
             else:
                 pred_prob += clf[i].predict_proba(X_test[:,features])
             if model == "rf" or model == "gbdt":
@@ -207,7 +210,43 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
     avg_feature_importance = np.sum(feature_importances,axis=0)/10
     
     return(avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance, confus_mat)
+
+
+def xgbt_feature_importance(n_features, clf, impt_type='gain'):
+    """
+    Helper function to return feature importance from a xgboost classifier, 
+    as xgbt does not have a built in feature_importance_
     
+    Returns: feature_importance, the importance from this classifier
+    """
+    
+    ft_impt_dict = clf.get_score(importance_type=impt_type)
+    feature_importance = np.zeros(n_features)
+    
+    for key in ft_impt_dict:
+        # Xgbt outputs a dict with feature importance coded with keys such as 
+        # {'f379: 86.5'} so first we need to parse out that index number
+        match = re.search(r'f(\d{1,3})', key)
+        ft_index = int(match.group(1))  
+        #print(ft_index)
+        # Then add it
+        feature_importance[ft_index] = feature_importance[ft_index] + ft_impt_dict[key]
+    
+    return feature_importance
+"""
+    Parameters
+    ----------
+    feature_importance : TYPE
+        DESCRIPTION.
+    clf : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+
 # =============================================================================
 # def features_used_in_rf(rf_clf, n_of_features):
 #     """
