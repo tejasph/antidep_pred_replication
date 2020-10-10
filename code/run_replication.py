@@ -5,7 +5,7 @@ Top level function to run models.
 """
 
 if __name__ == "__main__":
-    runs = 100
+    runs = 1
     
     
     # Table for investigating decreased performance of external validation
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     ## ? Extra for Table 6
     ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
-    RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
+    ## RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
     ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     ##RunModels(runs, "cv", "l2logreg", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     
@@ -78,7 +78,9 @@ if __name__ == "__main__":
     ## RunModels(runs, "cv", "rf", "all", "X_full_trd", "y_wk8_resp_qids_c_nolvl1drop")
 
     # Missing xgbt with elas for some reason
+
     ## RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
+    RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'chi', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
     

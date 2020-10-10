@@ -137,7 +137,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
                 pred_prob += clf[0].predict(dtest)
             else:
                 pred_prob += clf[i].predict_proba(X_test[:,features])
-            if model == "rf" or model == "gdbt":
+            if model == "rf" or model == "gbdt":
                 # Feature Importance for tree-based methods in sklearn
                 feature_importance += clf[i].feature_importances_
                 features_n_fold += np.count_nonzero(clf[i].feature_importances_) 
