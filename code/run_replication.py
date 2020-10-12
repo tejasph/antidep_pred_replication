@@ -5,7 +5,7 @@ Top level function to run models.
 """
 
 if __name__ == "__main__":
-    runs = 1
+    runs = 100
     
     
     # Table for investigating decreased performance of external validation
@@ -48,6 +48,10 @@ if __name__ == "__main__":
     ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     ##RunModels(runs, "cv", "l2logreg", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     
+    RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
+    RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
+    
+    
     ## ? New version of Table 6
     ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
     ##RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr") 
@@ -62,11 +66,11 @@ if __name__ == "__main__":
     ## RunModels(runs, "extval_resp", "rf", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  # X_ovlap_resp is misnamed, simply the subjects who stay till 4 weeks and have qids sr at baseline
     ## RunModels(runs, "extval_rem", "rf", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
     
-    ## RunModels(runs, "extval_rem", "gbdt", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
-    ## RunModels(runs, "extval_rem", "xgbt", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
+    ##RunModels(runs, "extval_rem", "gbdt", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
+    ##RunModels(runs, "extval_rem", "xgbt", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr")  
     
-    ## RunModels(runs, "extval_resp", "gbdt", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  
-    ## RunModels(runs, "extval_resp", "xgbt", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  
+    ##RunModels(runs, "extval_resp", "gbdt", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  
+    ##RunModels(runs, "extval_resp", "xgbt", "all", "X_ovlap_resp", "y_wk8_resp_qids_sr")  
     
     # Run to double check out extval_rem results are robust, uses a ext val target file that is scrambled
     ## RunModels(runs, "extval_rem_randomized", "rf", "all", "X_ovlap_resp", "y_wk8_rem_qids_sr") 
@@ -79,8 +83,9 @@ if __name__ == "__main__":
 
     # Missing xgbt with elas for some reason
 
-    RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
-    ## RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
+    ##RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
+    RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
+    
     ## RunModels(runs, "cv", 'xgbt', 'chi', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
     
