@@ -14,10 +14,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import KFold
 import numpy as np
+import joblib, bz2, _pickle as cPickle
 
-
-def RunModel(pathData, pathLabel, f_select, model, evl):
-    """ Train an ensemble of trees and report the accuracy as they did in the paper
+def RunModel(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=10):
+    """ 
+    Trains and evaluates a machine learning model. Returns metrics, and models
     """
     if evl == "extval_resp":
         testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
@@ -41,7 +42,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
     X = X[1:,1:]
     
     n,m = X.shape
-    kf = KFold(n_splits=10, shuffle=True)
+    kf = KFold(n_splits, shuffle=True)
 
     j=1
     accu = np.empty([10,], dtype=float)
@@ -57,7 +58,9 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
     tns = np.empty([10,], dtype=float)
     fns = np.empty([10,], dtype=float)
     feature_importances =  np.empty([10,m], dtype=float) #Store feature importances relative to the original ordering.
-
+    clfs = [None]*n_splits
+    
+    ##np.empty(shape=(n_splits, ensemble_n))
     
     for train_index, test_index in kf.split(X):
         print("Fold:", j)
@@ -89,8 +92,8 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
         X_combined = np.append(y_train.reshape(-1,1),X_train,axis=1)
         training, label = subsample(X_combined, t=30)
  
-        # Train an ensemble of 30 RF classifiers
-        ensemble_n = 30
+        # Train an ensemble of 30 classifiers
+        
         clf = [None]*ensemble_n
         for i in range(ensemble_n):
             if model == "rf":
@@ -122,7 +125,19 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
                 dtrain = xgb.DMatrix(training[i][:,features], label=label[i])
                 bst = xgb.train(param, dtrain, num_round)
                 clf[i] = bst
-                
+        
+        """
+        # TESTING RE SIZE OF INDIV COMPRESSION
+        test_dir = r"F:\ml_paper_models\table3_replication\test_indiv_run"
+        c_i = 0
+        for c in clf:
+            #joblib.dump(c, test_dir + "\\" + str(c_i) + '.9joblib', compress=9)
+            ##joblib.dump(c, test_dir + "\\" + str(c_i) + '.bz2joblib', compress='bz2')
+            with bz2.BZ2File( test_dir + "\\" + str(c_i) + str(j) + '.bz2cpickle', 'w') as f2: 
+                cPickle.dump(c, f2)
+            c_i += 1
+        """
+        
         # Prediction
         n = X_test.shape[0]
         if model == "xgbt":
@@ -134,8 +149,8 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
         # calculting the average probabilty of each class, as well as feature use/importance
         for i in range(ensemble_n):
             if model == "xgbt":
-                pred_prob += clf[0].predict(dtest)
-                feature_importance += xgbt_feature_importance(len(features), clf[0])
+                pred_prob += clf[i].predict(dtest) # Bug before, was clf[0]
+                feature_importance += xgbt_feature_importance(len(features), clf[i]) # Bug before, was clf[0]
                 ##print(f'Here is the get_score {clf[0].get_score(importance_type="gain")}')
                 ##print(f'Here is trying feature important {clf[0].feature_importances_}')
             else:
@@ -182,6 +197,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
         ##print("Accuracy is:", score)
         ##print("Balanced Accuracy is:", bscore[j-1])
         accu[j-1] = score
+        clfs[j-1] = clf
         
         
         j = j+1
@@ -209,7 +225,7 @@ def RunModel(pathData, pathLabel, f_select, model, evl):
     avg_features_n = sum(features_n)/10
     avg_feature_importance = np.sum(feature_importances,axis=0)/10
     
-    return(avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance, confus_mat)
+    return(avg_accu, avg_bal_acc, avg_auc, avg_sens, avg_spec, avg_prec, avg_f1, avg_features_n, avg_feature_importance, confus_mat, clfs)
 
 
 def xgbt_feature_importance(n_features, clf, impt_type='gain'):

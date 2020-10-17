@@ -5,7 +5,7 @@ Top level function to run models.
 """
 
 if __name__ == "__main__":
-    runs = 100
+    runs = 10
     
     
     # Table for investigating decreased performance of external validation
@@ -48,8 +48,8 @@ if __name__ == "__main__":
     ##RunModels(runs, "cv", "elnet", "all", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     ##RunModels(runs, "cv", "l2logreg", "elas", "X_tillwk4_qids_sr", "y_wk8_resp_qids_sr")
     
-    RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
-    RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "chi", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
+    ##RunModels(runs, "cv", "rf", "elas", "X_tillwk4_qids_sr", "y_wk8_rem_qids_sr") 
     
     
     ## ? New version of Table 6
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # Missing xgbt with elas for some reason
 
     ##RunModels(runs, "cv", 'xgbt', 'all', "X_full_trd", "y_all_trd")
-    RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
+    ##RunModels(runs, "cv", 'gbdt', 'all', "X_full_trd", "y_all_trd")
     
     ## RunModels(runs, "cv", 'xgbt', 'chi', "X_full_trd", "y_all_trd")
     ## RunModels(runs, "cv", 'xgbt', 'elas', "X_full_trd", "y_all_trd")
@@ -98,11 +98,8 @@ if __name__ == "__main__":
     ##RunModels(runs, "cv", 'l2logreg', 'all', "X_full_trd", "y_all_trd")
     
     
-    # Replication table
-    ##for model in ["l2logreg"]: #'gbdt','rf',"xgbt" (already done)| 
-    ##    for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
-    ##        RunModels(runs, "cv", model, f_select, "X_full_trd", "y_all_trd")
-     
+    
+    
     # External Validation table
     # for model in ["l2logreg",'elnet']: # already done: 'gbdt','rf',"xgbt"]
     #     for evl in ["extval_rem", "extval_resp"]: # for l2logreg "all",
@@ -112,6 +109,21 @@ if __name__ == "__main__":
     #             target = 'y_wk8_resp_qids_sr'
     #         RunModels(runs, evl, model, "all", "X_ovlap_tillwk4_sr", target)
     
+    
+    # Replication table
+    table = 'table3_replication'
+    
+    X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
+    y_labels = "y_nolvl1drop_trdrem_qids_c"# STAR*D targets for QIDS-C TRD as defined by remission, for subjects who do not drop in level 1 according to having QIDS-C scores
+    
+    RunModels(runs, 'cv', 'rf','all',X_matrix, y_labels, table)
+    """
+    for model in ['rf','gbdt',"xgbt", "l2logreg"]:
+        for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
+            RunModels(runs, "cv", model, f_select, X_matrix, y_labels, table)
+    RunModels(runs, "cv", 'elnet', 'all', X_matrix, y_labels, table)
+    """
+        
     print("Ran all succesfully!")
     
     
