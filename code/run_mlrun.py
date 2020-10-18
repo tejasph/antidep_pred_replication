@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-CPSC 532M project
-Yihan, John-Hose, Teyden
+Runs 1 run of the specified ML training and evaluation
+
 """
 import re
 from utility import subsample
@@ -10,28 +10,25 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.metrics import confusion_matrix
 import xgboost as xgb
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import KFold
 import numpy as np
-import joblib, bz2, _pickle as cPickle
+from run_globals import DATA_DIR
+import os
 
-def RunModel(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=10):
+def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=10):
     """ 
     Trains and evaluates a machine learning model. Returns metrics, and models
     """
+    testData = os.path.join(DATA_DIR, 'canbind_X_overlap_tillwk4_qids_sr.csv') # X data matrix over CAN-BIND, only overlapping features with STAR*D, subjects who have qids sr until at least week 4
     if evl == "extval_resp":
-        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
-        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_resp_canbind.csv'
+        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_resp_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr response
     elif evl == "extval_rem":
-        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
-        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_rem_canbind.csv'
+        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_rem_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr remission
     elif evl == "extval_rem_randomized": # A control to make sure our extval_rem results are robust, with the targets scrambled randomly
-        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
-        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_rem_canbind_randomized.csv'  
-    else: # Still set them though they won't be used
-        testData = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\X_test_cb_extval.csv'
-        testLabel = r'C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\final_datasets\to_run_20200809\y_wk8_resp_canbind.csv'
+        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
+    elif evl == "cv": # Use randomized as a placeholder, won't be used for cv
+        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
  
     # read data and chop the header
     X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
