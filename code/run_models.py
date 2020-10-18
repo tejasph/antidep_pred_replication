@@ -20,6 +20,7 @@ import numpy as np
 from run_model import RunModel
 #from joblib import dump, load
 import _pickle as cPickle
+import pickle
 import bz2
 import lzma
 import pickle
@@ -233,7 +234,9 @@ def RunModels(runs, evl, model,f_select, data, label, table=""):
             with bz2.BZ2File(models_filename, 'w') as f2: 
                 cPickle.dump(run_clfs, f2)
             ##print(f'{datetime.datetime.now() - cpicklt} for cPickle bz2')
-            f2.close()
+            ##with open(os.path.join(result_dir, f"run_{i}") + '.pickle', 'wb') as f2:
+            ##    pickle.dump(run_clfs, f2)
+            ##f2.close()
             
                 
             print("Finished run: " + str(i + 1) + " of " + str(runs) + "\n")
@@ -246,7 +249,7 @@ def RunModels(runs, evl, model,f_select, data, label, table=""):
     
     #print("Shape of avg_impts", np.shape(avg_impts))
     sorted_features = np.argsort(avg_impts)[::-1]
-    top_30_features = sorted_features[0:30] #In descending importance, first is most important
+    top_31_features = sorted_features[0:31] #In descending importance, first is most important
     with open(data_path) as f:
         feature_names = f.readline().split(',')
     
@@ -282,19 +285,19 @@ def RunModels(runs, evl, model,f_select, data, label, table=""):
     
     
     f.write("Feature Importance And Use:---------------------------\n")
-    f.write("Top 30 Features by importance, in descending order (1st most important):\n")
+    f.write("Top 31 Features by importance, in descending order (1st most important):\n")
     f.write("By position in data matrix, 1 added to skip index=0 \n")
     #print("Here are the top 30 features...")
-    #print(top_30_features + 1)
+    #print(top_31_features + 1)
     ##print(f'here are the importance of features: {avg_impts}')
     
     if np.sum(avg_impts) != 0:
-        f.write(str(top_30_features + 1) + "\n")
-        for i in range(len(top_30_features)): f.write(feature_names[top_30_features[i] + 1] + "\n")
+        f.write(str(top_31_features + 1) + "\n")
+        for i in range(len(top_31_features)): f.write(feature_names[top_31_features[i] + 1] + "\n")
         f.write("\n")
     else:
         f.write("Code does not support feature for this model at this time\n")
-    ##f.write(str(feature_names[top_30_features + 1]) + "\n")
+    ##f.write(str(feature_names[top_31_features + 1]) + "\n")
     
     f.write("Statistical Significance:----------------------------\n")
     if (data == "full_trd" or data =="ovlap_trd") and model == "rf_cv" and f_select == "all":

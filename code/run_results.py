@@ -110,7 +110,7 @@ if __name__ == "__main__":
     #         RunModels(runs, evl, model, "all", "X_ovlap_tillwk4_sr", target)
     
     
-    # Replication table
+    # Table 3: Replication 
     table = 'table3_replication'
     
     X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
@@ -120,6 +120,13 @@ if __name__ == "__main__":
         for f_select in ["all", "chi", "elas"]: # for l2logreg "all",
             RunModels(runs, "cv", model, f_select, X_matrix, y_labels, table)
     RunModels(runs, "cv", 'elnet', 'all', X_matrix, y_labels, table)
+    
+    # Table 4: External Validation
+    table = 'table4_externalvalidation'
+    
+    X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
+    y_labels = "y_nolvl1drop_trdrem_qids_c"# STAR*D targets for QIDS-C TRD as defined by remission, for subjects who do not drop in level 1 according to having QIDS-C scores
+    
     
         
     print("Ran all succesfully!")
