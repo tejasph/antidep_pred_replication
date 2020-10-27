@@ -56,9 +56,7 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
     fns = np.empty([10,], dtype=float)
     feature_importances =  np.empty([10,m], dtype=float) #Store feature importances relative to the original ordering.
     clfs = [None]*n_splits
-    
-    ##np.empty(shape=(n_splits, ensemble_n))
-    
+        
     for train_index, test_index in kf.split(X):
         print("Fold:", j)
         
@@ -98,8 +96,6 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == "elnet":
-                #clf[i] = SGDClassifier(loss='log', penalty='elasticnet', max_iter=50, alpha=0.01, l1_ratio=0.15)
-                #clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=10000,l1_ratio=0.5)
                 clf[i] = SGDClassifier(loss='log', penalty='elasticnet', l1_ratio=0.67, alpha=0.1, max_iter=10000, power_t=0.01)
                 clf[i].fit(training[i][:,features],label[i])
 
@@ -108,32 +104,16 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
                 clf[i].fit(training[i][:,features],label[i])
 
             elif model == 'l2logreg':
-#               clf[i] = LogisticRegression(penalty='elasticnet',solver='saga',max_iter=300,l1_ratio=0.5) Joeys
-                #clf[i] = SGDClassifier(loss='log', penalty='l2', max_iter=10000)#, alpha=0.01)#, alpha=0.01)
-                #clf[i] = LogisticRegression(penalty='l2',solver='saga',max_iter=10000)
                 clf[i] = LogisticRegression(penalty='l2',solver='lbfgs', max_iter=10000, C=0.092)
                 clf[i].fit(training[i][:,features],label[i])
                 
             elif model == "xgbt":
                 param = {'nthread':-1, 'booster': 'gbtree', 'max_depth':3, 'eta':0.1, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'lambda':0.5, 'lambda_bias': 0.5, 'subsample' : 1} # Original tuning by Joey
-                #param = {'nthread':5, 'booster': 'gbtree', 'max_depth':6, 'learning_rate':0.05, 'n_estimators': 500, 'silent':1, 'objective':'binary:logistic', 'eval_metric': 'error', 'colsample_bytree':0.8, 'reg_alpha':10,'reg_lambda':9, 'subsample' : 0.5} # Some extra tuning, didn't help
 
                 num_round = 5            
                 dtrain = xgb.DMatrix(training[i][:,features], label=label[i])
                 bst = xgb.train(param, dtrain, num_round)
                 clf[i] = bst
-        
-        """
-        # TESTING RE SIZE OF INDIV COMPRESSION
-        test_dir = r"F:\ml_paper_models\table3_replication\test_indiv_run"
-        c_i = 0
-        for c in clf:
-            #joblib.dump(c, test_dir + "\\" + str(c_i) + '.9joblib', compress=9)
-            ##joblib.dump(c, test_dir + "\\" + str(c_i) + '.bz2joblib', compress='bz2')
-            with bz2.BZ2File( test_dir + "\\" + str(c_i) + str(j) + '.bz2cpickle', 'w') as f2: 
-                cPickle.dump(c, f2)
-            c_i += 1
-        """
         
         # Prediction
         n = X_test.shape[0]
@@ -148,8 +128,6 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
             if model == "xgbt":
                 pred_prob += clf[i].predict(dtest) # Bug before, was clf[0]
                 feature_importance += xgbt_feature_importance(len(features), clf[i]) # Bug before, was clf[0]
-                ##print(f'Here is the get_score {clf[0].get_score(importance_type="gain")}')
-                ##print(f'Here is trying feature important {clf[0].feature_importances_}')
             else:
                 pred_prob += clf[i].predict_proba(X_test[:,features])
             if model == "rf" or model == "gbdt":
@@ -185,26 +163,12 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
         f1[j-1] = 2*precision[j-1]*sensitivity[j-1]/(precision[j-1]+sensitivity[j-1])
         feature_importances[j-1,features] = feature_importance/ensemble_n
         features_n[j-1] = features_n_fold/ensemble_n
-        ##print("Numnbers of features used: ", features_n_fold/30 )
-        ##print("Specificity is:", specificity[j-1])
-        ##print("Sensitivity is:", sensitivity[j-1])
-        ##print("Precision is:", precision[j-1])
-        ##print("F1 is:", f1[j-1])
         score = sum(pred==y_test)/n
-        ##print("Accuracy is:", score)
-        ##print("Balanced Accuracy is:", bscore[j-1])
         accu[j-1] = score
         clfs[j-1] = clf
         
         
         j = j+1
-    ##print("Average accuracy is:",sum(accu)/10)
-    ##print("Average AUC is:",sum(auc)/10)
-    ##print("Average balanced accuracy is:",sum(bscore)/10)
-    ##print("Specificity is:", sum(specificity)/10)
-    ##print("Sensitivity is:", sum(sensitivity)/10)
-    ##print("Precision is:", sum(precision)/10)
-    ##print("F1 is:", sum(f1)/10)
     
     confus_mat ={}
     confus_mat['tp'] = sum(tps)/10
@@ -246,28 +210,3 @@ def xgbt_feature_importance(n_features, clf, impt_type='gain'):
         feature_importance[ft_index] = feature_importance[ft_index] + ft_impt_dict[key]
     
     return feature_importance
-
-
-# =============================================================================
-# def features_used_in_rf(rf_clf, n_of_features):
-#     """
-#     Takes in a random forest classifier, the number of features for this model
-#     
-#     Returns an array as long as number of features, with how many times a feature was used as node in any 
-#     of the decision trees in this random forest classifier
-#     
-#     Ordering of features is same as order in X
-#     
-#     Function currently unsed as checking for feature_importance_ non-zeros leads to what wanted to use this for anyways
-#     
-#     
-#     """
-#     features_used_in_rf = np.zeros(n_of_features)
-#     
-#     for tree in rf_clf:
-#         for feature in tree.tree_.feature:
-#             if feature != -2:
-#                 features_used_in_rf[feature] += 1
-#             
-#     return features_used_in_rf
-# =============================================================================
