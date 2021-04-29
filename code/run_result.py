@@ -78,14 +78,12 @@ def RunResult(runs, evl, model,f_select, data, label, table=""):
     avg_impts = np.mean(impts, axis=0)
     std_impts = np.std(impts, axis=0)
     
-    #print("Shape of avg_impts", np.shape(avg_impts))
     sorted_features = np.argsort(avg_impts)[::-1]
     top_31_features = sorted_features[0:31] #In descending importance, first is most important
     with open(data_path) as f:
         feature_names = f.readline().split(',')
     
     # Write output file
-    ##filename = "{}_{}_{}_{}_{}_{}_{}".format(evl, model, runs,data, label, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     f = open(os.path.join(table_path, result_filename + '.txt'), 'w')
     
     f.write("MODEL RESULTS for run at: " + result_filename  + "\n\n")

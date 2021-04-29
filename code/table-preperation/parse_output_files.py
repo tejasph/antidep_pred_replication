@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Script to parse the output files written, to write in a new format.
+
 Created on Sat Oct  3 12:48:28 2020
 
 @author: jjnun

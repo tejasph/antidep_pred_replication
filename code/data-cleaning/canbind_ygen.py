@@ -22,7 +22,8 @@ This will output a single CSV file containing the y-matrix
 The method expects CSV files to be contained within their own subdirectories from the root directory, as is organized
 in the ZIP provided.
 
-TODO: took out most of the superflous code from canbind_preprocessing_manager, runs fast, but probably could still take out more. 
+TODO: took out most of the superflous code from canbind_preprocessing_manager, which this was based on
+      Runs fast, but probably could still take out more and be further optimized. 
 """
 def ygen(root_dir, debug=False):
     global COL_NAMES_CATEGORICAL

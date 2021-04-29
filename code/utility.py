@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CPSC 532M project
-Yihan, John-Hose, Teyden
+Helper functions used for other parts of the code
 """
 import numpy as np
 from sklearn.cluster import KMeans
@@ -136,7 +135,3 @@ def drawROC(y_true,y_score):
     plt.plot(fpr, tpr)
     print("AUC:", auc(fpr, tpr))
     return auc(fpr, tpr)
-
-"""
-TO DO: function to draw ROC
-"""

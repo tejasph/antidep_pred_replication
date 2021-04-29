@@ -5,6 +5,10 @@ import numpy as np
 
 from utils import *
 
+"""
+Script to used to analyze some of our data, mostly for double checking
+"""
+
 
 stard_dir = './stard_data'
 canbind_dir = './canbind_data'

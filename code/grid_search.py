@@ -2,10 +2,11 @@
 """
 Created on Mon Sep 28 10:21:40 2020
 
+Grid search script used for finding some of the model parameters.
+
 @author: jjnun
 """
 
-from utility import subsample
 from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureSelectionAgglo
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier, LogisticRegression

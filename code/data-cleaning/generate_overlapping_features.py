@@ -3,14 +3,20 @@ import sys
 import pandas as pd
 import numpy as np
 
-from utils import *
-
 from overlapping_globals import HEADER_CONVERSION_DICT, CANBIND_OVERLAPPING_VALUE_CONVERSION_MAP,NEW_FEATURES_CANBIND,QIDS_STARD_TO_CANBIND_DICT as Q_DICT_C
 from overlapping_globals import STARD_OVERLAPPING_VALUE_CONVERSION_MAP, STARD_TO_DROP
 
 """
-Generates the overlapping datasets from the processed datasets, for canbind data, that's the product of canbind_imputer
+Generates the overlapping datasets from the processed datasets, for canbind data, thats the product of canbind_imputer
+
+Takes in the processed dataset, and generates the overlapping datasets
+Can generate an overlapping dataset one at a time if needed, or 
+by default will do both
+
+See main() for description of arguments
+
 """
+
 
 Q_DICT_S = dict(map(reversed, Q_DICT_C.items()))
 
@@ -280,7 +286,6 @@ def check_missing_values(df):
         print("WARNING! A total of: " + str(nulls) + " missing values found, this should likely be 0!")
     
 
-#convert_canbind_to_overlapping(r"C:\Users\jjnun\Documents\Sync\Research\1_CANBIND_Replication\teyden-git\data\canbind_data")
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "-bothdefault":
@@ -299,5 +304,6 @@ if __name__ == "__main__":
 
     else:
         print("Enter valid arguments\n"
-              "\t options: -v for verbose, -v+ for super verbose\n"
-              "\t path: the path to a real directory\n")
+              "\t options: -both to generate overlapping for both, -sd for STAR*D, -cb for CAN-BIND\n"
+              "\t path: the path to a real directory with the preprocessed data\n"
+              "\t path: if generating the overlapping for both, this will be the CAN-BIND data, and the 2nd argument STAR*D")

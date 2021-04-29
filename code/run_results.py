@@ -1,7 +1,12 @@
 from run_result import RunResult
 
 """
-Top level function to produce results from our paper
+Top level script to produce results from our paper
+
+Does not take arguments. Adjust data and results directory in 
+run_globals.py
+
+Adjust number of runs below
 """
 
 if __name__ == "__main__":

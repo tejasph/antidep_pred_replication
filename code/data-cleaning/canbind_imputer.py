@@ -3,11 +3,13 @@ import sys
 import pandas as pd
 import numpy as np
 
-from utils import *
 from canbind_globals import VALUE_CONVERSION_MAP_IMPUTE
 from stard_preprocessing_manager import replace_with_median, replace 
 """
 Takes in can_bind data matrix containing blanks (produced by canbind_data_processor), imputes the blanks, and then imputes new features
+
+Takes as an argument the preprocessed CAN-BIND data, or if no arguments uses
+the default path hard-coded below
 """
 def impute(data_dir):
     input_file_name = data_dir + "/" + '/canbind_clean_aggregated.csv'

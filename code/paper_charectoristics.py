@@ -1,7 +1,6 @@
 import os
 import sys
 import pandas as pd
-import numpy as np
 from statsmodels.stats.proportion import proportions_ztest
 
 # Analyses the data matrices to produce charectoristics of the study cohorts

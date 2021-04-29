@@ -1,5 +1,10 @@
 import numpy as np
 
+"""
+Globals used for STAR*D preprocessing and other processing
+"""
+
+
 ignr = np.nan
 
 # Values in "level", "week", "days_baseline" are ordered in terms of optimal preference, as

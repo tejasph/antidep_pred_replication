@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-CPSC 532M project
-Yihan, John-Hose, Teyden
+Quick script to do some visualization, used for an old class project
+but not the current paper
 """
 import numpy as np
 import matplotlib.pyplot as plt

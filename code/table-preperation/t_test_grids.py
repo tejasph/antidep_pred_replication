@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Script to write some of the t-test supplementary tables for the paper
+
 Created on Fri Sep 18 10:14:57 2020
 
 @author: jjnun

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Globals for data directory and results directory. Replace with your own!
+
 Created on Sun Oct 18 11:44:04 2020
 
 @author: jjnun

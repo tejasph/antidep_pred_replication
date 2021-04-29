@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-
 from canbind_globals import COL_NAME_PATIENT_ID,COL_NAME_EVENTNAME, COL_NAMES_BLACKLIST_DARS
 from canbind_globals import COL_NAMES_TO_CONVERT, COL_NAMES_BLACKLIST_IPAQ, COL_NAMES_BLACKLIST_QIDS, COL_NAMES_BLACKLIST_LEAPS, COL_NAMES_BLACKLIST_MINI, COL_NAMES_BLACKLIST_DEMO
 from canbind_globals import COL_NAMES_BLACKLIST_SHAPS, COL_NAMES_BLACKLIST_PSYHIS, COL_NAMES_TO_DROP_FROM_EXTENSION, COL_NAMES_BLACKLIST_COMMON 
@@ -8,6 +7,12 @@ from canbind_globals import COL_NAMES_HCL_TO_CONVERT, COL_NAMES_GAD7_TO_CONVERT,
 from canbind_globals import COL_NAMES_NEW_FROM_EXTENSION, COL_NAMES_BLACKLIST_UNIQS, COL_NAMES_BLACKLIST_YGEN
 from utils import is_empty_value
 from collections import OrderedDict
+
+"""
+Helper functions for the CAN-BIND data preprocessing
+"""
+
+
 
 def get_event_based_value(row, curr_event, curr_feature, scale_name):
     """
@@ -99,7 +104,6 @@ def merge_columns(df, column_mapping):
                 df.at[i, merged_col_name]=val2
             blacklist.extend([col1, col2])
     add_columns_to_blacklist(blacklist)
-    ##print_progress_completion(merge_columns, "merged QLESQ columns")
     return df
 
 def print_progress_completion(f, msg):

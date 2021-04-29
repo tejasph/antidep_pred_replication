@@ -6,11 +6,25 @@ from collections import namedtuple
 
 import warnings
 
-from utils import *
+#from utils import *
 from stard_preprocessing_globals import ORIGINAL_SCALE_NAMES, BLACK_LIST_SCALES, SCALES, VALUE_CONVERSION_MAP, \
     VALUE_CONVERSION_MAP_IMPUTE, NEW_FEATURES
 
 """ 
+This is our preprocess for the raw STAR*D data from the NIMH, producing the 
+preprocessed STAR*D data, which can be used for ML or further processed into
+the dataset overlapping with CAN-BIND, etc.
+
+Takes 2 Arguments on command-line:
+    Direcotory containing all the raw STAR*D data from the NDA
+    
+    Run-option. See main for complete list, allows only one part of the 
+    preprocessing to be ran at a time. Use "--run-all" or "-a" to 
+    do the entire preprocessing. 
+
+Example Run configuration:
+runfile('C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning/stard_preprocessing_manager.py', args='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/stard_data -a', wdir='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning')
+
 This will take in multiple text files (representing psychiatric scales) and output multiple CSV files, at least for each scale read in.
 """
 
@@ -1074,12 +1088,20 @@ def handle_subject_selection_conditions(input_row_selected_dir_path, X, y_df, qi
     return X
 
 
+def get_row(scale_df, subjectkey):
+    return scale_df[(scale_df["level"] == "Level 1") & (scale_df["subjectkey"] == subjectkey)
+                    & (scale_df["inc_curr"].notnull()
+                    | scale_df["assist"].notnull()
+                    | scale_df["unempl"].notnull()
+                    | scale_df["otherinc"].notnull()
+                    | scale_df["totincom"].notnull())]
+
+
+
 if __name__ == "__main__":
     data_dir_path = sys.argv[1]
     option = sys.argv[2]
-    print(len(sys.argv))
     is_valid = len(sys.argv) == 3 and os.path.isdir(data_dir_path)
-    print(is_valid)
 
     if is_valid and option in ["--row-select", "-rs"]:
         select_rows(data_dir_path)
@@ -1131,15 +1153,5 @@ if __name__ == "__main__":
               "\t e.g. python stard_preprocessing_manager.py /Users/teyden/Downloads/stardmarch19v3")
 
 
-def get_row(scale_df, subjectkey):
-    return scale_df[(scale_df["level"] == "Level 1") & (scale_df["subjectkey"] == subjectkey)
-                    & (scale_df["inc_curr"].notnull()
-                    | scale_df["assist"].notnull()
-                    | scale_df["unempl"].notnull()
-                    | scale_df["otherinc"].notnull()
-                    | scale_df["totincom"].notnull())]
 
-"""
-Run configuration:
-runfile('C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning/stard_preprocessing_manager.py', args='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/data/stard_data -a', wdir='C:/Users/jjnun/Documents/Sync/Research/1_CANBIND_Replication/teyden-git/code/data-cleaning')
-"""
+

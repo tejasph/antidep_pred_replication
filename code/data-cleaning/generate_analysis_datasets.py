@@ -2,17 +2,12 @@
 """
 Created on Sun Feb  2 10:43:13 2020
 
-Generates datasets used for analysis
+Generates datasets used for additional analysis, not really used in the paper
 
 @author: jjnun
 """
-import os
-import sys
+
 import pandas as pd
-import numpy as np
-
-from utils import *
-
 
 
 # Select subjects with corresponding y values
