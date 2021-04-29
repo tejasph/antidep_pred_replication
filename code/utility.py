@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-<<<<<<< .merge_file_a04184
 Helper functions used for other parts of the code
-=======
-CPSC 532M project
-Yihan, John-Hose, Teyden
->>>>>>> .merge_file_a21292
 """
 import numpy as np
 from sklearn.cluster import KMeans
@@ -140,10 +135,4 @@ def drawROC(y_true,y_score):
     plt.plot(fpr, tpr)
     print("AUC:", auc(fpr, tpr))
     return auc(fpr, tpr)
-<<<<<<< .merge_file_a04184
-=======
 
-"""
-TO DO: function to draw ROC
-"""
->>>>>>> .merge_file_a21292
