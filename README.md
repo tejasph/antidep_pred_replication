@@ -1,6 +1,7 @@
 # Replication of Machine Learning Methods to Predict Treatment Outcome with Antidepressant Medications in Patients with Major Depressive Disorder from STAR*D and CAN-BIND-1
 ## Accepted for publication in PLOS One May 27, 2021
-## README by John-Jose Nunez, jjnunez11@gmail.com
+
+README by John-Jose Nunez, jjnunez11@gmail.com
 
 Thank you for your interest in our project! Our aim is to make it as reproducible as possible, please do not hesitate to reach out. 
 
@@ -22,7 +23,7 @@ The results used in our paper are located within zips for each table in the [res
 
 ## Data Processing
 
-[Please find our data cleaning and processing code in this folder](./code/data-cleaning/)
+Please find our data cleaning and processing code in [data-cleaning](./code/data-cleaning/)
 
 The raw STAR*D and CAN-BIND data should be placed in separate folders within [data](./data/)
 
@@ -32,7 +33,7 @@ The raw STAR*D and CAN-BIND data should be placed in separate folders within [da
 3. Generate overlapping datasets with [generate_overlapping_features](./code/data-cleaning/generate_overlapping_features.py)
 
 ## Running Machine Learning Analysis
-1. Update the path of your data and result directories in [run_globals](./run_globals.py)
+1. Update the path of your data and result directories in [run_globals](./code/run_globals.py)
 2. Place your .csv files with the X and y matrices you want to run (or ours as downloaded) into the data directory above
-3. Run the machine learning with [run_results](./run_results.py) script. This script calls [run_result](./run_results.py), assuming the filename of the 
+3. Run the machine learning with [run_results](./code/run_results.py) script. This script calls [run_result](./code/run_results.py), assuming the filename of the 
 dataset csv's will be passed along, minus the '.csv' ending. 
