@@ -10,10 +10,10 @@ Adjust number of runs below
 """
 
 if __name__ == "__main__":
-    runs = 100
+    runs = 1
 
     # Table 3: Replication 
-    if False:
+    if True:
         table = 'table3_replication'
     
         X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
@@ -22,6 +22,9 @@ if __name__ == "__main__":
         for model in ["l2logreg"]: ## 'rf','gbdt',"xgbt",
             for f_select in ["all", "chi", "elas"]: 
                 RunResult(runs, "cv", model, f_select, X_matrix, y_labels, table)
+
+                # Try with MinMax Scaling
+                RunResult(runs, "cv", model, f_select, X_matrix, y_labels, table, f_scaling = "norm")
         RunResult(runs, "cv", 'elnet', 'all', X_matrix, y_labels, table)
     
     # Table 4: External Validation
@@ -43,7 +46,7 @@ if __name__ == "__main__":
         
     
     # Table 5: Comparisons
-    if True:
+    if False:
         table = 'table5_comparisons'
         # Results in order they appear in table
         

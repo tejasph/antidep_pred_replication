@@ -15,7 +15,7 @@ from run_globals import DATA_DIR, RESULTS_DIR
 
 startTime = datetime.datetime.now()
 
-def RunResult(runs, evl, model,f_select, data, label, table=""):    
+def RunResult(runs, evl, model ,f_select, data, label, table="",f_scaling = "None"):    
     # Make a folder for each table to keep things organized
     table_path = os.path.join(RESULTS_DIR, table)
     if not(os.path.exists(table_path)):
@@ -44,7 +44,7 @@ def RunResult(runs, evl, model,f_select, data, label, table=""):
     feats = np.zeros(runs) # Average number of the average number of features used per classifier trained
 
     # Create filename based on parameters
-    result_filename = "{}_{}_{}_{}_{}_{}_{}".format(evl, model, runs,data, label, f_select, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+    result_filename = "{}_{}_{}_{}_{}_{}_{}_{}".format(evl, model, runs,data, label, f_select,f_scaling, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     # Make a dir for each result
     result_dir = os.path.join(table_path, result_filename)
     if not(os.path.exists(result_dir)):
@@ -52,7 +52,7 @@ def RunResult(runs, evl, model,f_select, data, label, table=""):
     
     for i in range(runs):
             
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat, run_clfs = RunMLRun(data_path, label_path, f_select, model, evl, ensemble_n, n_splits)
+            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat, run_clfs = RunMLRun(data_path, label_path, f_select,  model, evl, ensemble_n, n_splits, f_scaling)
        
             tps[i] = confus_mat['tp']
             fps[i] = confus_mat['fp']
@@ -92,6 +92,7 @@ def RunResult(runs, evl, model,f_select, data, label, table=""):
     f.write("Evaluation: " + evl + "\n")
     f.write("Model: " + model + "\n")
     f.write("Feature selection: " + f_select + "\n")
+    f.write("Feature scaling:" + f_select + "\n")
     f.write("X is: " + data_path + "\n")
     f.write("y is: " + label_path + "\n")
     f.write(str(runs) +" runs of 10-fold CV\n\n")

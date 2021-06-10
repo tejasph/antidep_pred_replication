@@ -9,6 +9,7 @@ from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureS
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import MinMaxScaler
 import xgboost as xgb
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import KFold
@@ -16,23 +17,27 @@ import numpy as np
 from run_globals import DATA_DIR
 import os
 
-def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=10):
+def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=10,  f_scaling = "None"):
     """ 
     Trains and evaluates a machine learning model. Returns metrics, and models
     """
-    testData = os.path.join(DATA_DIR, 'canbind_X_overlap_tillwk4_qids_sr.csv') # X data matrix over CAN-BIND, only overlapping features with STAR*D, subjects who have qids sr until at least week 4
-    if evl == "extval_resp":
-        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_resp_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr response
-    elif evl == "extval_rem":
-        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_rem_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr remission
-    elif evl == "extval_rem_randomized": # A control to make sure our extval_rem results are robust, with the targets scrambled randomly
-        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
-    elif evl == "cv": # Use randomized as a placeholder, won't be used for cv
-        testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
+
+    ##################
+    # Temporarily commented out below (don't have canbind data yet)
+    #testData = os.path.join(DATA_DIR, 'canbind_X_overlap_tillwk4_qids_sr.csv') # X data matrix over CAN-BIND, only overlapping features with STAR*D, subjects who have qids sr until at least week 4
+    # if evl == "extval_resp":
+    #     testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_resp_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr response
+    # elif evl == "extval_rem":
+    #     testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_rem_qids_sr.csv') # y matrix from canbind, with subjects as above, targetting week 8 qids sr remission
+    # elif evl == "extval_rem_randomized": # A control to make sure our extval_rem results are robust, with the targets scrambled randomly
+    #     testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
+    # elif evl == "cv": # Use randomized as a placeholder, won't be used for cv
+    #     testLabel = os.path.join(DATA_DIR, 'canbind_y_tillwk8_randomized.csv') # y matrix from canbind, with subjects as above, with targets scrambled
  
-    # read data and chop the header
-    X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
-    y_test = np.genfromtxt(testLabel, delimiter=',')[1:,1]
+    # # read data and chop the header
+    # X_test = np.genfromtxt(testData, delimiter=',')[1:,1:]
+    # y_test = np.genfromtxt(testLabel, delimiter=',')[1:,1]
+    #############################################################
     
     X = np.genfromtxt(pathData, delimiter=',')
     y = np.genfromtxt(pathLabel, delimiter=',')[1:,1]
@@ -59,7 +64,7 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
         
     for train_index, test_index in kf.split(X):
         print("Fold:", j)
-        
+        print(evl)
         if evl == 'cv':
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
@@ -68,7 +73,15 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
             y_train, _ = y[train_index], y[test_index]
         else:
             Exception("Invalid evaluation type provided, must be cv or extval")
-
+ 
+         # Feature Scaling (added by Tejas) --> temporary
+        if f_scaling == 'norm':
+        
+            # Bounding all variables between 0 and 1
+            scaler = MinMaxScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_test = scaler.transform(X_test)
+            
         # Feature selection
         if f_select == "chi":
             features = featureSelectionChi(X_train,y_train,30,50)
@@ -78,7 +91,9 @@ def RunMLRun(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_splits=
             features,_ = featureSelectionAgglo(np.append(y_train.reshape(-1,1),X_train , axis=1),20)
         elif f_select == "all":
             features = np.arange(m)
-            
+
+
+ 
         # Array to store the importance of features, whether feature was used, and an int to stores number of features per classifier
         feature_importance = np.zeros(len(features))
         features_n_fold = 0
