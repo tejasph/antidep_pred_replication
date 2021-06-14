@@ -1,4 +1,5 @@
 from run_result import RunResult
+from run_experiment import RunExperiment
 
 """
 Top level script to produce results from our paper
@@ -13,19 +14,21 @@ if __name__ == "__main__":
     runs = 1
 
     # Table 3: Replication 
-    if True:
+    if False:
         table = 'table3_replication'
     
         X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
         y_labels = "y_nolvl1drop_trdrem_qids_c"# STAR*D targets for QIDS-C TRD as defined by remission, for subjects who do not drop in level 1 according to having QIDS-C scores
         
-        for model in ["l2logreg"]: ## 'rf','gbdt',"xgbt",
+        for model in ["l2logreg","rf"]: ## 'rf','gbdt',"xgbt",
             for f_select in ["all", "chi", "elas"]: 
                 RunResult(runs, "cv", model, f_select, X_matrix, y_labels, table)
 
                 # Try with MinMax Scaling
                 RunResult(runs, "cv", model, f_select, X_matrix, y_labels, table, f_scaling = "norm")
+                
         RunResult(runs, "cv", 'elnet', 'all', X_matrix, y_labels, table)
+        RunResult(runs, "cv", 'elnet', 'all', X_matrix, y_labels, table, f_scaling = "norm")
     
     # Table 4: External Validation
     if False:
@@ -67,9 +70,25 @@ if __name__ == "__main__":
         RunResult(runs, "cv", 'rf', 'all', 'X_overlap_tillwk4_qids_sr', 'y_wk8_resp_qids_sr', table)
         
         # External Validation with QIDS-SR Remission and Response on CANBIND
-        RunResult(runs, "extval_rem", 'rf', 'all', 'X_overlap_tillwk4_qids_sr', 'y_tillwk4_wk8_rem_qids_sr', table)
-        RunResult(runs, "extval_resp", 'rf', 'all', 'X_overlap_tillwk4_qids_sr', 'y_tillwk4_wk8_resp_qids_sr', table)
-        
+        #RunResult(runs, "extval_rem", 'rf', 'all', 'X_overlap_tillwk4_qids_sr', 'y_tillwk4_wk8_rem_qids_sr', table)
+       # RunResult(runs, "extval_resp", 'rf', 'all', 'X_overlap_tillwk4_qids_sr', 'y_tillwk4_wk8_resp_qids_sr', table)
+
+    if True:
+
+        table = 'Tejas_experiements'
+        X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
+        y_labels = "y_nolvl1drop_trdrem_qids_c"# STAR*D targets for QIDS-C TRD as defined by remission, for subjects who do not drop in level 1 according to having QIDS-C scores
+
+       
+            
+
+        # Try with MinMax Scaling
+        RunResult(runs, "cv", "mlp", 'all', X_matrix, y_labels, table, f_scaling = "norm")
+        RunResult(runs, "cv","l2logreg", 'all', X_matrix, y_labels, table, f_scaling = "norm")
+        RunResult(runs, "cv","svc", 'all', X_matrix, y_labels, table, f_scaling = "norm")
+        RunResult(runs, "cv","knn", 'all', X_matrix, y_labels, table, f_scaling = "norm")
+
+            
     print("Ran all succesfully!")
     
     

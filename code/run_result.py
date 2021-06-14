@@ -7,7 +7,8 @@ import re
 from scipy.stats import ttest_1samp
 import datetime
 import numpy as np
-from run_mlrun import RunMLRun
+# from run_mlrun import RunMLRun   (temp)
+from run_experiment import RunExperiment
 import _pickle as cPickle
 import bz2
 from run_globals import DATA_DIR, RESULTS_DIR
@@ -52,7 +53,8 @@ def RunResult(runs, evl, model ,f_select, data, label, table="",f_scaling = "Non
     
     for i in range(runs):
             
-            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat, run_clfs = RunMLRun(data_path, label_path, f_select,  model, evl, ensemble_n, n_splits, f_scaling)
+            #changed from runMlrun to runexperiment
+            accus[i], bal_accus[i], aucs[i], senss[i], specs[i], precs[i], f1s[i], feats[i], impt, confus_mat, run_clfs = RunExperiment(data_path, label_path, f_select,  model, evl, ensemble_n, n_splits, f_scaling)
        
             tps[i] = confus_mat['tp']
             fps[i] = confus_mat['fp']
