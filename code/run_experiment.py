@@ -9,13 +9,17 @@ from utility import featureSelectionChi, featureSelectionELAS, drawROC, featureS
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
+from imblearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from catboost import CatBoostClassifier
 import xgboost as xgb
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import KFold
+from sklearn.decomposition import PCA
 import numpy as np
 from run_globals import DATA_DIR
 import os
@@ -77,13 +81,28 @@ def RunExperiment(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_sp
         else:
             Exception("Invalid evaluation type provided, must be cv or extval")
  
-         # Feature Scaling (added by Tejas) --> temporary
+         # Feature Scaling (added by Tejas)
         if f_scaling == 'norm':
         
             # Bounding all variables between 0 and 1
             scaler = MinMaxScaler()
             X_train = scaler.fit_transform(X_train)
             X_test = scaler.transform(X_test)
+        elif f_scaling == 'stand':
+            cat_cols = []
+            num_cols = []
+
+            for col in X.columns:
+                val_nums = len(X[col].unique())
+                if val_nums <= 2:
+                    cat_cols.append(col)
+                else:
+                    num_cols.append(col)            
+            num_transformer = Pipeline([('standardize', StandardScaler())])
+            ct = ColumnTransformer([('stand_norm', num_transformer, num_cols)], remainder = 'passthrough')
+
+            X_train = ct.fit_transform(X_train)
+            X_test = ct.transform(X_test)
             
         # Feature selection
         if f_select == "chi":
@@ -92,6 +111,15 @@ def RunExperiment(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_sp
             features = featureSelectionELAS(X_train,y_train,31)
         elif f_select == "agglo":
             features,_ = featureSelectionAgglo(np.append(y_train.reshape(-1,1),X_train , axis=1),20)
+        elif f_select == 'pca':
+            # Establish PCA model to create components that explain 95% of variance
+            pca = PCA(n_components = 0.95)
+            X_train = pca.fit_transform(X_train)
+            X_test = pca.transform(X_test)
+            print(X_train.shape[1])
+            # To be consistent, tells script to use all features generated from the pca
+            features = np.arange(X_train.shape[1])
+
         elif f_select == "all":
             features = np.arange(m)
 
@@ -130,11 +158,15 @@ def RunExperiment(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_sp
                 clf[i].fit(training[i][:,features], label[i])
             
             elif model =='knn':
-                clf[i] = KNeighborsClassifier(n_neighbors = 15, weights = 'distance')
+                clf[i] = KNeighborsClassifier(n_neighbors = 10)
                 clf[i].fit(training[i][:,features], label[i])
 
             elif model == 'mlp':
-                clf[i] = MLPClassifier()
+                clf[i] = MLPClassifier(early_stopping = True)
+                clf[i].fit(training[i][:,features], label[i])
+
+            elif model == 'catboost':
+                clf[i] = CatBoostClassifier(verbose = 0)
                 clf[i].fit(training[i][:,features], label[i])      
 
             elif model == "xgbt":
@@ -160,6 +192,8 @@ def RunExperiment(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_sp
                 feature_importance += xgbt_feature_importance(len(features), clf[i]) # Bug before, was clf[0]
             else:
                 pred_prob += clf[i].predict_proba(X_test[:,features])
+
+            
             if model == "rf" or model == "gbdt":
                 # Feature Importance for tree-based methods in sklearn
                 feature_importance += clf[i].feature_importances_
@@ -168,7 +202,7 @@ def RunExperiment(pathData, pathLabel, f_select, model, evl, ensemble_n=30, n_sp
                 # Feature importance for linear methods in sklearn                
                 feature_importance += clf[i].coef_.flatten()
                 features_n_fold += np.count_nonzero(clf[i].coef_)
-            elif model == 'svc' or model == "knn" or model == 'mlp':
+            elif model == 'svc' or model == "knn" or model == 'mlp' or model == 'catboost':
                 # need to clarify this!!!!!
                 feature_importance += np.zeros(len(features))
                 features_n_fold += 0

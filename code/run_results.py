@@ -75,18 +75,20 @@ if __name__ == "__main__":
 
     if True:
 
-        table = 'Tejas_experiements'
+        table = 'Tejas_experiments'
         X_matrix = "X_nolvl1drop_qids_c" # STAR*D full feature data matrix, with subjects who do not drop in level according to having QIDS-C scores
         y_labels = "y_nolvl1drop_trdrem_qids_c"# STAR*D targets for QIDS-C TRD as defined by remission, for subjects who do not drop in level 1 according to having QIDS-C scores
 
-       
-            
+        # looking at log reg performance in response and remission
+        
+        RunResult(runs, "cv", "catboost", "all", X_matrix, y_labels, table, f_scaling = "norm")   
 
-        # Try with MinMax Scaling
-        RunResult(runs, "cv", "mlp", 'all', X_matrix, y_labels, table, f_scaling = "norm")
-        RunResult(runs, "cv","l2logreg", 'all', X_matrix, y_labels, table, f_scaling = "norm")
-        RunResult(runs, "cv","svc", 'all', X_matrix, y_labels, table, f_scaling = "norm")
-        RunResult(runs, "cv","knn", 'all', X_matrix, y_labels, table, f_scaling = "norm")
+        
+        RunResult(runs, "cv", "rf", "all", X_matrix, y_labels, table, f_scaling = "norm")
+
+
+
+  
 
             
     print("Ran all succesfully!")
