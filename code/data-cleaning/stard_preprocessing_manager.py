@@ -860,6 +860,9 @@ def generate_y(root_data_dir_path):
                 y_lvl2_rem_qids01 = pd.DataFrame()
                 y_wk8_resp_qids01 = pd.DataFrame()
                 y_lvl2_rem_qids01_tillwk4 = pd.DataFrame()
+
+                # Adding magnitude df
+                y_wk8_resp_magnitude_qids01 = pd.DataFrame()
                 
                 if vers == 'c': 
                     version_form = 'Clinician'
@@ -887,6 +890,34 @@ def generate_y(root_data_dir_path):
                             y_lvl2_rem_qids01_tillwk4.loc[i, "target"] = 0
     
                         i += 1
+                
+                # creating magnitude change y_labels
+                i = 0
+                for id, group in scale_df.groupby(['subjectkey']):
+                    if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
+                        # Grab the baseline entry
+                        subset = group[(group['version_form'] == version_form)]
+
+                        if subset.shape[0] == 0:
+                            continue
+
+                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                        y_wk8_resp_magnitude_qids01.loc[i, "subjectkey"] = id
+
+                        # Grab the later days_baseline entries
+                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
+                        # y_wk8_resp_magnitude_qids01.loc[i, "target"] = 0  ---> can probably remove
+                        
+                        # Establish a starting max_diff and then largest qstot magnitude change from baseline
+                        max_diff = 0
+                        for k, row in subset.iterrows():
+                            diff = row['qstot'] - baseline
+                            if abs(diff) > abs(max_diff):
+                                max_diff = diff
+                            
+                        y_wk8_resp_magnitude_qids01.loc[i, "target"] = max_diff
+                        
+                    i += 1
     
                 # Create CAN-BIND overlapping targets with QIDS-SR remission
                 i = 0
@@ -914,10 +945,12 @@ def generate_y(root_data_dir_path):
                     y_lvl2_rem_qids_c = y_lvl2_rem_qids01
                     y_lvl2_rem_qids_tillwk4_c = y_lvl2_rem_qids01_tillwk4
                     y_wk8_resp_qids_c = y_wk8_resp_qids01
+                    y_wk8_resp_mag_qids_c = y_wk8_resp_magnitude_qids01
     
                 elif vers == 'sr': 
                     y_lvl2_rem_qids_sr = y_lvl2_rem_qids01
                     y_wk8_resp_qids_sr = y_wk8_resp_qids01
+                    y_wk8_resp_mag_qids_sr = y_wk8_resp_magnitude_qids01
                 else:
                     Exception()
                     
@@ -958,6 +991,10 @@ def generate_y(root_data_dir_path):
     
     y_wk8_rem_qids_c.to_csv(output_y_dir_path + "y_wk8_rem_qids_c" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_sr.to_csv(output_y_dir_path + "y_wk8_rem_qids_sr" + CSV_SUFFIX, index=False)
+
+    #Output Magnitude respones y_files
+    y_wk8_resp_mag_qids_c.to_csv(output_y_dir_path + "y_wk8_resp_mag_qids_c" + CSV_SUFFIX, index = False)
+    y_wk8_resp_mag_qids_sr.to_csv(output_y_dir_path + "y_wk8_resp_mag_qids_sr" + CSV_SUFFIX, index = False)
 
     print("Y output files have  been written to:", output_y_dir_path)
 
@@ -1007,6 +1044,10 @@ def select_subjects(root_data_dir_path):
     y_wk8_resp_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_c" + CSV_SUFFIX)
     y_wk8_resp_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_sr" + CSV_SUFFIX)
 
+    # Handle the week8 response magnitude stuff
+    y_wk8_resp_mag_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_mag_qids_c" + CSV_SUFFIX)
+    y_wk8_resp_mag_qids_sr= pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_mag_qids_sr" + CSV_SUFFIX)
+
     # Handle the week8 remission stuff
     y_wk8_rem_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_c" + CSV_SUFFIX)
     y_wk8_rem_qids_sr = pd.read_csv(input_y_generation_dir_path + "/y_wk8_rem_qids_sr" + CSV_SUFFIX)    
@@ -1024,6 +1065,10 @@ def select_subjects(root_data_dir_path):
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c[y_wk8_rem_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr[y_wk8_rem_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
 
+    # Subset y magnitude matrices so that they match X matrices
+    y_wk8_resp_mag_qids_c__final = y_wk8_resp_mag_qids_c[y_wk8_resp_mag_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
+    y_wk8_resp_mag_qids_sr__final = y_wk8_resp_mag_qids_sr[y_wk8_resp_mag_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
+
     # Also do a form of the lvl 2 remission (TRD) to match the week 4 inclusion criteria
     y_lvl2_rem_qids_c_tillwk4__final = y_lvl2_rem_qids_tillwk4_c[y_lvl2_rem_qids_tillwk4_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
 
@@ -1037,6 +1082,8 @@ def select_subjects(root_data_dir_path):
     y_lvl2_rem_qids_sr__final = y_lvl2_rem_qids_sr__final.sort_values(by=['subjectkey'])    
     y_wk8_resp_qids_c__final = y_wk8_resp_qids_c__final.sort_values(by=['subjectkey'])
     y_wk8_resp_qids_sr__final = y_wk8_resp_qids_sr__final.sort_values(by=['subjectkey'])
+    y_wk8_resp_mag_qids_c__final = y_wk8_resp_mag_qids_c__final.sort_values(by=['subjectkey'])
+    y_wk8_resp_mag_qids_sr__final = y_wk8_resp_mag_qids_sr__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c__final.sort_values(by=['subjectkey'])
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr__final.sort_values(by=['subjectkey'])
     
@@ -1046,8 +1093,8 @@ def select_subjects(root_data_dir_path):
     y_wk8_resp_qids_sr_nolvl1drop = y_wk8_resp_qids_sr__final[y_wk8_resp_qids_sr__final.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
     y_wk8_resp_qids_c_nolvl1drop = y_wk8_resp_qids_c__final[y_wk8_resp_qids_c__final.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
     
-
-    
+    y_wk8_resp_mag_qids_sr_nolvl1drop = y_wk8_resp_mag_qids_sr__final[y_wk8_resp_mag_qids_sr__final.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
+    y_wk8_resp_mag_qids_c_nolvl1drop = y_wk8_resp_mag_qids_c__final[y_wk8_resp_mag_qids_c__final.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
 
     # Output X matrices to CSV
     X_nolvl1drop_qids_c__final.to_csv(output_subject_selected_path + "X_nolvl1drop_qids_c__final" + CSV_SUFFIX, index=False)
@@ -1060,6 +1107,8 @@ def select_subjects(root_data_dir_path):
     y_lvl2_rem_qids_sr__final.to_csv(output_subject_selected_path + "y_lvl2_rem_qids_sr__final" + CSV_SUFFIX, index=False)
     y_wk8_resp_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_resp_qids_c__final" + CSV_SUFFIX, index=False)
     y_wk8_resp_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_resp_qids_sr__final" + CSV_SUFFIX, index=False)
+    y_wk8_resp_mag_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_resp_mag_qids_c__final" + CSV_SUFFIX, index=False)
+    y_wk8_resp_mag_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_resp_mag_qids_sr__final" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_c__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_c__final" + CSV_SUFFIX, index=False)
     y_wk8_rem_qids_sr__final.to_csv(output_subject_selected_path + "y_wk8_rem_qids_sr__final" + CSV_SUFFIX, index=False)
 
@@ -1067,6 +1116,8 @@ def select_subjects(root_data_dir_path):
     
     y_wk8_resp_qids_sr_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_qids_sr_nolvl1drop" + CSV_SUFFIX, index=False)
     y_wk8_resp_qids_c_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_qids_c_nolvl1drop" + CSV_SUFFIX, index=False)
+    y_wk8_resp_mag_qids_sr_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_mag_qids_sr_nolvl1drop" + CSV_SUFFIX, index=False)
+    y_wk8_resp_mag_qids_c_nolvl1drop.to_csv(output_subject_selected_path + "y_wk8_resp_mag_qids_c_nolvl1drop" + CSV_SUFFIX, index=False)
     
     print("Files written to: ", output_subject_selected_path)
 
