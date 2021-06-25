@@ -1,8 +1,8 @@
-# split_data.py
+# prepare_data.py
 # June 24th 2021
 
 
-'''This script split data with a set random_state for reproducibility. 
+'''This script split data with a set random_state for reproducibility. It also creates scaled versions of the data 
 
 Usage: split_data.py --X_path=<X_path> --y_path=<y_path>
 
@@ -14,11 +14,14 @@ Options:
 ''' 
 
 import pandas as pd
+import datetime
 import os
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 if __name__ == "__main__":
 
+    startTime = datetime.datetime.now()
 
     out_path = "data/modelling_data"
     X_path = "data/X_tillwk4_qids_sr__final.csv"
@@ -47,13 +50,27 @@ if __name__ == "__main__":
     # checks that all subject ids match between X and y
     assert X_train.subjectkey.compare(y_train.subjectkey).shape[0] == 0
     assert X_test.subjectkey.compare(y_test.subjectkey).shape[0] == 0
+
+    # Associate subjectkey as the index for easier tracking/manipulation
+    X_train = X_train.set_index('subjectkey')
+    X_test = X_test.set_index('subjectkey')
     
+    # Create normalized version of X_train
+    scaler = MinMaxScaler()
+    X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    X_test_norm = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns, index = X_test.index)
+
+    # Create standardized version of X_train and X_test
+
+    # Create standardized/normalized version of X_train and X_test
 
     # Output csv files
     X_train.to_csv(out_path + "/X_train.csv", index = False)
+    X_train_norm.to_csv(out_path + "/X_train_norm.csv", index = True)
     y_train.to_csv(out_path + "/y_train.csv", index = False) 
 
     X_test.to_csv(out_path + "/X_test.csv", index = False)
+    X_test_norm.to_csv(out_path + "/X_test_norm.csv", index = False)
     y_test.to_csv(out_path + "/y_test.csv", index = False) 
 
-print("Finished Run")
+print(f"Finished data prep in {datetime.datetime.now() - startTime}")
