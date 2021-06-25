@@ -91,8 +91,8 @@ if __name__ == "__main__":
     # Output csv files
     X_train.to_csv(out_path + "/X_train.csv", index = True)
     X_train_norm.to_csv(out_path + "/X_train_norm.csv", index = True)
-    X_train_stand.to_csv(out_path + "X_train_stand.csv" , index = True)
-    X_train_stand_norm.to_csv(out_path + "X_train_stand_norm.csv", index = True)
+    X_train_stand.to_csv(out_path + "/X_train_stand.csv" , index = True)
+    X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm.csv", index = True)
     y_train.to_csv(out_path + "/y_train.csv", index = False) 
 
     X_test.to_csv(out_path + "/X_test.csv", index = False)

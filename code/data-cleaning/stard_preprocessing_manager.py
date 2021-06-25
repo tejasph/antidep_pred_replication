@@ -903,6 +903,7 @@ def generate_y(root_data_dir_path):
 
                         baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
                         y_wk8_resp_magnitude_qids01.loc[i, "subjectkey"] = id
+                        y_wk8_resp_magnitude_qids01.loc[i,"baseline_score"] = baseline
 
                         # Grab the later days_baseline entries
                         subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
