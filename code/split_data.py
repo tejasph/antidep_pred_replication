@@ -18,6 +18,9 @@ import datetime
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.compose import ColumnTransformer
+from imblearn.pipeline import Pipeline
+
 
 if __name__ == "__main__":
 
@@ -60,17 +63,42 @@ if __name__ == "__main__":
     X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
     X_test_norm = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns, index = X_test.index)
 
+    # Crude way of determining categorical variables
+    cat_cols = []
+    num_cols = []
+    for col in X_train.columns:
+        val_nums = len(X_train[col].unique())
+        if val_nums <= 2:
+            cat_cols.append(col)
+        else:
+            num_cols.append(col)  
+
     # Create standardized version of X_train and X_test
+    num_transformer = Pipeline([('standardize', StandardScaler())])
+    ct = ColumnTransformer([('stand', num_transformer, num_cols)], remainder = 'passthrough')
+
+    X_train_stand = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    X_test_stand = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
 
     # Create standardized/normalized version of X_train and X_test
+    num_transformer = Pipeline([('standardize', StandardScaler()),('normalize',MinMaxScaler())])
+    ct = ColumnTransformer([('stand_norm', num_transformer, num_cols)], remainder = 'passthrough')
+    
+    X_train_stand_norm = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    X_test_stand_norm = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
 
+  
     # Output csv files
-    X_train.to_csv(out_path + "/X_train.csv", index = False)
+    X_train.to_csv(out_path + "/X_train.csv", index = True)
     X_train_norm.to_csv(out_path + "/X_train_norm.csv", index = True)
+    X_train_stand.to_csv(out_path + "X_train_stand.csv" , index = True)
+    X_train_stand_norm.to_csv(out_path + "X_train_stand_norm.csv", index = True)
     y_train.to_csv(out_path + "/y_train.csv", index = False) 
 
     X_test.to_csv(out_path + "/X_test.csv", index = False)
-    X_test_norm.to_csv(out_path + "/X_test_norm.csv", index = False)
+    X_test_norm.to_csv(out_path + "/X_test_norm.csv", index = True)
+    X_test_stand.to_csv(out_path + "/X_test_stand.csv", index = True)
+    X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm.csv", index = True)
     y_test.to_csv(out_path + "/y_test.csv", index = False) 
 
 print(f"Finished data prep in {datetime.datetime.now() - startTime}")
