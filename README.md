@@ -37,3 +37,6 @@ The raw STAR*D and CAN-BIND data should be placed in separate folders within [da
 2. Place your .csv files with the X and y matrices you want to run (or ours as downloaded) into the data directory above
 3. Run the machine learning with [run_results](./code/run_results.py) script. This script calls [run_result](./code/run_results.py), assuming the filename of the 
 dataset csv's will be passed along, minus the '.csv' ending. 
+
+## Running Regression Aspect of the Project
+1. Prepare the data beforehand using `python code/split_data.py` 

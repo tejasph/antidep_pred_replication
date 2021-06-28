@@ -921,6 +921,7 @@ def generate_y(root_data_dir_path):
                     i += 1
     
                 # Create CAN-BIND overlapping targets with QIDS-SR remission
+                temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0}
                 i = 0
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
@@ -934,6 +935,18 @@ def generate_y(root_data_dir_path):
                     
                         # Grab the later days_baseline entries
                         subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
+
+                        # Validity checks
+                        if subset.shape[0] == 1:
+                            temp_test['length_one'] += 1
+                            if subset.iloc[0]['days_baseline'] == 0:
+                                temp_test['days_baseline_zero'] += 1
+                        elif subset.shape[0] == 0:
+                            temp_test['length_zero'] += 1
+
+
+
+
                         y_wk8_resp_qids01.loc[i, "target"] = 0
                         for k, row in subset.iterrows():
                             #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
@@ -954,7 +967,8 @@ def generate_y(root_data_dir_path):
                     y_wk8_resp_mag_qids_sr = y_wk8_resp_magnitude_qids01
                 else:
                     Exception()
-                    
+                print(temp_test)
+            print(f"Before subsetting, shape is {y_wk8_resp_qids_sr.shape}")    
                     
                 
             # Create targets from both QIDS-C and QIDS-SR for week 8 remissions (qids_tot <= 5)
@@ -1039,7 +1053,7 @@ def select_subjects(root_data_dir_path):
     # Subset the y matrices so that it matches the X matrices
     y_lvl2_rem_qids_c__final = y_lvl2_rem_qids_c[y_lvl2_rem_qids_c.subjectkey.isin(X_nolvl1drop_qids_c__final.subjectkey)]
     y_lvl2_rem_qids_sr__final = y_lvl2_rem_qids_sr[y_lvl2_rem_qids_sr.subjectkey.isin(X_nolvl1drop_qids_sr__final.subjectkey)]
-    
+
     
     # Handle the week8 response stuff
     y_wk8_resp_qids_c = pd.read_csv(input_y_generation_dir_path + "/y_wk8_resp_qids_c" + CSV_SUFFIX)
@@ -1062,6 +1076,7 @@ def select_subjects(root_data_dir_path):
     # Subset the y matrices so that they matches the X matrices
     y_wk8_resp_qids_c__final = y_wk8_resp_qids_c[y_wk8_resp_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
     y_wk8_resp_qids_sr__final = y_wk8_resp_qids_sr[y_wk8_resp_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
+    print(f"after subsetting, size is {y_wk8_resp_qids_sr__final.shape}")
 
     y_wk8_rem_qids_c__final = y_wk8_rem_qids_c[y_wk8_rem_qids_c.subjectkey.isin(X_tillwk4_qids_c__final.subjectkey)]
     y_wk8_rem_qids_sr__final = y_wk8_rem_qids_sr[y_wk8_rem_qids_sr.subjectkey.isin(X_tillwk4_qids_sr__final.subjectkey)]
