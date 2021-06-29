@@ -6,25 +6,30 @@ Runs 1 run of the specified ML training and evaluation
 from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 
 import pandas as pd
 import numpy as np
+import datetime
+import os
 
 def RunRegRun(regressor, X_train_path, y_train_path, runs):
 
+    result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_train_path, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     # Read in the data
-    X = pd.read_csv(X_train_path)
-    y = pd.read_csv(y_train_path)
+    X = pd.read_csv("data/modelling/"+ X_train_path + ".csv")
+    y = pd.read_csv("data/modelling/" + y_train_path + ".csv")
     y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
-    print(y_response.head())
+
     # alter Column slightly
     y_response.columns = ['actual_resp']
 
+    run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_bal_acc':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_bal_acc':[], 'avg_valid_R2':[]}
     for r in range(runs):
         print(f"Run {r}")
         # Establish 10 fold crossvalidation splits
         kf = KFold(10, shuffle = True)
-        scores = {'fold':[], 'model':[], 'train_RMSE':[], 'train_bal_acc':[], 'valid_RMSE':[], 'valid_bal_acc':[], 'valid_R2': [],'specificity':[], 'sensitivity':[], 'precision':[]}
+        scores = {'fold':[], 'model':[], 'train_RMSE':[], 'train_bal_acc':[],'train_R2':[], 'valid_RMSE':[], 'valid_bal_acc':[], 'valid_R2': [],'specificity':[], 'sensitivity':[], 'precision':[]}
         fold = 1
         for train_index, valid_index in kf.split(X):
 
@@ -39,6 +44,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, runs):
             # Establish the model
             if regressor == 'rf':
                 model = RandomForestRegressor()
+            if regressor == 'svr':
+                model = SVR()
 
 
             # Make our predictions (t_results = training, v_results = validation)
@@ -50,6 +57,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, runs):
             
             scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred, squared = False))
             scores['train_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_results.pred_response))
+            scores['train_R2'].append(r2_score(t_results.target, t_results.pred))
             
             scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred, squared = False))
             scores['valid_bal_acc'].append(balanced_accuracy_score(v_results.actual_resp,v_results.pred_response))
@@ -64,13 +72,35 @@ def RunRegRun(regressor, X_train_path, y_train_path, runs):
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)
+        print(f"Run {r} Results")
         print(results.mean())
+        run_scores['run'].append(r)
+        run_scores['model'].append(regressor)
+
+        run_scores['avg_train_RMSE'].append(results['train_RMSE'].mean())
+        run_scores['avg_train_bal_acc'].append(results['train_bal_acc'].mean())
+        run_scores['avg_train_R2'].append(results['train_R2'].mean())
+
+        run_scores['avg_valid_RMSE'].append(results['valid_RMSE'].mean())
+        run_scores['avg_valid_bal_acc'].append(results['valid_bal_acc'].mean())
+        run_scores['avg_valid_R2'].append(results['valid_R2'].mean())
         
     # average the scores across the r runs and get standard deviations
-
+    final_score_df = pd.DataFrame(run_scores)
+    print(final_score_df.mean())
+    print(final_score_df.std())
 
 
     # Write text file, or output dataframes to appropriate folders
+
+    f = open(os.path.join("results/", result_filename + '.txt'), 'w')
+    f.write("Average training RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_RMSE'].mean(), final_score_df['avg_train_RMSE'].std()))
+    f.write("Average training balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_bal_acc'].mean(), final_score_df['avg_train_bal_acc'].std()))
+    f.write("Average training R2 is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_R2'].mean(), final_score_df['avg_train_R2'].std()))
+
+    f.write("Average validation RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_RMSE'].mean(), final_score_df['avg_valid_RMSE'].std()))
+    f.write("Average validation balanced accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_bal_acc'].mean(), final_score_df['avg_valid_bal_acc'].std()))
+    f.write("Average validation R2 is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_R2'].mean(), final_score_df['avg_valid_R2'].std()))
 
 def assess_model(model, X_train, y_train, X_valid, y_valid):
     train_results = y_train.copy()
