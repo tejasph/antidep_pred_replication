@@ -6,9 +6,9 @@ Temporary
 """
 
 if __name__ == "__main__":
-    runs = 10
-    model = "rf"
+    runs = 1
+    regressor = "rf"
     X_path = "data/modelling_data/X_train_norm.csv"
-    y = "y_df"
+    y = "data/modelling_data/y_train.csv"
 
-    RunRegRun(model, X_path, y, runs)
+    RunRegRun(regressor, X_path, y, runs)
