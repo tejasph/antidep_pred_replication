@@ -898,6 +898,9 @@ def generate_y(root_data_dir_path):
                         # Grab the baseline entry
                         subset = group[(group['version_form'] == version_form)]
 
+                        # Added due to a bug where there is nan qstot at days_baseline = 0
+                        subset = subset[subset['qstot'].notna()]
+
                         if subset.shape[0] == 0:
                             continue
 
@@ -921,16 +924,22 @@ def generate_y(root_data_dir_path):
                     i += 1
     
                 # Create CAN-BIND overlapping targets with QIDS-SR remission
-                temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0}
+                temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0, "baseline_na":0}
                 i = 0
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
                         # Grab the baseline entry
                         subset = group[(group['version_form'] == version_form)]
+
+                        # Added due to a bug where there is nan qstot at days_baseline = 0
+                        subset = subset[subset['qstot'].notna()]
+
                         if subset.shape[0] == 0:
                             continue
     
                         baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                        if np.isnan(baseline):
+                            temp_test['baseline_na'] += 1
                         y_wk8_resp_qids01.loc[i, "subjectkey"] = id
                     
                         # Grab the later days_baseline entries

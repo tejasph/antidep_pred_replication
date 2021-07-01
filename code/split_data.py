@@ -16,18 +16,20 @@ Options:
 import pandas as pd
 import datetime
 import os
+import sys
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.compose import ColumnTransformer
 from imblearn.pipeline import Pipeline
 
 
-if __name__ == "__main__":
+def prepare_data(X_path, name):
 
     startTime = datetime.datetime.now()
 
-    out_path = "data/modelling_data"
-    X_path = "data/X_tillwk4_qids_sr__final.csv"
+    out_path = "data/modelling"
+    # X_path = "data/X_tillwk4_qids_sr__final.csv"
+    # X_overlap_path = "data/jj_processed/X_overlap_tillwk4_qids_sr.csv" # temporary read in location
     y_path = "data/y_wk8_resp_mag_qids_sr__final.csv"
 
     if not os.path.exists(out_path):
@@ -89,16 +91,30 @@ if __name__ == "__main__":
 
   
     # Output csv files
-    X_train.to_csv(out_path + "/X_train.csv", index = True)
-    X_train_norm.to_csv(out_path + "/X_train_norm.csv", index = True)
-    X_train_stand.to_csv(out_path + "/X_train_stand.csv" , index = True)
-    X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm.csv", index = True)
-    y_train.to_csv(out_path + "/y_train.csv", index = False) 
+    X_train.to_csv(out_path + "/X_train" + name + ".csv", index = True)
+    X_train_norm.to_csv(out_path + "/X_train_norm" + name + ".csv", index = True)
+    X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
+    X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
+    y_train.to_csv(out_path + "/y_train" + name + ".csv", index = False) 
 
-    X_test.to_csv(out_path + "/X_test.csv", index = False)
-    X_test_norm.to_csv(out_path + "/X_test_norm.csv", index = True)
-    X_test_stand.to_csv(out_path + "/X_test_stand.csv", index = True)
-    X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm.csv", index = True)
-    y_test.to_csv(out_path + "/y_test.csv", index = False) 
+    X_test.to_csv(out_path + "/X_test" +name + ".csv", index = False)
+    X_test_norm.to_csv(out_path + "/X_test_norm" + name + ".csv", index = True)
+    X_test_stand.to_csv(out_path + "/X_test_stand" + name + ".csv", index = True)
+    X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm" + name + ".csv", index = True)
+    y_test.to_csv(out_path + "/y_test" + name + ".csv", index = False) 
 
-print(f"Finished data prep in {datetime.datetime.now() - startTime}")
+    print(f"Finished data prep in {datetime.datetime.now() - startTime}")
+
+if __name__ == "__main__":
+    print(sys.argv[1])
+    print(sys.argv[2])
+    if sys.argv[1] == "-over":
+        name = "_over"
+    elif sys.argv[1] == "-all":
+        name = ""
+    else:
+        print("option not typed correctly")
+
+    # Need a check on this
+    prepare_data(sys.argv[2], name)
+ 
