@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_scor
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.svm import SVR
+from scipy.stats import kurtosistest
 
 import pandas as pd
 import numpy as np
@@ -23,6 +24,9 @@ def RunRegRun(regressor, X_train_path, y_train_path, runs, test_data = False):
 
     # alter Column slightly
     y_response.columns = ['actual_resp']
+
+
+    print(kurtosistest(y['target']))
 
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_bal_acc':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_bal_acc':[], 'avg_valid_R2':[]}
     for r in range(runs):
@@ -44,10 +48,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, runs, test_data = False):
             # Establish the model
             if regressor == 'rf':
                 # optimized for overlapping features
-                model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-                      min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
-                # model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
-                #       min_samples_split=10, n_jobs=-1)
+                # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+                #       min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+                
+                # optimized for non-overlapping X
+                model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
+                      min_samples_split=10, n_jobs=-1)
             elif regressor == 'svr':
                 model = SVR()
             elif regressor == 'gbr':
@@ -134,6 +140,11 @@ def assess_model(model, X_train, y_train, X_valid, y_valid):
     # Make Predictions
     train_results['pred'] = model.predict(X_train)
     valid_results['pred'] = model.predict(X_valid)
+
+    # # Inverse Transform predictions
+    # train_results['pred'] = (train_results['pred']**2) + y_min
+    # valid_results['pred'] = (valid_results['pred']**2) + y_min
+    # print(train_results.head())
     
     # Calculate response percentage
     train_results['response_pct'] = train_results['pred']/train_results['baseline_score']
