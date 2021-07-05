@@ -4,12 +4,9 @@
 
 '''This script split data with a set random_state for reproducibility. It also creates scaled versions of the data 
 
-Usage: split_data.py --X_path=<X_path> --y_path=<y_path>
+Example Usage: python code/split_data.py -over data/jj_processed/X_overlap_tillwk4_qids_sr.csv
 
-
-Options: 
---X_path=<X_path>   :   Relative folder path for features
---y_path=<y_path>   :   Relative folder path for labels
+Run from root of the repo
 
 ''' 
 

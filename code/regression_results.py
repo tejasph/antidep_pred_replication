@@ -1,18 +1,27 @@
 #Regression Results
 from run_regression import RunRegRun
+import os
 
 """
-Temporary
+Run Experiment script
 """
 
 if __name__ == "__main__":
+    exp_name = "remission_baseline_models_all"
+    if os.path.isdir("results/" + exp_name):
+        raise Exception("Name already exists")
+    else:
+        out_path = "results/" + exp_name + "/"
+        os.mkdir(out_path)
+
     runs = 10
     regressor = "rf"
     X_path = "X_train_norm"
     y = "y_train"
-    test_data = True
+    class_y = "remission"
+    test_data = False
 
-    RunRegRun(regressor, X_path, y, runs, test_data)
+    RunRegRun(regressor, X_path, y, out_path,  runs, class_y , test_data)
 
     # runs = 10
     # regressor = "rf"

@@ -39,4 +39,5 @@ The raw STAR*D and CAN-BIND data should be placed in separate folders within [da
 dataset csv's will be passed along, minus the '.csv' ending. 
 
 ## Running Regression Aspect of the Project
-1. Prepare the data beforehand using `python code/split_data.py` 
+1. Run all steps in "Run Order" to generate the processed STARD and CAN-BIND data
+2. Prepare the data beforehand using `python code/prepare_reg_data.py` 
