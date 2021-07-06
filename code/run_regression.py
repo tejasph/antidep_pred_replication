@@ -18,7 +18,9 @@ import numpy as np
 import datetime
 import os
 
-def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "response", test_data = False):
+def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data = False):
+
+    startTime = datetime.datetime.now()
 
     result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_train_path, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     # Read in the data
@@ -26,24 +28,30 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
     y = pd.read_csv("data/modelling/" + y_train_path + ".csv")
 
 
-    if class_y == "response":
-        y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
-    elif class_y == "remission":
-        y_response = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
-    else: raise Exception("Not a valid classification label")
+    
+    y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
+    y_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
+    
 
     # alter Column name to avoid mixup
     y_response.columns = ['actual_resp']
+    y_remission.columns = ['true_rem']
 
 
     print(kurtosistest(y['target']))
 
-    run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_bal_acc':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_bal_acc':[], 'avg_valid_R2':[]}
+    run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
+                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[], 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[]}
+
     for r in range(runs):
         print(f"Run {r}")
         # Establish 10 fold crossvalidation splits
         kf = KFold(10, shuffle = True)
-        scores = {'fold':[], 'model':[], 'train_RMSE':[], 'train_bal_acc':[],'train_R2':[], 'valid_RMSE':[], 'valid_bal_acc':[], 'valid_R2': [],'specificity':[], 'sensitivity':[], 'precision':[]}
+
+        scores = {'fold':[], 'model':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2': [],
+            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[],
+            'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[]}
+
         fold = 1
         for train_index, valid_index in kf.split(X):
 
@@ -53,7 +61,10 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
 
             # append actual_resp for later comparison --> grabs actual response fore each matching subjectkey
             y_train = y_train.join(y_response)
+            y_train = y_train.join(y_remission)
+
             y_valid = y_valid.join(y_response)
+            y_valid = y_valid.join(y_remission)
 
             #Transform y to make the distribution more Gaussian
             # yeo_transformer = PowerTransformer()
@@ -63,12 +74,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
             # Establish the model
             if regressor == 'rf':
                 # optimized for overlapping features
-                # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-                #       min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+                model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+                      min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
 
                 # optimized for non-overlapping X
-                model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
-                      min_samples_split=10, n_jobs=-1)
+                # model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
+                #       min_samples_split=10, n_jobs=-1)
 
                 # Basic Model
                 # model = RandomForestRegressor()
@@ -79,32 +90,42 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
 
 
             # Make our predictions (t_results = training, v_results = validation)
-            if class_y == "response":
-                t_results, v_results = assess_model(model, X_train, y_train, X_valid, y_valid)
-                t_classification = t_results.pred_response
-                v_classification = v_results.pred_response
+            
+            t_results, v_results = assess_model(model, X_train, y_train, X_valid, y_valid)
+            # t_classification = t_results.pred_response
+            # v_classification = v_results.pred_response
 
-            elif class_y == "remission":
-                t_results, v_results = assess_on_remission(model, X_train, y_train, X_valid, y_valid)
-                t_classification = t_results.pred_remission
-                v_classification = v_results.pred_remission
+            # elif class_y == "remission":
+            #     t_results, v_results = assess_on_remission(model, X_train, y_train, X_valid, y_valid)
+            #     t_classification = t_results.pred_remission
+            #     v_classification = v_results.pred_remission
 
-            # Calculate Scores
+            # Calculate Regression Scores
             scores['fold'].append(fold)
             scores['model'].append(regressor)
             
             scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_change, squared = False))
-            scores['train_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_classification)) # t_classification used to be t_results.pred_response
             scores['train_R2'].append(r2_score(t_results.target, t_results.pred_change))
-            
             scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
-            scores['valid_bal_acc'].append(balanced_accuracy_score(v_results.actual_resp, v_classification))
             scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_change))
 
-            tn, fp, fn, tp = confusion_matrix(v_results.actual_resp,v_classification).ravel()
-            scores['specificity'].append(tn/(tn+fp)) 
-            scores['sensitivity'].append(tp/(tp+fn))
-            scores['precision'].append(tp/(tp+fp))
+            # Calculate Response Classification Accuracy
+            scores['train_resp_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_results.pred_response)) 
+            scores['valid_resp_bal_acc'].append(balanced_accuracy_score(v_results.actual_resp, v_results.pred_response))
+
+            tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ravel()
+            scores['resp_specificity'].append(tn/(tn+fp)) 
+            scores['resp_sensitivity'].append(tp/(tp+fn))
+            scores['resp_precision'].append(tp/(tp+fp))
+
+            # Calculate Remission Classification Accuracy 
+            scores['train_rem_bal_acc'].append(balanced_accuracy_score(t_results.true_rem, t_results.pred_remission)) 
+            scores['valid_rem_bal_acc'].append(balanced_accuracy_score(v_results.true_rem, v_results.pred_remission))
+
+            tn, fp, fn, tp = confusion_matrix(v_results.true_rem, v_results.pred_remission).ravel()
+            scores['rem_specificity'].append(tn/(tn+fp)) 
+            scores['rem_sensitivity'].append(tp/(tp+fn))
+            scores['rem_precision'].append(tp/(tp+fp))
             fold += 1
             
         # Generate a histogram of predictions for the run 
@@ -120,7 +141,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
         plt.legend()
         plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
 
-    
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)
@@ -130,13 +150,17 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
         run_scores['model'].append(regressor)
 
         run_scores['avg_train_RMSE'].append(results['train_RMSE'].mean())
-        run_scores['avg_train_bal_acc'].append(results['train_bal_acc'].mean())
         run_scores['avg_train_R2'].append(results['train_R2'].mean())
-
         run_scores['avg_valid_RMSE'].append(results['valid_RMSE'].mean())
-        run_scores['avg_valid_bal_acc'].append(results['valid_bal_acc'].mean())
         run_scores['avg_valid_R2'].append(results['valid_R2'].mean())
+
         
+        run_scores['avg_train_resp_bal_acc'].append(results['train_resp_bal_acc'].mean())
+        run_scores['avg_valid_resp_bal_acc'].append(results['valid_resp_bal_acc'].mean())
+
+        run_scores['avg_train_rem_bal_acc'].append(results['train_rem_bal_acc'].mean())
+        run_scores['avg_valid_rem_bal_acc'].append(results['valid_rem_bal_acc'].mean())
+
     # average the scores across the r runs and get standard deviations
     final_score_df = pd.DataFrame(run_scores)
     print(final_score_df.mean())
@@ -147,14 +171,22 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
     # Write text file, or output dataframes to appropriate folders
 
     f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
-    f.write("Model Results for: {}\n\n".format(result_filename))
+    # Regression Related metrics
+    f.write("Regression Model Results for: {}\n\n".format(result_filename))
     f.write("Average training RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_RMSE'].mean(), final_score_df['avg_train_RMSE'].std()))
-    f.write("Average training balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_bal_acc'].mean(), final_score_df['avg_train_bal_acc'].std()))
     f.write("Average training R2 is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_train_R2'].mean(), final_score_df['avg_train_R2'].std()))
-
     f.write("Average validation RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_RMSE'].mean(), final_score_df['avg_valid_RMSE'].std()))
-    f.write("Average validation balanced accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_bal_acc'].mean(), final_score_df['avg_valid_bal_acc'].std()))
-    f.write("Average validation R2 is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_R2'].mean(), final_score_df['avg_valid_R2'].std()))
+    f.write("Average validation R2 is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_R2'].mean(), final_score_df['avg_valid_R2'].std()))
+
+    # Response Classification Performance
+    f.write("Response Classification Results: \n")
+    f.write("Average training response balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_resp_bal_acc'].mean(), final_score_df['avg_train_resp_bal_acc'].std()))
+    f.write("Average validation response balanced accuracy is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_resp_bal_acc'].mean(), final_score_df['avg_valid_resp_bal_acc'].std()))
+
+    # Remission Classification Performance 
+    f.write("Remission Classification Results: \n")
+    f.write("Average training remission balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_rem_bal_acc'].mean(), final_score_df['avg_train_rem_bal_acc'].std()))
+    f.write("Average validation remission balanced accuracy is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_rem_bal_acc'].mean(), final_score_df['avg_valid_rem_bal_acc'].std()))
 
     if test_data == True: # need to add transformer if its proven to work out
         X_test = pd.read_csv("data/modelling/X_test_norm.csv").set_index('subjectkey')
@@ -169,6 +201,9 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, class_y = "
         f.write("Test RMSE is {:4f}\n".format(mean_squared_error(test_results.target,test_results.pred, squared = False)))
         f.write("Test balanced accuracy is {:4f}\n".format(balanced_accuracy_score(test_results.actual_resp,test_results.pred_response)))
         f.write("Test R2 is {:4f}\n".format(r2_score(test_results.target, test_results.pred)))
+    
+    print("Completed after seconds: \n")
+    print(datetime.datetime.now() - startTime)
 
 def assess_model(model, X_train, y_train, X_valid, y_valid):
     train_results = y_train.copy()
@@ -197,7 +232,14 @@ def assess_model(model, X_train, y_train, X_valid, y_valid):
     # Determine whether model predictions are established as response or not
     train_results['pred_response'] = np.where(train_results['response_pct'] <= -.50, 1.0, 0.0)
     valid_results['pred_response'] = np.where(valid_results['response_pct'] <= -.50, 1.0, 0.0)
-    print(valid_results.head())
+
+    train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
+    valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
+
+    # Determine whether model predictions are established as remission or not
+    train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
+    valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
+
 #     print(f"Balanced Accuracy: {balanced_accuracy_score(results['actual_resp'], results['pred_response'])}")
     return train_results, valid_results
 
