@@ -91,7 +91,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
 
             # Make our predictions (t_results = training, v_results = validation)
             
-            t_results, v_results = assess_model(model, X_train, y_train, X_valid, y_valid)
+            t_results, v_results = assess_model(model, X_train, y_train, X_valid, y_valid, out_path)
             # t_classification = t_results.pred_response
             # v_classification = v_results.pred_response
 
@@ -140,6 +140,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
         sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
         plt.legend()
         plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
+        plt.close()
+
+        t_results['correct_resp'] = np.where(t_results['pred_response'] == t_results['actual_resp'], 1, 0)
+        print(t_results.head())
+        sns.scatterplot(data = t_results, x = 'target', y = 'pred_change', hue = 'correct_resp', alpha = 0.3)
+        plt.plot([-25,10], [-25,10])
+        plt.savefig(out_path + "prediction_vs_actual.png", bbox_inches = 'tight')
+        plt.close()
 
 
         # Avg the scores across the 10 folds
@@ -205,7 +213,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     print("Completed after seconds: \n")
     print(datetime.datetime.now() - startTime)
 
-def assess_model(model, X_train, y_train, X_valid, y_valid):
+def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results = y_train.copy()
     valid_results = y_valid.copy()
     
@@ -239,28 +247,38 @@ def assess_model(model, X_train, y_train, X_valid, y_valid):
     # Determine whether model predictions are established as remission or not
     train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
-
-#     print(f"Balanced Accuracy: {balanced_accuracy_score(results['actual_resp'], results['pred_response'])}")
-    return train_results, valid_results
-
-def assess_on_remission(model, X_train, y_train, X_valid, y_valid): #Merge this with above
-
-    train_results = y_train.copy()
-    valid_results = y_valid.copy()
     
-    # Fit the model to transformed y
-    model.fit(X_train, y_train['target'])
+    #Temporary exploratory analysis
+    sns.scatterplot(data = train_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
+    plt.plot([0,25],[0,0])
+    plt.savefig(out_path + "baseline_vs_target.png", bbox_inches = 'tight')
+    plt.close()
 
-    # Make Predictions
-    train_results['pred_change'] = model.predict(X_train)
-    valid_results['pred_change'] = model.predict(X_valid)
+    sns.scatterplot(data = train_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
+    plt.plot([0,25],[0,0])
+    plt.savefig(out_path + "baseline_vs_target_pred.png", bbox_inches = 'tight')
+    plt.close()
 
-    train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
-    valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
-
-    # Determine whether model predictions are established as response or not
-    train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
-    valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
-
-    print(valid_results.head())
     return train_results, valid_results
+
+# def assess_on_remission(model, X_train, y_train, X_valid, y_valid): #Merge this with above
+
+#     train_results = y_train.copy()
+#     valid_results = y_valid.copy()
+    
+#     # Fit the model to transformed y
+#     model.fit(X_train, y_train['target'])
+
+#     # Make Predictions
+#     train_results['pred_change'] = model.predict(X_train)
+#     valid_results['pred_change'] = model.predict(X_valid)
+
+#     train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
+#     valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
+
+#     # Determine whether model predictions are established as response or not
+#     train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
+#     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
+
+#     print(valid_results.head())
+#     return train_results, valid_results
