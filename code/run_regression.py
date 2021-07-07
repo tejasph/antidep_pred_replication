@@ -41,7 +41,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     print(kurtosistest(y['target']))
 
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
-                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[], 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[]}
+                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[],
+                 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[]}
 
     for r in range(runs):
         print(f"Run {r}")
@@ -74,12 +75,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
             # Establish the model
             if regressor == 'rf':
                 # optimized for overlapping features
-                model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-                      min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+                # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+                #       min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
 
                 # optimized for non-overlapping X
-                # model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
-                #       min_samples_split=10, n_jobs=-1)
+                model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
+                      min_samples_split=10, n_jobs=-1)
 
                 # Basic Model
                 # model = RandomForestRegressor()
@@ -165,9 +166,15 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
         
         run_scores['avg_train_resp_bal_acc'].append(results['train_resp_bal_acc'].mean())
         run_scores['avg_valid_resp_bal_acc'].append(results['valid_resp_bal_acc'].mean())
+        run_scores['avg_valid_resp_sens'].append(results['resp_sensitivity'].mean())
+        run_scores['avg_valid_resp_spec'].append(results['resp_specificity'].mean())
+        run_scores['avg_valid_resp_prec'].append(results['resp_precision'].mean())
 
         run_scores['avg_train_rem_bal_acc'].append(results['train_rem_bal_acc'].mean())
         run_scores['avg_valid_rem_bal_acc'].append(results['valid_rem_bal_acc'].mean())
+        run_scores['avg_valid_rem_sens'].append(results['rem_sensitivity'].mean())
+        run_scores['avg_valid_rem_spec'].append(results['rem_specificity'].mean())
+        run_scores['avg_valid_rem_prec'].append(results['rem_precision'].mean())
 
     # average the scores across the r runs and get standard deviations
     final_score_df = pd.DataFrame(run_scores)
@@ -189,12 +196,18 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     # Response Classification Performance
     f.write("Response Classification Results: \n")
     f.write("Average training response balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_resp_bal_acc'].mean(), final_score_df['avg_train_resp_bal_acc'].std()))
-    f.write("Average validation response balanced accuracy is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_resp_bal_acc'].mean(), final_score_df['avg_valid_resp_bal_acc'].std()))
+    f.write("Average validation response balanced accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_resp_bal_acc'].mean(), final_score_df['avg_valid_resp_bal_acc'].std()))
+    f.write("Average validation sensitivity is {:4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_resp_sens'].mean(), final_score_df['avg_valid_resp_sens'].std()))
+    f.write("Average validation specificity is {:4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_resp_spec'].mean(), final_score_df['avg_valid_resp_spec'].std()))
+    f.write("Average validation precision is {:4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_resp_prec'].mean(), final_score_df['avg_valid_resp_prec'].std()))
 
     # Remission Classification Performance 
     f.write("Remission Classification Results: \n")
     f.write("Average training remission balanced_accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_rem_bal_acc'].mean(), final_score_df['avg_train_rem_bal_acc'].std()))
-    f.write("Average validation remission balanced accuracy is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_rem_bal_acc'].mean(), final_score_df['avg_valid_rem_bal_acc'].std()))
+    f.write("Average validation remission balanced accuracy is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_rem_bal_acc'].mean(), final_score_df['avg_valid_rem_bal_acc'].std()))
+    f.write("Average validation sensitivity is {:4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_rem_sens'].mean(), final_score_df['avg_valid_rem_sens'].std()))
+    f.write("Average validation specificity is {:4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_rem_spec'].mean(), final_score_df['avg_valid_rem_spec'].std()))
+    f.write("Average validation precision is {:4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_rem_prec'].mean(), final_score_df['avg_valid_rem_prec'].std()))
 
     if test_data == True: # need to add transformer if its proven to work out
         X_test = pd.read_csv("data/modelling/X_test_norm.csv").set_index('subjectkey')
@@ -249,12 +262,12 @@ def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
     
     #Temporary exploratory analysis
-    sns.scatterplot(data = train_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
+    sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
     plt.plot([0,25],[0,0])
     plt.savefig(out_path + "baseline_vs_target.png", bbox_inches = 'tight')
     plt.close()
 
-    sns.scatterplot(data = train_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
+    sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
     plt.plot([0,25],[0,0])
     plt.savefig(out_path + "baseline_vs_target_pred.png", bbox_inches = 'tight')
     plt.close()

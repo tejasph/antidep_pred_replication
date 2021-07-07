@@ -920,6 +920,7 @@ def generate_y(root_data_dir_path):
                                 max_diff = diff
                             
                         y_wk8_resp_magnitude_qids01.loc[i, "target"] = max_diff
+                        y_wk8_resp_magnitude_qids01.loc[i, "target_score"] = baseline + max_diff # get's us the the final score
                         
                     i += 1
     

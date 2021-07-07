@@ -92,13 +92,13 @@ def prepare_data(X_path, name):
     X_train_norm.to_csv(out_path + "/X_train_norm" + name + ".csv", index = True)
     X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
     X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
-    y_train.to_csv(out_path + "/y_train" + name + ".csv", index = False) 
+    y_train.to_csv(out_path + "/y_train" + ".csv", index = False) # y_train and y_test aren't affected by overlapping feats --> that's why no name variable used
 
     X_test.to_csv(out_path + "/X_test" +name + ".csv", index = False)
     X_test_norm.to_csv(out_path + "/X_test_norm" + name + ".csv", index = True)
     X_test_stand.to_csv(out_path + "/X_test_stand" + name + ".csv", index = True)
     X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm" + name + ".csv", index = True)
-    y_test.to_csv(out_path + "/y_test" + name + ".csv", index = False) 
+    y_test.to_csv(out_path + "/y_test" + ".csv", index = False) 
 
     print(f"Finished data prep in {datetime.datetime.now() - startTime}")
 

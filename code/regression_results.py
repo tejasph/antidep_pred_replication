@@ -8,7 +8,7 @@ Run Experiment script
 
 if __name__ == "__main__":
 
-    exp_name = "testplot"
+    exp_name = "test_prec"
 
     # Makes sure not to overwrite any files
     if os.path.isdir("results/" + exp_name):
@@ -17,10 +17,10 @@ if __name__ == "__main__":
         out_path = "results/" + exp_name + "/"
         os.mkdir(out_path)
 
-    runs = 1
+    runs = 10
     regressor = "rf"
-    X_path = "X_train_stand_over"
-    y = "y_train_over"
+    X_path = "X_train_norm"
+    y = "y_train"
     test_data = False
 
     RunRegRun(regressor, X_path, y, out_path,  runs , test_data)
