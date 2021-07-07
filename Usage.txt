@@ -1,6 +1,12 @@
+Preprocessing;
+
+ex. python antidep_pred_replication/code/data-cleaning/stard_preprocessing_manager.py STARD_Raw_Data_Used -a 
+
+Processed datasets are generated within same folder as the raw data (ex. STARD_Raw_Data_Used) so I suggest moving the processed files to the data folder of your repo.
+
 
 Splitting the Data:
 
-C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/split_data.py -all data/X_tillwk4_qids_sr__final.csv   --> split data (repeat using -over argument)
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -all data/X_tillwk4_qids_sr__final.csv  
 
-C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/split_data.py -over data/jj_processed/X_overlap_tillwk4_qids_sr.csv
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -over data/jj_processed/X_overlap_tillwk4_qids_sr.csv

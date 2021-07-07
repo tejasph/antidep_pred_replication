@@ -18,7 +18,7 @@ import numpy as np
 import datetime
 import os
 
-def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data = False):
+def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, test_data = False):
 
     startTime = datetime.datetime.now()
 
@@ -26,8 +26,17 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     # Read in the data
     X = pd.read_csv("data/modelling/"+ X_train_path + ".csv")
     y = pd.read_csv("data/modelling/" + y_train_path + ".csv")
+    print(y.head())
 
+    if y_proxy == "score_change":
+        y['target'] = y['target_change']
+    elif y_proxy == 'final_score':
+        y['target'] = y['target_score']
+    else: raise Exception("Invalid proxy y selection")   
 
+    print(y.head())
+    y = y.drop(columns = ['target_change', 'target_score'])
+    print(y.head())
     
     y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
     y_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
@@ -37,8 +46,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     y_response.columns = ['actual_resp']
     y_remission.columns = ['true_rem']
 
-
-    print(kurtosistest(y['target']))
 
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
                 'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[],
@@ -91,8 +98,10 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
 
 
             # Make our predictions (t_results = training, v_results = validation)
-            
-            t_results, v_results = assess_model(model, X_train, y_train, X_valid, y_valid, out_path)
+            if y_proxy == "score_change":
+                t_results, v_results = assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path)
+            elif y_proxy == "final_score":
+                t_results, v_results = assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path)
             # t_classification = t_results.pred_response
             # v_classification = v_results.pred_response
 
@@ -184,7 +193,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     
 
     # Write text file, or output dataframes to appropriate folders
-
+ 
     f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
     # Regression Related metrics
     f.write("Regression Model Results for: {}\n\n".format(result_filename))
@@ -226,7 +235,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, out_path, runs, test_data =
     print("Completed after seconds: \n")
     print(datetime.datetime.now() - startTime)
 
-def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
+def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results = y_train.copy()
     valid_results = y_valid.copy()
     
@@ -236,6 +245,10 @@ def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
     # Make Predictions
     train_results['pred_change'] = model.predict(X_train)
     valid_results['pred_change'] = model.predict(X_valid)
+
+    # Calculate the predicted score
+    train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
+    valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
 
     # # Inverse Transform predictions
     # train_results['pred'] = (train_results['pred']**2) + y_min
@@ -254,8 +267,6 @@ def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results['pred_response'] = np.where(train_results['response_pct'] <= -.50, 1.0, 0.0)
     valid_results['pred_response'] = np.where(valid_results['response_pct'] <= -.50, 1.0, 0.0)
 
-    train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
-    valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
 
     # Determine whether model predictions are established as remission or not
     train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
@@ -274,24 +285,32 @@ def assess_model(model, X_train, y_train, X_valid, y_valid, out_path):
 
     return train_results, valid_results
 
-# def assess_on_remission(model, X_train, y_train, X_valid, y_valid): #Merge this with above
+def assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path):
+    train_results = y_train.copy()
+    valid_results = y_valid.copy()
 
-#     train_results = y_train.copy()
-#     valid_results = y_valid.copy()
-    
-#     # Fit the model to transformed y
-#     model.fit(X_train, y_train['target'])
+    # Fit the model to transformed y
+    model.fit(X_train, y_train['target'])
 
-#     # Make Predictions
-#     train_results['pred_change'] = model.predict(X_train)
-#     valid_results['pred_change'] = model.predict(X_valid)
+    # Make Predictions
+    train_results['pred_score'] = model.predict(X_train)
+    valid_results['pred_score'] = model.predict(X_valid)
 
-#     train_results['pred_score'] = train_results['baseline_score'] + train_results['pred_change']
-#     valid_results['pred_score'] = valid_results['baseline_score'] + valid_results['pred_change']
+    # Calculate predicted score change
+    train_results['pred_change'] = train_results['pred_score'] - train_results['baseline_score']
+    valid_results['pred_change'] = valid_results['pred_score'] - valid_results['baseline_score']
 
-#     # Determine whether model predictions are established as response or not
-#     train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
-#     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
+    # Calculate response percentage (calculated in similar manner to train_on_score_change())
+    train_results['response_pct'] = train_results['pred_change']/train_results['baseline_score']
+    valid_results['response_pct'] = valid_results['pred_change']/valid_results['baseline_score']
 
-#     print(valid_results.head())
-#     return train_results, valid_results
+    # Determine whether model predictions are established as response or not (note: response_pct is calculated slightly differently as assess_model())
+    train_results['pred_response'] = np.where(train_results['response_pct'] <= -.50, 1.0, 0.0)
+    valid_results['pred_response'] = np.where(valid_results['response_pct'] <= -.50, 1.0, 0.0)
+
+    # Determine whether model predictions are established as remission or not
+    train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
+    valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
+
+    print(valid_results.head())
+    return train_results, valid_results
