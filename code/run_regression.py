@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import datetime
+import pickle
 import os
 
 def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, test_data = False):
@@ -79,6 +80,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # y_train['yeo_target'] = yeo_transformer.fit_transform(y_train[['target']])
             # y_valid['target'] = yeo_transformer.transform(y_valid[['target']])
 
+            model_filename = "{}_{}".format(regressor, y_proxy) # can use this to directly import the optimized param model
             # Establish the model
             if regressor == 'rf':
                 # optimized for overlapping features
@@ -86,8 +88,17 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 #       min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
 
                 # optimized for non-overlapping X
-                model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
-                      min_samples_split=10, n_jobs=-1)
+                # model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
+                #       min_samples_split=10, n_jobs=-1)
+
+                # Load in optimized model for specified task
+                
+                model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
+                print(model)
+                #Non-overlapping for final score
+                # model = RandomForestRegressor(bootstrap=False, max_depth=90, max_features=0.33,
+                #       max_samples=0.9, min_samples_leaf=4, min_samples_split=7,
+                #       n_jobs=-1)
 
                 # Basic Model
                 # model = RandomForestRegressor()
@@ -96,12 +107,43 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             elif regressor == 'gbr':
                 model = GradientBoostingRegressor()
 
-
+            sns.set(style = "darkgrid")
+        
             # Make our predictions (t_results = training, v_results = validation)
             if y_proxy == "score_change":
+                
                 t_results, v_results = assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path)
+                # All thx to python-graph-gallery.com
+                fig, axs = plt.subplots(2,2, figsize = (7,7))
+                sns.histplot(data = v_results, x = 'pred_change', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
+                sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
+                sns.histplot(data = t_results, x = 'pred_change', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
+                sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
+                plt.legend()
+                plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
+                plt.close()
+
+                scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_change, squared = False))
+                scores['train_R2'].append(r2_score(t_results.target, t_results.pred_change))
+                scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
+                scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_change))
+
             elif y_proxy == "final_score":
+
                 t_results, v_results = assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path)
+                fig, axs = plt.subplots(2,2, figsize = (7,7))
+                sns.histplot(data = v_results, x = 'pred_score', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
+                sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
+                sns.histplot(data = t_results, x = 'pred_score', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
+                sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
+                plt.legend()
+                plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
+                plt.close()
+
+                scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_score, squared = False))
+                scores['train_R2'].append(r2_score(t_results.target, t_results.pred_score))
+                scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_score, squared = False))
+                scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_score))
             # t_classification = t_results.pred_response
             # v_classification = v_results.pred_response
 
@@ -113,11 +155,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # Calculate Regression Scores
             scores['fold'].append(fold)
             scores['model'].append(regressor)
-            
-            scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_change, squared = False))
-            scores['train_R2'].append(r2_score(t_results.target, t_results.pred_change))
-            scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
-            scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_change))
 
             # Calculate Response Classification Accuracy
             scores['train_resp_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_results.pred_response)) 
@@ -143,14 +180,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
 
         sns.set(style = "darkgrid")
         # All thx to python-graph-gallery.com
-        fig, axs = plt.subplots(2,2, figsize = (7,7))
-        sns.histplot(data = v_results, x = 'pred_change', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
-        sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
-        sns.histplot(data = t_results, x = 'pred_change', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
-        sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
-        plt.legend()
-        plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
-        plt.close()
+
 
         t_results['correct_resp'] = np.where(t_results['pred_response'] == t_results['actual_resp'], 1, 0)
         print(t_results.head())
