@@ -22,7 +22,7 @@ import os
 def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, test_data = False):
 
     startTime = datetime.datetime.now()
-
+    sns.set(style = "darkgrid")
     result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_train_path, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     # Read in the data
     X = pd.read_csv("data/modelling/"+ X_train_path + ".csv")
@@ -79,35 +79,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # yeo_transformer = PowerTransformer()
             # y_train['yeo_target'] = yeo_transformer.fit_transform(y_train[['target']])
             # y_valid['target'] = yeo_transformer.transform(y_valid[['target']])
-
-            model_filename = "{}_{}".format(regressor, y_proxy) # can use this to directly import the optimized param model
+            
             # Establish the model
-            if regressor == 'rf':
-                # optimized for overlapping features
-                # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-                #       min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+            model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
+            model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
 
-                # optimized for non-overlapping X
-                # model = RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=5,
-                #       min_samples_split=10, n_jobs=-1)
-
-                # Load in optimized model for specified task
-                
-                model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
-                print(model)
-                #Non-overlapping for final score
-                # model = RandomForestRegressor(bootstrap=False, max_depth=90, max_features=0.33,
-                #       max_samples=0.9, min_samples_leaf=4, min_samples_split=7,
-                #       n_jobs=-1)
-
-                # Basic Model
-                # model = RandomForestRegressor()
-            elif regressor == 'svr':
-                model = SVR()
-            elif regressor == 'gbr':
-                model = GradientBoostingRegressor()
-
-            sns.set(style = "darkgrid")
+            
         
             # Make our predictions (t_results = training, v_results = validation)
             if y_proxy == "score_change":
@@ -227,6 +204,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
     f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
     # Regression Related metrics
     f.write("Regression Model Results for: {}\n\n".format(result_filename))
+    f.write("Model used: {}\n\n".format(model))
     f.write("Average training RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_RMSE'].mean(), final_score_df['avg_train_RMSE'].std()))
     f.write("Average training R2 is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_train_R2'].mean(), final_score_df['avg_train_R2'].std()))
     f.write("Average validation RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_RMSE'].mean(), final_score_df['avg_valid_RMSE'].std()))
