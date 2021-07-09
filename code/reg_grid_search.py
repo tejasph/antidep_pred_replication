@@ -2,6 +2,8 @@
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import HalvingGridSearchCV, HalvingRandomSearchCV, RandomizedSearchCV
+from sklearn.linear_model import SGDRegressor
+from sklearn.svm import SVR
 import pandas as pd
 import numpy as np
 import datetime
@@ -43,6 +45,21 @@ def select_model_and_params(model_type):
             'max_features': ['auto', 'sqrt', 'log2', 0.33],
             'subsample': [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         }
+    elif model_type == "sgdReg":
+        model = SGDRegressor()
+        params = {
+            'loss':['squared_loss','huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'],
+            'penalty': ['l2', 'l1', 'elasticnet'],
+            'alpha': [1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e0],
+            'max_iter':[10000],
+            'epsilon': [0.1, 0.2,0.3]
+        }
+
+    elif model_type == "svr":
+        model = SVR()
+        params = {
+
+        }
     
     
 
@@ -76,13 +93,13 @@ def optimize_params(model, params, X, y, filename):
 
 if __name__== "__main__":
 
-    runs = 30
+    runs = 10
     score_dict = {'run':[], 'model':[], 'best_score':[]}
 
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['gbdt']
+    regressors = ['sgdReg']
     y_proxies = ['score_change', 'final_score']
     X_types = ['X_train_norm_over']
 
