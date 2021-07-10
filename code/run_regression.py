@@ -83,7 +83,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # Establish the model
             model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
             model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
-
+            print(model)
             
         
             # Make our predictions (t_results = training, v_results = validation)
@@ -320,5 +320,5 @@ def assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results['pred_remission'] = np.where(train_results['pred_score'] <= 5, 1.0, 0.0)
     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
 
-    print(valid_results.head())
+    
     return train_results, valid_results

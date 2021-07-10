@@ -8,7 +8,7 @@ Run Experiment script
 
 if __name__ == "__main__":
 
-    exp_name = "testing_pkl_gbdt"
+    exp_name = "testz"
 
     # Makes sure not to overwrite any files
     if os.path.isdir("results/" + exp_name):
@@ -18,7 +18,7 @@ if __name__ == "__main__":
         os.mkdir(out_path)
 
     runs = 10
-    regressor = "gbdt"
+    regressor = "rf"
     X_path = "X_train_norm_over"
     y = "y_train"
     y_proxy = "final_score"

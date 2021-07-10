@@ -77,7 +77,6 @@ def optimize_params(model, params, X, y, filename):
     
 
     search = HalvingRandomSearchCV(model, params, cv = 10, scoring = 'neg_root_mean_squared_error', n_jobs = -1, verbose = 1)
-
     search.fit(X, y.to_numpy().ravel())
 
     print(search.best_score_)
@@ -93,21 +92,22 @@ def optimize_params(model, params, X, y, filename):
 
 if __name__== "__main__":
 
-    runs = 10
-    score_dict = {'run':[], 'model':[], 'best_score':[]}
+    runs = 50
+
 
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['sgdReg']
+    regressors = ['rf', 'gbdt', 'sgdReg']
     y_proxies = ['score_change', 'final_score']
-    X_types = ['X_train_norm_over']
+    X_types = ['X_train_norm_over', 'X_train_norm']
 
     for reg in regressors:
         for y_proxy in y_proxies:
             for X_type in X_types:
 
                 startTime = datetime.datetime.now()
+                score_dict = {'run':[], 'model':[], 'best_score':[]}
                 filename = "{}_{}_{}".format(reg, X_type, y_proxy)
                 print(filename)
                 model, params = select_model_and_params(reg)
@@ -134,14 +134,3 @@ if __name__== "__main__":
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)
-
-    # Optimizing for Rf models
-
-    # optimize_params(rf_model, rf_params, X, y_score_change)
-    # optimize_params(rf_model, rf_params, X, y_final_score)
-
-# RandomForestRegressor(max_depth=30, max_samples=0.8, min_samples_leaf=6,
-#                       min_samples_split=11, n_jobs=-1)
-
-# RandomForestRegressor(max_samples=0.7, min_samples_leaf=4, min_samples_split=8,
-#                       n_jobs=-1)
