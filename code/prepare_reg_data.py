@@ -18,20 +18,21 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.compose import ColumnTransformer
 from imblearn.pipeline import Pipeline
+from run_globals import REG_MODEL_DATA_DIR, REG_PROCESSED_DATA
 
 
 def prepare_data(X_path, name):
 
     startTime = datetime.datetime.now()
 
-    out_path = "data/modelling"
     # X_path = "data/X_tillwk4_qids_sr__final.csv"
     # X_overlap_path = "data/jj_processed/X_overlap_tillwk4_qids_sr.csv" # temporary read in location
-    y_path = "data/y_wk8_resp_mag_qids_sr__final.csv"
+    y_path = os.path.join(REG_PROCESSED_DATA, "y_wk8_resp_mag_qids_sr__final.csv")
 
-    if not os.path.exists(out_path):
-        os.mkdir(out_path)
-
+    if not os.path.exists(REG_MODEL_DATA_DIR):
+        os.mkdir(REG_MODEL_DATA_DIR)
+    out_path = REG_MODEL_DATA_DIR
+    
     # Read in cleaned csv
     X = pd.read_csv(X_path)
     y = pd.read_csv(y_path)

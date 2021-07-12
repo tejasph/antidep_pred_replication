@@ -5,11 +5,13 @@ import os
 
 """
 Run Experiment script
+
+Change variables and experiment name using this script. 
 """
 
 if __name__ == "__main__":
 
-    exp_name = "test_paths"
+    exp_name = "test_paths1"
     out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
     # Makes sure not to overwrite any files
@@ -30,10 +32,3 @@ if __name__ == "__main__":
             for X_path in X_paths:
                 RunRegRun(regressor, X_path, y, y_proxy, out_path,  runs , test_data)
 
-    # runs = 10
-    # regressor = "rf"
-    # X_path = "X_train_norm_over"
-    # y = "y_train_over"
-
-
-    # RunRegRun(regressor, X_path, y, runs)

@@ -10,7 +10,7 @@ from sklearn.svm import SVR
 from sklearn.preprocessing import PowerTransformer
 from scipy.stats import kurtosistest
 
-from run_globals import REG_DATA_DIR, OPTIMIZED_MODELS
+from run_globals import REG_MODEL_DATA_DIR, OPTIMIZED_MODELS
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -27,8 +27,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
     sns.set(style = "darkgrid")
     result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 
-    X_path = os.path.join(REG_DATA_DIR, X_train_path + ".csv")
-    y_path = os.path.join(REG_DATA_DIR, y_train_path + ".csv")
+    X_path = os.path.join(REG_MODEL_DATA_DIR, X_train_path + ".csv")
+    y_path = os.path.join(REG_MODEL_DATA_DIR, y_train_path + ".csv")
     # Read in the data
     X = pd.read_csv(X_path)
     y = pd.read_csv(y_path)
