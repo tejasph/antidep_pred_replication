@@ -8,7 +8,7 @@ Run Experiment script
 
 if __name__ == "__main__":
 
-    exp_name = "testz"
+    exp_name = "test_mae"
 
     # Makes sure not to overwrite any files
     if os.path.isdir("results/" + exp_name):
@@ -18,13 +18,16 @@ if __name__ == "__main__":
         os.mkdir(out_path)
 
     runs = 10
-    regressor = "rf"
-    X_path = "X_train_norm_over"
+    regressors = ["rf"]
+    X_paths = ["X_train_norm_over"]
     y = "y_train"
-    y_proxy = "final_score"
+    y_proxies = ["score_change"]
     test_data = False
 
-    RunRegRun(regressor, X_path, y, y_proxy, out_path,  runs , test_data)
+    for regressor in regressors:
+        for y_proxy in y_proxies:
+            for X_path in X_paths:
+                RunRegRun(regressor, X_path, y, y_proxy, out_path,  runs , test_data)
 
     # runs = 10
     # regressor = "rf"

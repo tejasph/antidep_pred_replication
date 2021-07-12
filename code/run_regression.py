@@ -23,7 +23,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
 
     startTime = datetime.datetime.now()
     sns.set(style = "darkgrid")
-    result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_train_path, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+    result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
     # Read in the data
     X = pd.read_csv("data/modelling/"+ X_train_path + ".csv")
     y = pd.read_csv("data/modelling/" + y_train_path + ".csv")
@@ -83,6 +83,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # Establish the model
             model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
             model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
+            # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+            #           min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
             print(model)
             
         
@@ -121,13 +123,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 scores['train_R2'].append(r2_score(t_results.target, t_results.pred_score))
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_score, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_score))
-            # t_classification = t_results.pred_response
-            # v_classification = v_results.pred_response
-
-            # elif class_y == "remission":
-            #     t_results, v_results = assess_on_remission(model, X_train, y_train, X_valid, y_valid)
-            #     t_classification = t_results.pred_remission
-            #     v_classification = v_results.pred_remission
 
             # Calculate Regression Scores
             scores['fold'].append(fold)

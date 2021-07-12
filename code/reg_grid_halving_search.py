@@ -130,7 +130,7 @@ if __name__== "__main__":
                 f.write("The best performing model is: {}".format(score_df.iloc[0,1]))
 
                 pickle.dump(score_df.iloc[0,1], open("results/optimized_params/" + filename + ".pkl", 'wb'))
-                score_df.to_csv("results/optimized_params/" + filename + ".csv", index = False)
+                score_df.to_csv("results/optimized_halving_params/" + filename + ".csv", index = False)
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)
