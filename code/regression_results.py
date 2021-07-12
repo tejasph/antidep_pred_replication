@@ -1,5 +1,6 @@
 #Regression Results
 from run_regression import RunRegRun
+from run_globals import REG_RESULTS_DIR
 import os
 
 """
@@ -8,14 +9,14 @@ Run Experiment script
 
 if __name__ == "__main__":
 
-    exp_name = "test_mae"
+    exp_name = "test_paths"
+    out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
     # Makes sure not to overwrite any files
-    if os.path.isdir("results/" + exp_name):
+    if os.path.isdir(out_path):
         raise Exception("Name already exists")
     else:
-        out_path = "results/" + exp_name + "/"
-        os.mkdir(out_path)
+        os.mkdir(out_path + "/")
 
     runs = 10
     regressors = ["rf"]

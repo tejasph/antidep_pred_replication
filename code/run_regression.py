@@ -10,6 +10,8 @@ from sklearn.svm import SVR
 from sklearn.preprocessing import PowerTransformer
 from scipy.stats import kurtosistest
 
+from run_globals import REG_DATA_DIR, OPTIMIZED_MODELS
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -24,9 +26,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
     startTime = datetime.datetime.now()
     sns.set(style = "darkgrid")
     result_filename = "{}_{}_{}_{}_{}".format(regressor, runs,X_train_path, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+
+    X_path = os.path.join(REG_DATA_DIR, X_train_path + ".csv")
+    y_path = os.path.join(REG_DATA_DIR, y_train_path + ".csv")
     # Read in the data
-    X = pd.read_csv("data/modelling/"+ X_train_path + ".csv")
-    y = pd.read_csv("data/modelling/" + y_train_path + ".csv")
+    X = pd.read_csv(X_path)
+    y = pd.read_csv(y_path)
     print(y.head())
 
     if y_proxy == "score_change":
@@ -82,9 +87,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             
             # Establish the model
             model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
-            model = pickle.load(open("results/optimized_params/"+ model_filename + ".pkl",'rb'))
-            # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-            #           min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+            model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
+            # model = pickle.load(open(model_path,'rb'))
+
+            # Below is best performing model for overlapping features --> 70ish bal acc
+            model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+                      min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
             print(model)
             
         
@@ -99,7 +107,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 sns.histplot(data = t_results, x = 'pred_change', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
                 sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
                 plt.legend()
-                plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
+                plt.savefig(out_path + "/prediction_plots.png", bbox_inches = 'tight')
                 plt.close()
 
                 scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_change, squared = False))
@@ -116,7 +124,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 sns.histplot(data = t_results, x = 'pred_score', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
                 sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
                 plt.legend()
-                plt.savefig(out_path + "prediction_plots.png", bbox_inches = 'tight')
+                plt.savefig(out_path + "/prediction_plots.png", bbox_inches = 'tight')
                 plt.close()
 
                 scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_score, squared = False))
@@ -158,7 +166,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         print(t_results.head())
         sns.scatterplot(data = t_results, x = 'target', y = 'pred_change', hue = 'correct_resp', alpha = 0.3)
         plt.plot([-25,10], [-25,10])
-        plt.savefig(out_path + "prediction_vs_actual.png", bbox_inches = 'tight')
+        plt.savefig(out_path + "/prediction_vs_actual.png", bbox_inches = 'tight')
         plt.close()
 
 
@@ -278,12 +286,12 @@ def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     #Temporary exploratory analysis
     sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
     plt.plot([0,25],[0,0])
-    plt.savefig(out_path + "baseline_vs_target.png", bbox_inches = 'tight')
+    plt.savefig(out_path + "/baseline_vs_target.png", bbox_inches = 'tight')
     plt.close()
 
     sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
     plt.plot([0,25],[0,0])
-    plt.savefig(out_path + "baseline_vs_target_pred.png", bbox_inches = 'tight')
+    plt.savefig(out_path + "/baseline_vs_target_pred.png", bbox_inches = 'tight')
     plt.close()
 
     return train_results, valid_results

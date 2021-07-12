@@ -15,3 +15,4 @@ RESULTS_DIR = r'C:\Users\Tejas\Documents\star_project\script_results'
 #Directories for regression related paths
 OPTIMIZED_MODELS = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\optimized_params"
 REG_DATA_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data\modelling"
+REG_RESULTS_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\experiments"
