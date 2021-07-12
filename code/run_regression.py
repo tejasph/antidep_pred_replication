@@ -66,6 +66,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[],
             'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[]}
 
+        binned_scores = {'train_RMSE':{}, 'valid_RMSE':{}}
+
         fold = 1
         for train_index, valid_index in kf.split(X):
 
@@ -114,6 +116,21 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 scores['train_R2'].append(r2_score(t_results.target, t_results.pred_change))
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_change))
+
+                # Get binned scores
+                t_results['target_bins'] = pd.cut(t_results['target'], [-25,-15,-5,5,15])
+
+                grouped_t_results = t_results.groupby('target_bins')
+                for target_bin, df in grouped_t_results:
+                    print(target_bin)
+                    print(df.shape)
+                    if str(target_bin) in binned_scores['train_RMSE']:
+                        binned_scores['train_RMSE'][str(target_bin)].append(mean_squared_error(df.target, df.pred_change, squared = False))
+                    else: 
+                        binned_scores['train_RMSE'][str(target_bin)] = []
+                        binned_scores['train_RMSE'][str(target_bin)].append(mean_squared_error(df.target, df.pred_change, squared = False))
+             
+                # v_results['target_bins'] = pd.cut(v_results['target'], [-25,-15,-5,5,15])
 
             elif y_proxy == "final_score":
 
@@ -169,6 +186,9 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         plt.savefig(out_path + "/prediction_vs_actual.png", bbox_inches = 'tight')
         plt.close()
 
+        # Create a df with the 10 fold bin scores
+        bin_results = pd.DataFrame(binned_scores['train_RMSE'])
+        print(bin_results.head())
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)

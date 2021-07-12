@@ -11,7 +11,7 @@ Change variables and experiment name using this script.
 
 if __name__ == "__main__":
 
-    exp_name = "test_paths1"
+    exp_name = "test_bin"
     out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
     # Makes sure not to overwrite any files
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     else:
         os.mkdir(out_path + "/")
 
-    runs = 10
+    runs = 1
     regressors = ["rf"]
     X_paths = ["X_train_norm_over"]
     y = "y_train"
