@@ -57,6 +57,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[],
                  'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[]}
 
+    binned_run_scores = {'bin':[], 'valid_RMSE':[]}
+
     for r in range(runs):
         print(f"Run {r}")
         # Establish 10 fold crossvalidation splits
@@ -66,7 +68,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[],
             'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[]}
 
-        binned_scores = {'train_RMSE':{}, 'valid_RMSE':{}}
+        binned_scores = {'bin':[], 'valid_resp_bal_acc':[], 'valid_rem_bal_acc':[]}
 
         fold = 1
         for train_index, valid_index in kf.split(X):
@@ -117,18 +119,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_change))
 
-                # Get binned scores
-                t_results['target_bins'] = pd.cut(t_results['target'], [-25,-15,-5,5,15])
+  
 
-                grouped_t_results = t_results.groupby('target_bins')
-                for target_bin, df in grouped_t_results:
-                    print(target_bin)
-                    print(df.shape)
-                    if str(target_bin) in binned_scores['train_RMSE']:
-                        binned_scores['train_RMSE'][str(target_bin)].append(mean_squared_error(df.target, df.pred_change, squared = False))
-                    else: 
-                        binned_scores['train_RMSE'][str(target_bin)] = []
-                        binned_scores['train_RMSE'][str(target_bin)].append(mean_squared_error(df.target, df.pred_change, squared = False))
              
                 # v_results['target_bins'] = pd.cut(v_results['target'], [-25,-15,-5,5,15])
 
@@ -171,6 +163,17 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             scores['rem_sensitivity'].append(tp/(tp+fn))
             scores['rem_precision'].append(tp/(tp+fp))
             fold += 1
+
+            # Get binned scores
+            v_results['target_bins'] = pd.cut(v_results['target'], [-25,-15,-5,5,15])
+
+            grouped_v_results = v_results.groupby('target_bins')
+            for target_bin, df in grouped_v_results:
+                print(target_bin)
+                print(df.shape)
+                binned_scores['bin'].append(str(target_bin))
+                binned_scores['valid_resp_bal_acc'].append(balanced_accuracy_score(df.actual_resp, df.pred_response))
+                binned_scores['valid_rem_bal_acc'].append(balanced_accuracy_score(df.true_rem, df.pred_remission))
             
         # Generate a histogram of predictions for the run 
         # v_plot = sns.histplot(data = v_results, x = 'pred')
@@ -187,8 +190,15 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         plt.close()
 
         # Create a df with the 10 fold bin scores
-        bin_results = pd.DataFrame(binned_scores['train_RMSE'])
+        bin_results = pd.DataFrame(binned_scores)
         print(bin_results.head())
+        sns.boxplot(data = bin_results, x= 'bin', y = 'valid_resp_bal_acc', width = 0.5)
+        plt.savefig(out_path + "/binned_valid_resp_bal_acc.png", bbox_inches = 'tight')
+        plt.close()    
+
+        sns.boxplot(data = bin_results, x= 'bin', y = 'valid_rem_bal_acc', width = 0.5)
+        plt.savefig(out_path + "/binned_valid_rem_bal_acc.png", bbox_inches = 'tight')
+        plt.close()    
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)
@@ -215,12 +225,26 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         run_scores['avg_valid_rem_spec'].append(results['rem_specificity'].mean())
         run_scores['avg_valid_rem_prec'].append(results['rem_precision'].mean())
 
+        # # Grouping by bin to get mean()
+        # bin_stats = bin_results.groupby('bin')
+        # for target_bin, df in bin_stats:
+        #     print(target_bin)
+        #     print(df.shape)
+        #     binned_run_scores['bin'].append(target_bin)
+        #     binned_run_scores['valid_RMSE'].append(df['valid_RMSE'].mean())     
+
     # average the scores across the r runs and get standard deviations
     final_score_df = pd.DataFrame(run_scores)
     print(final_score_df.mean())
     print(final_score_df.std())
 
-    
+    # # Get Mean bin scores
+    # final_binned_score_df = pd.DataFrame(binned_run_scores)
+    # print(bin_results.head())
+    # sns.boxplot(data = final_binned_score_df, x= 'bin', y = 'valid_RMSE', width = 0.5)
+    # plt.savefig(out_path + "/binned_valid_RMSE_runs.png", bbox_inches = 'tight')
+    # plt.close()   
+
 
     # Write text file, or output dataframes to appropriate folders
  

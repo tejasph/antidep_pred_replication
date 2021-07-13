@@ -11,7 +11,7 @@ Change variables and experiment name using this script.
 
 if __name__ == "__main__":
 
-    exp_name = "test_bin"
+    exp_name = "test_bin4"
     out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
     # Makes sure not to overwrite any files
