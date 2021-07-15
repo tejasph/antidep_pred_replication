@@ -339,9 +339,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
     print(datetime.datetime.now() - startTime)
     return final_score_df
 
-def evaluate_on_test(regressor, X_train_type, y_proxy, out_path):
+def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     print("Predicting on unseen data...")
     result_filename = "test_{}_{}_{}_{}".format(regressor, X_train_type, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+
+    test_run_scores = {'run':[], 'model':[], 'train_RMSE':[], 'train_R2':[], 'test_RMSE':[], 'test_R2':[],
+                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],
+                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[]}
+
     # Adding path to test data
     if X_train_type == "X_train_norm":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm.csv")
@@ -389,27 +394,53 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path):
     model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
     model = pickle.load(open(model_path,'rb'))
 
-    # Train and Assess
-    if y_proxy == "score_change":
-        train_results, test_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
-    elif  y_proxy == "final_score":
-        train_results, test_results = assess_on_final_score(model, X_train, y_train, X_test, y_test, out_path)
+    for run in range(runs):
+        # Train and Assess
+        test_run_scores['run'].append(run)
+        test_run_scores['model'].append(regressor)
 
-    # Calculate Response Classification Accuracy
-    train_resp_bal_acc = balanced_accuracy_score(train_results.actual_resp, train_results.pred_response)
-    test_resp_bal_acc = balanced_accuracy_score(test_results.actual_resp, test_results.pred_response)
+        if y_proxy == "score_change":
+            train_results, test_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
+            test_run_scores['train_RMSE'].append(mean_squared_error(train_results.target, train_results.pred_change, squared = False))
+            test_run_scores['train_R2'].append(r2_score(train_results.target, train_results.pred_change))
+            test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_change, squared = False))
+            test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_change))
 
-    # Calculate Remission Classification Accuracy 
-    train_rem_bal_acc = balanced_accuracy_score(train_results.true_rem, train_results.pred_remission)
-    test_rem_bal_acc = balanced_accuracy_score(test_results.true_rem, test_results.pred_remission)
+        elif  y_proxy == "final_score":
+            train_results, test_results = assess_on_final_score(model, X_train, y_train, X_test, y_test, out_path)
+            test_run_scores['train_RMSE'].append(mean_squared_error(train_results.target, train_results.pred_score, squared = False))
+            test_run_scores['train_R2'].append(r2_score(train_results.target, train_results.pred_score))
+            test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_score, squared = False))
+            test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_score))
 
-    f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
-    f.write("Test Data: \n\n")
-    f.write("Test response balanced accuracy is {:4f}\n".format(test_resp_bal_acc))
-    f.write("Test remission balanced accuracy is {:4f}\n".format(test_rem_bal_acc))
+        # Calculate Response Classification Accuracy
+        test_run_scores['train_resp_bal_acc'].append(balanced_accuracy_score(train_results.actual_resp, train_results.pred_response))
+        test_run_scores['test_resp_bal_acc'].append(balanced_accuracy_score(test_results.actual_resp, test_results.pred_response))
 
-    return test_resp_bal_acc, test_rem_bal_acc
-    # tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ra
+        tn, fp, fn, tp = confusion_matrix(test_results.actual_resp, test_results.pred_response).ravel()
+        test_run_scores['test_resp_spec'].append(tn/(tn+fp)) 
+        test_run_scores['test_resp_sens'].append(tp/(tp+fn))
+        test_run_scores['test_resp_prec'].append(tp/(tp+fp))
+
+        # Calculate Remission Classification Accuracy 
+        train_rem_bal_acc = balanced_accuracy_score(train_results.true_rem, train_results.pred_remission)
+        test_rem_bal_acc = balanced_accuracy_score(test_results.true_rem, test_results.pred_remission)
+
+        test_run_scores['train_rem_bal_acc'].append(balanced_accuracy_score(train_results.true_rem, train_results.pred_remission))
+        test_run_scores['test_rem_bal_acc'].append(balanced_accuracy_score(test_results.true_rem, test_results.pred_remission))
+        
+        tn, fp, fn, tp = confusion_matrix(test_results.true_rem, test_results.pred_remission).ravel()
+        test_run_scores['test_rem_spec'].append(tn/(tn+fp)) 
+        test_run_scores['test_rem_sens'].append(tp/(tp+fn))
+        test_run_scores['test_rem_prec'].append(tp/(tp+fp))
+
+        # f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
+        # f.write("Test Data: \n\n")
+        # f.write("Test response balanced accuracy is {:4f}\n".format(test_resp_bal_acc))
+        # f.write("Test remission balanced accuracy is {:4f}\n".format(test_rem_bal_acc))
+    test_results_df = pd.DataFrame(test_run_scores)
+    return test_results_df
+
 
 
 def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
