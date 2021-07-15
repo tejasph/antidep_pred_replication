@@ -5,7 +5,7 @@ Runs 1 run of the specified ML training and evaluation
 """
 from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix
 from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, IsolationForest
 from sklearn.svm import SVR
 from sklearn.preprocessing import PowerTransformer
 from scipy.stats import kurtosistest
@@ -92,12 +92,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             # Establish the model
             model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
             model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
-            # model = pickle.load(open(model_path,'rb'))
+            model = pickle.load(open(model_path,'rb'))
 
             # Below is best performing model for overlapping features --> 70ish bal acc
-            model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
-                      min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
-            print(model)
+            # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
+            #           min_samples_leaf=11, min_samples_split=7, n_jobs=-1)
+
+            # Optimized for X_train_norm w/ final score
+            # print(model)
             
         
             # Make our predictions (t_results = training, v_results = validation)
@@ -165,12 +167,10 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             fold += 1
 
             # Get binned scores
-            v_results['target_bins'] = pd.cut(v_results['target'], [-25,-15,-5,5,15])
+            v_results['baseline_bins'] = pd.cut(v_results['baseline_score'], [5,10,15,20,27])
 
-            grouped_v_results = v_results.groupby('target_bins')
+            grouped_v_results = v_results.groupby('baseline_bins')
             for target_bin, df in grouped_v_results:
-                print(target_bin)
-                print(df.shape)
                 binned_scores['bin'].append(str(target_bin))
                 binned_scores['valid_resp_bal_acc'].append(balanced_accuracy_score(df.actual_resp, df.pred_response))
                 binned_scores['valid_rem_bal_acc'].append(balanced_accuracy_score(df.true_rem, df.pred_remission))
@@ -180,8 +180,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
 
         sns.set(style = "darkgrid")
         # All thx to python-graph-gallery.com
-
-
         t_results['correct_resp'] = np.where(t_results['pred_response'] == t_results['actual_resp'], 1, 0)
         print(t_results.head())
         sns.scatterplot(data = t_results, x = 'target', y = 'pred_change', hue = 'correct_resp', alpha = 0.3)
@@ -273,22 +271,146 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
     f.write("Average validation specificity is {:4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_rem_spec'].mean(), final_score_df['avg_valid_rem_spec'].std()))
     f.write("Average validation precision is {:4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_valid_rem_prec'].mean(), final_score_df['avg_valid_rem_prec'].std()))
 
-    if test_data == True: # need to add transformer if its proven to work out
-        X_test = pd.read_csv("data/modelling/X_test_norm.csv").set_index('subjectkey')
-        y_test = pd.read_csv("data/modelling/y_test.csv").set_index('subjectkey')
-        print("Predicting on unseen data")
+    # if test_data == True:
+    #     print("Predicting on unseen data...")
+    #     # Adding path to test data
+    #     if X_train_path == "X_train_norm":
+    #         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm.csv")
+    #     elif X_train_path == "X_train_norm_over":
+    #         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over.csv")
+    #     y_test_path = os.path.join(REG_MODEL_DATA_DIR, "y_test.csv")
 
-        y = y.join(y_response)
-        y_test = y_test.join(y_response)
+    #     X_train = X.set_index('subjectkey')
+    #     y_train = y.set_index('subjectkey')
+    #     # Read in the data
+    #     X_test = pd.read_csv(X_test_path).set_index('subjectkey')
+    #     y_test = pd.read_csv(y_test_path).set_index('subjectkey')
 
-        train_results, test_results = assess_model(model, X.set_index('subjectkey'), y.set_index('subjectkey'), X_test, y_test)
+    #     # Prep the y labels (y -refers to entire training data) 
+    #     if y_proxy == "score_change":
+    #         y_test['target'] = y_test['target_change']
+    #     elif y_proxy == 'final_score':
+    #         y_test['target'] = y_test['target_score']
+    #     else: raise Exception("Invalid proxy y selection")   
 
-        f.write("Test RMSE is {:4f}\n".format(mean_squared_error(test_results.target,test_results.pred, squared = False)))
-        f.write("Test balanced accuracy is {:4f}\n".format(balanced_accuracy_score(test_results.actual_resp,test_results.pred_response)))
-        f.write("Test R2 is {:4f}\n".format(r2_score(test_results.target, test_results.pred)))
+    #     y_test = y_test.drop(columns = ['target_change', 'target_score'])
+        
+    #     y_test = y_test.join(y_response)
+    #     y_test = y_test.join(y_remission)
+
+    #     y_train = y_train.join(y_response)
+    #     y_train = y_train.join(y_remission)
+
+    #     print(y_test.head())
+    #     if y_proxy == "score_change":
+    #         t_results, v_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
+    #     elif  y_proxy == "final_score":
+    #         t_results, v_results = assess_on_final_score(model, X_train, y_train, X_test, y_test, out_path)
+
+    #     # f.write("Test RMSE is {:4f}\n".format(mean_squared_error(test_results.target,test_results.pred, squared = False)))
+    #     # f.write("Test balanced accuracy is {:4f}\n".format(balanced_accuracy_score(test_results.actual_resp,test_results.pred_response)))
+    #     # f.write("Test R2 is {:4f}\n".format(r2_score(test_results.target, test_results.pred)))
+
+        
+    #     # Calculate Response Classification Accuracy
+    #     train_resp_bal_acc = balanced_accuracy_score(t_results.actual_resp, t_results.pred_response)
+    #     test_resp_bal_acc = balanced_accuracy_score(v_results.actual_resp, v_results.pred_response)
+
+    #     # Calculate Remission Classification Accuracy 
+    #     train_rem_bal_acc = balanced_accuracy_score(t_results.true_rem, t_results.pred_remission)
+    #     test_rem_bal_acc = balanced_accuracy_score(v_results.true_rem, v_results.pred_remission)
+
+    #     f.write("Test Data: \n\n")
+    #     f.write("Test response balanced accuracy is {:4f}\n".format(test_resp_bal_acc))
+    #     f.write("Test remission balanced accuracy is {:4f}\n".format(test_rem_bal_acc))
+    #     # tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ravel()
+    #     # scores['resp_specificity'].append(tn/(tn+fp)) 
+    #     # scores['resp_sensitivity'].append(tp/(tp+fn))
+    #     # scores['resp_precision'].append(tp/(tp+fp))
+
+
+
+    #     # tn, fp, fn, tp = confusion_matrix(v_results.true_rem, v_results.pred_remission).ravel()
+    #     # scores['rem_specificity'].append(tn/(tn+fp)) 
+    #     # scores['rem_sensitivity'].append(tp/(tp+fn))
+    #     # scores['rem_precision'].append(tp/(tp+fp))
     
     print("Completed after seconds: \n")
     print(datetime.datetime.now() - startTime)
+    return final_score_df
+
+def evaluate_on_test(regressor, X_train_type, y_proxy, out_path):
+    print("Predicting on unseen data...")
+    result_filename = "test_{}_{}_{}_{}".format(regressor, X_train_type, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+    # Adding path to test data
+    if X_train_type == "X_train_norm":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm.csv")
+    elif X_train_type == "X_train_norm_over":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over.csv")
+        
+    y_train_path =os.path.join(REG_MODEL_DATA_DIR, "y_train.csv")
+    y_test_path = os.path.join(REG_MODEL_DATA_DIR, "y_test.csv")
+
+    # Read in the Data
+    X_train = pd.read_csv(X_train_path).set_index('subjectkey')
+    X_test = pd.read_csv(X_test_path).set_index('subjectkey')
+    y_train = pd.read_csv(y_train_path).set_index('subjectkey')
+    y_test = pd.read_csv(y_test_path).set_index('subjectkey')
+    y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
+    y_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
+    
+
+    # alter Column name to avoid mixup
+    y_response.columns = ['actual_resp']
+    y_remission.columns = ['true_rem']
+
+    # Prep the y labels (y -refers to entire training data) 
+    if y_proxy == "score_change":
+        y_train['target'] = y_train['target_change']
+        y_test['target'] = y_test['target_change']
+    elif y_proxy == 'final_score':
+        y_train['target'] = y_train['target_score']
+        y_test['target'] = y_test['target_score']
+    else: raise Exception("Invalid proxy y selection")   
+
+    y_train = y_train.drop(columns = ['target_change','target_score'])
+    y_test = y_test.drop(columns = ['target_change', 'target_score'])
+    
+    y_train = y_train.join(y_response)
+    y_train = y_train.join(y_remission)
+
+    y_test = y_test.join(y_response)
+    y_test = y_test.join(y_remission)
+
+    # Load Model
+    model_filename = "{}_{}_{}".format(regressor, X_train_type, y_proxy) # can use this to directly import the optimized param model
+    model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
+    model = pickle.load(open(model_path,'rb'))
+
+    # Train and Assess
+    if y_proxy == "score_change":
+        train_results, test_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
+    elif  y_proxy == "final_score":
+        train_results, test_results = assess_on_final_score(model, X_train, y_train, X_test, y_test, out_path)
+
+    # Calculate Response Classification Accuracy
+    train_resp_bal_acc = balanced_accuracy_score(train_results.actual_resp, train_results.pred_response)
+    test_resp_bal_acc = balanced_accuracy_score(test_results.actual_resp, test_results.pred_response)
+
+    # Calculate Remission Classification Accuracy 
+    train_rem_bal_acc = balanced_accuracy_score(train_results.true_rem, train_results.pred_remission)
+    test_rem_bal_acc = balanced_accuracy_score(test_results.true_rem, test_results.pred_remission)
+
+    f = open(os.path.join(out_path, result_filename + '.txt'), 'w')
+    f.write("Test Data: \n\n")
+    f.write("Test response balanced accuracy is {:4f}\n".format(test_resp_bal_acc))
+    f.write("Test remission balanced accuracy is {:4f}\n".format(test_rem_bal_acc))
+
+    return test_resp_bal_acc, test_rem_bal_acc
+    # tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ra
+
 
 def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results = y_train.copy()

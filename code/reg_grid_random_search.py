@@ -22,27 +22,25 @@ def select_X(X_type):
 def select_model_and_params(model_type):
     if model_type == "rf":
         model = RandomForestRegressor(n_jobs = -1)
-        max_depth = [int(x) for x in np.linspace(10, 110, num = 6)]
-        max_depth.append(None)
+        max_depth = [int(x) for x in np.linspace(5, 100, num = 20)]
         params = {
-                    'max_features': ['auto', 'sqrt', 'log2', 0.33],
+                    'max_features': ['sqrt', 'log2', 0.33, 0.2],
                     'max_depth': max_depth,
-                    'min_samples_split': np.arange(2,15),
-                    'min_samples_leaf': np.arange(2,15),
+                    'min_samples_split': np.arange(5,20),
+                    'min_samples_leaf': np.arange(5,20),
                     'bootstrap':  [True, False],
                         'criterion':['mse','mae'],
                         'max_samples':[0.7,0.8,0.9, None]}
     elif model_type == "gbdt":
         model = GradientBoostingRegressor(n_iter_no_change = 10)
         max_depth = [int(x) for x in np.arange(2,15)]
-        max_depth.append(None)
 
         params = {
             'loss': ['ls', 'lad', 'huber', 'quantile'],
             'max_depth': max_depth,
-            'min_samples_split': np.arange(2,15),
-            'min_samples_leaf': np.arange(2, 15),
-            'max_features': ['auto', 'sqrt', 'log2', 0.33],
+            'min_samples_split': np.arange(5,20),
+            'min_samples_leaf': np.arange(5, 20),
+            'max_features': ['auto', 'sqrt', 'log2', 0.33, 0.2],
             'subsample': [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         }
     elif model_type == "sgdReg":
@@ -70,7 +68,7 @@ def select_target(y, y_proxy):
 def optimize_params(model, params, X, y, filename):
     
 
-    search = RandomizedSearchCV(model, params, cv = 10, scoring = 'neg_mean_absolute_error', n_jobs = -1, verbose = 1)
+    search = RandomizedSearchCV(model, params, cv = 10, scoring = 'neg_mean_absolute_error', n_iter = 100, n_jobs = -1, verbose = 1)
     search.fit(X, y.to_numpy().ravel())
 
     print(search.best_score_)
@@ -92,9 +90,9 @@ if __name__== "__main__":
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['rf']
-    y_proxies = ['score_change']
-    X_types = ['X_train_norm_over']
+    regressors = ['rf','gbdt','sgdReg']
+    y_proxies = ['score_change','final_score']
+    X_types = ['X_train_norm', 'X_train_norm_over']
 
     for reg in regressors:
         for y_proxy in y_proxies:
@@ -111,11 +109,11 @@ if __name__== "__main__":
 
                 best_estimator, best_score = optimize_params(model, params, X_train, y_target, filename)
 
-                f = open(os.path.join("results/optimized_params", filename + '.txt'), 'w')
+                f = open(os.path.join("results/optimized_for_MAE", filename + '.txt'), 'w')
                 f.write("Best estimator RMSE is: {:.4f}\n".format(best_score))
                 f.write("The best performing model is: {}".format(best_estimator))
 
-                pickle.dump(best_estimator, open("results/optimized_params/" + filename + ".pkl", 'wb'))
+                pickle.dump(best_estimator, open("results/optimized_for_MAE/" + filename + ".pkl", 'wb'))
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)
