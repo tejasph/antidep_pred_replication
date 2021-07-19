@@ -12,7 +12,7 @@ Change variables and experiment name using this script.
 
 if __name__ == "__main__":
 
-    exp_name = "testing_test_data4"
+    exp_name = "12_RMSE_prelim_run"
     out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
     # Makes sure not to overwrite any files
@@ -22,8 +22,8 @@ if __name__ == "__main__":
         os.mkdir(out_path + "/")
 
     runs = 10
-    regressors = ["sgdReg"]
-    X_paths = ["X_train_norm_over"]
+    regressors = ["rf", "gbdt", "sgdReg"]
+    X_paths = ["X_train_norm", "X_train_norm_over"]
     y = "y_train"
     y_proxies = ["score_change", "final_score"]
     test_data = True

@@ -68,7 +68,7 @@ def select_target(y, y_proxy):
 def optimize_params(model, params, X, y, filename):
     
 
-    search = RandomizedSearchCV(model, params, cv = 10, scoring = 'neg_mean_absolute_error', n_iter = 100, n_jobs = -1, verbose = 1)
+    search = RandomizedSearchCV(model, params, cv = 10, scoring = 'neg_root_mean_squared_error', n_iter = 100, n_jobs = -1, verbose = 1)
     search.fit(X, y.to_numpy().ravel())
 
     print(search.best_score_)
@@ -109,11 +109,11 @@ if __name__== "__main__":
 
                 best_estimator, best_score = optimize_params(model, params, X_train, y_target, filename)
 
-                f = open(os.path.join("results/optimized_for_MAE", filename + '.txt'), 'w')
+                f = open(os.path.join("results/optimized_for_RMSE", filename + '.txt'), 'w')
                 f.write("Best estimator RMSE is: {:.4f}\n".format(best_score))
                 f.write("The best performing model is: {}".format(best_estimator))
 
-                pickle.dump(best_estimator, open("results/optimized_for_MAE/" + filename + ".pkl", 'wb'))
+                pickle.dump(best_estimator, open("results/optimized_for_RMSE/" + filename + ".pkl", 'wb'))
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)
