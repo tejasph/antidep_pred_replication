@@ -25,8 +25,7 @@ def prepare_data(X_path, name):
 
     startTime = datetime.datetime.now()
 
-    # X_path = "data/X_tillwk4_qids_sr__final.csv"
-    # X_overlap_path = "data/jj_processed/X_overlap_tillwk4_qids_sr.csv" # temporary read in location
+    
     y_path = os.path.join(REG_PROCESSED_DATA, "y_wk8_resp_mag_qids_sr__final.csv")
 
     if not os.path.exists(REG_MODEL_DATA_DIR):
