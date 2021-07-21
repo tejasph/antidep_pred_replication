@@ -21,7 +21,7 @@ import datetime
 import pickle
 import os
 
-def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, test_data = False):
+def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
 
     startTime = datetime.datetime.now()
     sns.set(style = "darkgrid")
@@ -55,8 +55,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
 
     # This dict will store all results across the runs
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
-                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[],
-                 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[]}
+                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[], 'avg_valid_resp_NPV':[],
+                 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[], 'avg_valid_rem_NPV':[]}
 
     binned_run_scores = {'bin':[], 'valid_RMSE':[]} # can remove
 
@@ -66,8 +66,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         kf = KFold(10, shuffle = True)
 
         scores = {'fold':[], 'model':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2': [],
-            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[],
-            'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[]}
+            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
+            'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[], 'rem_NPV':[]}
 
         binned_scores = {'bin':[], 'valid_resp_bal_acc':[], 'valid_rem_bal_acc':[]} # can probs remove
 
@@ -148,6 +148,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             scores['resp_specificity'].append(tn/(tn+fp)) 
             scores['resp_sensitivity'].append(tp/(tp+fn))
             scores['resp_precision'].append(tp/(tp+fp))
+            scores['resp_NPV'].append(tn/(fn + tn))
 
             # Calculate Remission Classification Accuracy 
             scores['train_rem_bal_acc'].append(balanced_accuracy_score(t_results.true_rem, t_results.pred_remission)) 
@@ -157,6 +158,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
             scores['rem_specificity'].append(tn/(tn+fp)) 
             scores['rem_sensitivity'].append(tp/(tp+fn))
             scores['rem_precision'].append(tp/(tp+fp))
+            scores['rem_NPV'].append(tn/(fn + tn))
             fold += 1
 
             # Get binned scores
@@ -206,12 +208,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs, te
         run_scores['avg_valid_resp_sens'].append(results['resp_sensitivity'].mean())
         run_scores['avg_valid_resp_spec'].append(results['resp_specificity'].mean())
         run_scores['avg_valid_resp_prec'].append(results['resp_precision'].mean())
+        run_scores['avg_valid_resp_NPV'].append(results['resp_NPV'].mean())
 
         run_scores['avg_train_rem_bal_acc'].append(results['train_rem_bal_acc'].mean())
         run_scores['avg_valid_rem_bal_acc'].append(results['valid_rem_bal_acc'].mean())
         run_scores['avg_valid_rem_sens'].append(results['rem_sensitivity'].mean())
         run_scores['avg_valid_rem_spec'].append(results['rem_specificity'].mean())
         run_scores['avg_valid_rem_prec'].append(results['rem_precision'].mean())
+        run_scores['avg_valid_rem_NPV'].append(results['rem_NPV'].mean())
 
     # average the scores across the r runs and get standard deviations
     final_score_df = pd.DataFrame(run_scores)
@@ -262,8 +266,8 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     result_filename = "test_{}_{}_{}_{}".format(regressor, X_train_type, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 
     test_run_scores = {'run':[], 'model':[], 'train_RMSE':[], 'train_R2':[], 'test_RMSE':[], 'test_R2':[],
-                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],
-                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[]}
+                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],'test_resp_NPV':[],
+                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[], 'test_rem_NPV':[]}
 
     # Adding path to test data
     if X_train_type == "X_train_norm":
@@ -339,6 +343,7 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
         test_run_scores['test_resp_spec'].append(tn/(tn+fp)) 
         test_run_scores['test_resp_sens'].append(tp/(tp+fn))
         test_run_scores['test_resp_prec'].append(tp/(tp+fp))
+        test_run_scores['test_resp_NPV'].append(tn/(fn + tn))
 
         # Calculate Remission Classification Accuracy 
         train_rem_bal_acc = balanced_accuracy_score(train_results.true_rem, train_results.pred_remission)
@@ -351,6 +356,7 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
         test_run_scores['test_rem_spec'].append(tn/(tn+fp)) 
         test_run_scores['test_rem_sens'].append(tp/(tp+fn))
         test_run_scores['test_rem_prec'].append(tp/(tp+fp))
+        test_run_scores['test_rem_NPV'].append(tn/(fn + tn))
 
     test_results_df = pd.DataFrame(test_run_scores)
     return test_results_df
