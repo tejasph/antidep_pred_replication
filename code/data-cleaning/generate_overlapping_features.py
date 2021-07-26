@@ -28,7 +28,7 @@ def convert_stard_to_overlapping(output_dir=""):
         os.mkdir(output_dir)
 
     # df = pd.read_csv(file_path)
-    df = pd.read_csv(output_dir + "/" + "X_wk8_response_qids01__final.csv")
+    df = pd.read_csv(output_dir + "/" + "X_tillwk4_qids_sr__final.csv")  # changed to fit Tejas file name
 
     # Take whitelist columns first
     df = df[STARD_OVERLAPPING_VALUE_CONVERSION_MAP["whitelist"]]## + ["days_baseline"]]

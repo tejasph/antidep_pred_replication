@@ -4,14 +4,20 @@ C:\Users\Tejas\Documents\star_project>python antidep_pred_replication/code/data-
 
 note: processed datasets are generated within the STARD_Raw_Data_Used folder (suggest moving the processed data into your antidep_pred_replication repo or change path)
 
+Create Overlapping Data from processed data:
+
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/data-cleaning/generate_overlapping_features.py -sd data
+
+note: currently have to relabel index to "subjectkey" for next step
+
 Splitting the Data:
 
 C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -all data/X_tillwk4_qids_sr__final.csv 
-C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -over data/jj_processed/X_overlap_tillwk4_qids_sr.csv
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -over data/X_train_stard_extval.csv
 
 Grid Search:
 
 
 Running Experiment:
 
-python code/regression_results
+python code/regression_results.py

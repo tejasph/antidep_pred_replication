@@ -13,8 +13,8 @@ Change variables and experiment name using this script.
 
 if __name__ == "__main__":
 
-    if False:
-        exp_name = "13_RMSE_NPV_added"
+    if True:
+        exp_name = "testing_replication"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         # Makes sure not to overwrite any files
@@ -24,10 +24,10 @@ if __name__ == "__main__":
             os.mkdir(out_path + "/")
 
         runs = 10
-        regressors = ["rf", "gbdt", "sgdReg"]
-        X_paths = ["X_train_norm", "X_train_norm_over"]
+        regressors = ["rf"]
+        X_paths = ["X_train_norm_over"]
         y = "y_train"
-        y_proxies = ["score_change", "final_score"]
+        y_proxies = ["final_score"]
     
 
         exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[], 'valid_RMSE':[],
@@ -58,18 +58,18 @@ if __name__ == "__main__":
         print(exp_df)
         exp_df.to_csv(out_path + '/summary.csv', index = False)
     
-    if True:
+    # if True:
 
-        runs = 1
-        classifiers = ["rf"]
-        X_paths = ["X_train_norm"]
-        y = "y_train"
-        y_labels = ['response']
+    #     runs = 1
+    #     classifiers = ["rf"]
+    #     X_paths = ["X_train_norm"]
+    #     y = "y_train"
+    #     y_labels = ['response']
 
-        for classifier in classifiers:
-            for X_path in X_paths:
-                for y_label in y_labels:
-                    RunClassRun(classifier,X_path, y, y_label, "blank", runs)
+    #     for classifier in classifiers:
+    #         for X_path in X_paths:
+    #             for y_label in y_labels:
+    #                 RunClassRun(classifier,X_path, y, y_label, "blank", runs)
 
 
 
