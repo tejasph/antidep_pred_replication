@@ -11,9 +11,18 @@ Created on Sun Oct 18 11:44:04 2020
 DATA_DIR = r"C:\Users\Tejas\Documents\star_project\processed_STARD_datasets"
 RESULTS_DIR = r'C:\Users\Tejas\Documents\star_project\script_results'
 
-
+#########################################
 #Directories for regression related paths
+#########################################
+
+# Path for reading in processed data
 REG_PROCESSED_DATA = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data"
+
+# Output path for optimized models
 OPTIMIZED_MODELS = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\optimized_for_RMSE"
+
+# Path for modelling data (ie. X_train, y_train...etc)
 REG_MODEL_DATA_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data\modelling"
+
+# Output path for experiment results
 REG_RESULTS_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\experiments"
