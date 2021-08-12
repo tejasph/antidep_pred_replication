@@ -28,7 +28,7 @@ REG_MODEL_DATA_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replic
 REG_RESULTS_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\experiments"
 
 # Variable Categories
-cont_vars = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enroll__frend','dm01_enroll__thous',
+CONT_VARS = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enroll__frend','dm01_enroll__thous',
              'dm01_enroll__educat','dm01_w0__mempl','dm01_w0__massist','dm01_w0__munempl','dm01_w0__minc_other',
              'dm01_w0__totincom','hrsd01__hdtot_r','phx01__dage','phx01__epino','phx01__episode_date','qids01_w0c__qstot',
              'qids01_w0sr__qstot','qids01_w2c__qstot','qids01_w2sr__qstot','qlesq01__totqlesq','sfhs01__pcs12',
@@ -38,7 +38,7 @@ cont_vars = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enro
              'wpai01__wpai_totwrkimp','wsas01__totwsas','imput_bech','imput_maier','imput_santen','imput_gibbons',
              'imput_hamd7','imput_hamdret','imput_hamdanx','imput_idsc5pccg','imput_qidscpccg']
 
-categorical_vars = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2__trtmt||2.0', 'ccv01_w2__trtmt||3.0', 
+CATEGORICAL_VARS = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2__trtmt||2.0', 'ccv01_w2__trtmt||3.0', 
 'ccv01_w2__trtmt||4.0', 'dm01_enroll__resid||1.0', 'dm01_enroll__resid||2.0', 'dm01_enroll__resid||3.0',
  'dm01_enroll__resid||4.0', 'dm01_enroll__resid||5.0', 'dm01_enroll__resid||6.0', 'dm01_enroll__resid||7.0',
   'dm01_enroll__resid||8.0', 'dm01_enroll__rtown||1.0', 'dm01_enroll__rtown||2.0', 'dm01_enroll__rtown||3.0',
@@ -52,12 +52,12 @@ categorical_vars = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2_
         'phx01__alcoh||1.0', 'phx01__alcoh||2.0', 'phx01__amphet||1.0', 'phx01__amphet||2.0', 'phx01__cannibis||1.0',
          'phx01__cannibis||2.0', 'phx01__opioid||1.0', 'phx01__opioid||2.0', 'phx01__ax_cocaine||1.0', 'phx01__ax_cocaine||2.0']
 
-categorical_dict ={'gender':2, 'ccv01_w2__trtmt':4, 'dm01_enroll__resid':8,'dm01_enroll__rtown':3,'dm01_enroll__marital':6,
+CATEGORICAL_DICT ={'gender':2, 'ccv01_w2__trtmt':4, 'dm01_enroll__resid':8,'dm01_enroll__rtown':3,'dm01_enroll__marital':6,
            'dm01_enroll__empl':6,'dm01_enroll__volun':3,'dm01_enroll__leave':2,'dm01_enroll__publica':2,'dm01_enroll__medicaid':2,
            'dm01_enroll__privins':2,'idsc01__iwrse':3,'phx01__bulimia':3,'phx01__alcoh':2,'phx01__amphet':2,'phx01__cannibis':2,'phx01__opioid':2,
            'phx01__ax_cocaine':2}
 
-ord_vars = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ugi','crs01__lgi','crs01__renal',
+ORD_VARS = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ugi','crs01__lgi','crs01__renal',
            'crs01__genur','crs01__mskl','crs01__neuro','crs01__psych','crs01__respiratory','crs01__liverd',
             'crs01__endod','ccv01_w2__medication1_dosage','dm01_enroll__student','dm01_enroll__mkedc','dm01_enroll__enjoy',
             'dm01_enroll__famim','hrsd01__hsoin','hrsd01__hmnin','hrsd01__hemin','hrsd01__hmdsd','hrsd01__hpanx','hrsd01__hinsg',
@@ -85,7 +85,7 @@ ord_vars = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ug
             'wpai01__wpai06','wsas01__wsas01','wsas01__wsas02','wsas01__wsas03','wsas01__wsas04','wsas01__wsas05','imput_hamdsle','imput_idsc5w0','imput_idsc5w2']
 
 
-binary_vars =['ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2__effct', 'ccv01_w2__cncn', 'ccv01_w2__prtcl', 'ccv01_w2__stmed', 'dm01_enroll__spous',
+BINARY_VARS =['ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2__effct', 'ccv01_w2__cncn', 'ccv01_w2__prtcl', 'ccv01_w2__stmed', 'dm01_enroll__spous',
  'dm01_w0__inc_curr', 'dm01_w0__assist', 'dm01_w0__unempl', 'dm01_w0__otherinc', 'idsc01__ienv', 'mhx01__psmed', 'pdsq01__evy2w', 'pdsq01__joy2w', 'pdsq01__int2w',
   'pdsq01__lap2w', 'pdsq01__gap2w', 'pdsq01__lsl2w', 'pdsq01__msl2w', 'pdsq01__jmp2w', 'pdsq01__trd2w', 'pdsq01__glt2w', 'pdsq01__neg2w', 'pdsq01__flr2w', 'pdsq01__cnt2w',
    'pdsq01__dcn2w', 'pdsq01__psv2w', 'pdsq01__wsh2w', 'pdsq01__btr2w', 'pdsq01__tht2w', 'pdsq01__ser2w', 'pdsq01__spf2w', 'pdsq01__sad2y', 'pdsq01__apt2y', 'pdsq01__slp2y', 

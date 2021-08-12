@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.compose import ColumnTransformer
 from imblearn.pipeline import Pipeline
-from run_globals import REG_MODEL_DATA_DIR, REG_PROCESSED_DATA
+from run_globals import REG_MODEL_DATA_DIR, REG_PROCESSED_DATA, CONT_VARS, CATEGORICAL_DICT, CATEGORICAL_VARS, ORD_VARS, BINARY_VARS
 
 
 def prepare_data(X_path, name):
@@ -56,48 +56,75 @@ def prepare_data(X_path, name):
     # Associate subjectkey as the index for easier tracking/manipulation
     X_train = X_train.set_index('subjectkey')
     X_test = X_test.set_index('subjectkey')
+
+    if name == "": # temporary until i figure out the overlapping categories
+        print("Centering and Scaling Data")
+        # Center Binary Variables
+        for var in BINARY_VARS:
+            X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
+            X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
+
+        for key, value in CATEGORICAL_DICT.items():
+            sub_vals = {"zero":-1/value, "one": 1-(1/value)}
+            subset_feats = []
+            for var in CATEGORICAL_VARS:
+                if (key + "||") in var:
+                    X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+                    X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+
+        scaler = MinMaxScaler(feature_range = (-1,1))
+        X_train_cont_ord = pd.DataFrame(scaler.fit_transform(X_train[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_train.index)
+        X_test_cont_ord = pd.DataFrame(scaler.transform(X_test[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_test.index)
+
+        # potentially rename
+        X_train_norm = pd.concat([X_train_cont_ord, X_train[BINARY_VARS], X_train[CATEGORICAL_VARS]], axis =1 )
+        X_test_norm = pd.concat([X_test_cont_ord, X_test[BINARY_VARS], X_test[CATEGORICAL_VARS]], axis = 1)
+
+        print(X_train_norm.head())
     
+    #Below is from the original script
     # Create normalized version of X_train
-    scaler = MinMaxScaler()
-    X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    X_test_norm = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns, index = X_test.index)
+    # scaler = MinMaxScaler()
+    # X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    # X_test_norm = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns, index = X_test.index)
 
-    # Crude way of determining categorical variables
-    cat_cols = []
-    num_cols = []
-    for col in X_train.columns:
-        val_nums = len(X_train[col].unique())
-        if val_nums <= 2:
-            cat_cols.append(col)
-        else:
-            num_cols.append(col)  
+    # # Crude way of determining categorical variables
+    # cat_cols = []
+    # num_cols = []
+    # for col in X_train.columns:
+    #     val_nums = len(X_train[col].unique())
+    #     if val_nums <= 2:
+    #         cat_cols.append(col)
+    #     else:
+    #         num_cols.append(col)  
 
-    # Create standardized version of X_train and X_test
-    num_transformer = Pipeline([('standardize', StandardScaler())])
-    ct = ColumnTransformer([('stand', num_transformer, num_cols)], remainder = 'passthrough')
+    # # Create standardized version of X_train and X_test
+    # num_transformer = Pipeline([('standardize', StandardScaler())])
+    # ct = ColumnTransformer([('stand', num_transformer, num_cols)], remainder = 'passthrough')
 
-    X_train_stand = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    X_test_stand = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
+    # X_train_stand = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    # X_test_stand = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
 
-    # Create standardized/normalized version of X_train and X_test
-    num_transformer = Pipeline([('standardize', StandardScaler()),('normalize',MinMaxScaler())])
-    ct = ColumnTransformer([('stand_norm', num_transformer, num_cols)], remainder = 'passthrough')
+    # # Create standardized/normalized version of X_train and X_test
+    # num_transformer = Pipeline([('standardize', StandardScaler()),('normalize',MinMaxScaler())])
+    # ct = ColumnTransformer([('stand_norm', num_transformer, num_cols)], remainder = 'passthrough')
     
-    X_train_stand_norm = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    X_test_stand_norm = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
+    # X_train_stand_norm = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
+    # X_test_stand_norm = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
 
   
     # Output csv files
+    #X_train is now modified d/t to recent changes
     X_train.to_csv(out_path + "/X_train" + name + ".csv", index = True)
     X_train_norm.to_csv(out_path + "/X_train_norm" + name + ".csv", index = True)
-    X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
-    X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
+    # X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
+    # X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
     y_train.to_csv(out_path + "/y_train" + ".csv", index = False) # y_train and y_test aren't affected by overlapping feats --> that's why no name variable used
 
     X_test.to_csv(out_path + "/X_test" +name + ".csv", index = False)
     X_test_norm.to_csv(out_path + "/X_test_norm" + name + ".csv", index = True)
-    X_test_stand.to_csv(out_path + "/X_test_stand" + name + ".csv", index = True)
-    X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm" + name + ".csv", index = True)
+    # X_test_stand.to_csv(out_path + "/X_test_stand" + name + ".csv", index = True)
+    # X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm" + name + ".csv", index = True)
     y_test.to_csv(out_path + "/y_test" + ".csv", index = False) 
 
     print(f"Finished data prep in {datetime.datetime.now() - startTime}")
