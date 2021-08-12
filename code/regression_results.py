@@ -23,12 +23,12 @@ y_proxy_options = ['score_change', 'final_score']  # what the target for the reg
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_new_scaling2"
+        exp_name = "test_new_scaling4"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ["rf","sgdReg"]
-        X_paths = ["X_train_norm"]
+        regressors = ["sgdReg"]
+        X_paths = ["X_train_norm_over"]
         y = "y_train"
         y_proxies = ["final_score"]
 

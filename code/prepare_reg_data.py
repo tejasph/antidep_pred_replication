@@ -18,13 +18,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.compose import ColumnTransformer
 from imblearn.pipeline import Pipeline
-from run_globals import REG_MODEL_DATA_DIR, REG_PROCESSED_DATA, CONT_VARS, CATEGORICAL_DICT, CATEGORICAL_VARS, ORD_VARS, BINARY_VARS
+from run_globals import REG_MODEL_DATA_DIR, REG_PROCESSED_DATA, ALL_CONT_VARS, ALL_CAT_DICT, ALL_CAT_VARS, ALL_ORD_VARS, ALL_BINARY_VARS, OVER_BINARY_VARS, OVER_CAT_VARS, OVER_CAT_DICT, OVER_CONT_VARS, OVER_ORD_VARS
 
 
 def prepare_data(X_path, name):
 
     startTime = datetime.datetime.now()
 
+    if name == "_over":
+        CAT_VARS = OVER_CAT_VARS
+        CAT_DICT = OVER_CAT_DICT
+        ORD_VARS = OVER_ORD_VARS
+        CONT_VARS = OVER_CONT_VARS
+        BINARY_VARS = OVER_BINARY_VARS
+    else:
+        CAT_VARS = ALL_CAT_VARS
+        CAT_DICT = ALL_CAT_DICT
+        ORD_VARS = ALL_ORD_VARS
+        CONT_VARS = ALL_CONT_VARS
+        BINARY_VARS = ALL_BINARY_VARS
     
     y_path = os.path.join(REG_PROCESSED_DATA, "y_wk8_resp_mag_qids_sr__final.csv")
 
@@ -57,30 +69,30 @@ def prepare_data(X_path, name):
     X_train = X_train.set_index('subjectkey')
     X_test = X_test.set_index('subjectkey')
 
-    if name == "": # temporary until i figure out the overlapping categories
-        print("Centering and Scaling Data")
-        # Center Binary Variables
-        for var in BINARY_VARS:
-            X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-            X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
 
-        for key, value in CATEGORICAL_DICT.items():
-            sub_vals = {"zero":-1/value, "one": 1-(1/value)}
-            subset_feats = []
-            for var in CATEGORICAL_VARS:
-                if (key + "||") in var:
-                    X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
-                    X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+    print("Centering and Scaling Data")
+    # Center Binary Variables
+    for var in BINARY_VARS:
+        X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
+        X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
 
-        scaler = MinMaxScaler(feature_range = (-1,1))
-        X_train_cont_ord = pd.DataFrame(scaler.fit_transform(X_train[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_train.index)
-        X_test_cont_ord = pd.DataFrame(scaler.transform(X_test[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_test.index)
+    for key, value in CAT_DICT.items():
+        sub_vals = {"zero":-1/value, "one": 1-(1/value)}
+        subset_feats = []
+        for var in CAT_VARS:
+            if (key + "||") in var:
+                X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+                X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
 
-        # potentially rename
-        X_train_norm = pd.concat([X_train_cont_ord, X_train[BINARY_VARS], X_train[CATEGORICAL_VARS]], axis =1 )
-        X_test_norm = pd.concat([X_test_cont_ord, X_test[BINARY_VARS], X_test[CATEGORICAL_VARS]], axis = 1)
+    scaler = MinMaxScaler(feature_range = (-1,1))
+    X_train_cont_ord = pd.DataFrame(scaler.fit_transform(X_train[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_train.index)
+    X_test_cont_ord = pd.DataFrame(scaler.transform(X_test[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_test.index)
 
-        print(X_train_norm.head())
+    # potentially rename
+    X_train_norm = pd.concat([X_train_cont_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
+    X_test_norm = pd.concat([X_test_cont_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
+
+    print(X_train_norm.head())
     
     #Below is from the original script
     # Create normalized version of X_train

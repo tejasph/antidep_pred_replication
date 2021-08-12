@@ -28,7 +28,7 @@ REG_MODEL_DATA_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replic
 REG_RESULTS_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\experiments"
 
 # Variable Categories
-CONT_VARS = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enroll__frend','dm01_enroll__thous',
+ALL_CONT_VARS = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enroll__frend','dm01_enroll__thous',
              'dm01_enroll__educat','dm01_w0__mempl','dm01_w0__massist','dm01_w0__munempl','dm01_w0__minc_other',
              'dm01_w0__totincom','hrsd01__hdtot_r','phx01__dage','phx01__epino','phx01__episode_date','qids01_w0c__qstot',
              'qids01_w0sr__qstot','qids01_w2c__qstot','qids01_w2sr__qstot','qlesq01__totqlesq','sfhs01__pcs12',
@@ -38,7 +38,7 @@ CONT_VARS = ['interview_age','dm01_enroll__resm','dm01_enroll__relat','dm01_enro
              'wpai01__wpai_totwrkimp','wsas01__totwsas','imput_bech','imput_maier','imput_santen','imput_gibbons',
              'imput_hamd7','imput_hamdret','imput_hamdanx','imput_idsc5pccg','imput_qidscpccg']
 
-CATEGORICAL_VARS = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2__trtmt||2.0', 'ccv01_w2__trtmt||3.0', 
+ALL_CAT_VARS = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2__trtmt||2.0', 'ccv01_w2__trtmt||3.0', 
 'ccv01_w2__trtmt||4.0', 'dm01_enroll__resid||1.0', 'dm01_enroll__resid||2.0', 'dm01_enroll__resid||3.0',
  'dm01_enroll__resid||4.0', 'dm01_enroll__resid||5.0', 'dm01_enroll__resid||6.0', 'dm01_enroll__resid||7.0',
   'dm01_enroll__resid||8.0', 'dm01_enroll__rtown||1.0', 'dm01_enroll__rtown||2.0', 'dm01_enroll__rtown||3.0',
@@ -52,12 +52,12 @@ CATEGORICAL_VARS = ['gender||F', 'gender||M', 'ccv01_w2__trtmt||1.0', 'ccv01_w2_
         'phx01__alcoh||1.0', 'phx01__alcoh||2.0', 'phx01__amphet||1.0', 'phx01__amphet||2.0', 'phx01__cannibis||1.0',
          'phx01__cannibis||2.0', 'phx01__opioid||1.0', 'phx01__opioid||2.0', 'phx01__ax_cocaine||1.0', 'phx01__ax_cocaine||2.0']
 
-CATEGORICAL_DICT ={'gender':2, 'ccv01_w2__trtmt':4, 'dm01_enroll__resid':8,'dm01_enroll__rtown':3,'dm01_enroll__marital':6,
+ALL_CAT_DICT ={'gender':2, 'ccv01_w2__trtmt':4, 'dm01_enroll__resid':8,'dm01_enroll__rtown':3,'dm01_enroll__marital':6,
            'dm01_enroll__empl':6,'dm01_enroll__volun':3,'dm01_enroll__leave':2,'dm01_enroll__publica':2,'dm01_enroll__medicaid':2,
            'dm01_enroll__privins':2,'idsc01__iwrse':3,'phx01__bulimia':3,'phx01__alcoh':2,'phx01__amphet':2,'phx01__cannibis':2,'phx01__opioid':2,
            'phx01__ax_cocaine':2}
 
-ORD_VARS = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ugi','crs01__lgi','crs01__renal',
+ALL_ORD_VARS = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ugi','crs01__lgi','crs01__renal',
            'crs01__genur','crs01__mskl','crs01__neuro','crs01__psych','crs01__respiratory','crs01__liverd',
             'crs01__endod','ccv01_w2__medication1_dosage','dm01_enroll__student','dm01_enroll__mkedc','dm01_enroll__enjoy',
             'dm01_enroll__famim','hrsd01__hsoin','hrsd01__hmnin','hrsd01__hemin','hrsd01__hmdsd','hrsd01__hpanx','hrsd01__hinsg',
@@ -85,7 +85,7 @@ ORD_VARS = ['crs01__heart','crs01__vsclr','crs01__hema','crs01__eyes','crs01__ug
             'wpai01__wpai06','wsas01__wsas01','wsas01__wsas02','wsas01__wsas03','wsas01__wsas04','wsas01__wsas05','imput_hamdsle','imput_idsc5w0','imput_idsc5w2']
 
 
-BINARY_VARS =['ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2__effct', 'ccv01_w2__cncn', 'ccv01_w2__prtcl', 'ccv01_w2__stmed', 'dm01_enroll__spous',
+ALL_BINARY_VARS =['ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2__effct', 'ccv01_w2__cncn', 'ccv01_w2__prtcl', 'ccv01_w2__stmed', 'dm01_enroll__spous',
  'dm01_w0__inc_curr', 'dm01_w0__assist', 'dm01_w0__unempl', 'dm01_w0__otherinc', 'idsc01__ienv', 'mhx01__psmed', 'pdsq01__evy2w', 'pdsq01__joy2w', 'pdsq01__int2w',
   'pdsq01__lap2w', 'pdsq01__gap2w', 'pdsq01__lsl2w', 'pdsq01__msl2w', 'pdsq01__jmp2w', 'pdsq01__trd2w', 'pdsq01__glt2w', 'pdsq01__neg2w', 'pdsq01__flr2w', 'pdsq01__cnt2w',
    'pdsq01__dcn2w', 'pdsq01__psv2w', 'pdsq01__wsh2w', 'pdsq01__btr2w', 'pdsq01__tht2w', 'pdsq01__ser2w', 'pdsq01__spf2w', 'pdsq01__sad2y', 'pdsq01__apt2y', 'pdsq01__slp2y', 
@@ -107,4 +107,42 @@ BINARY_VARS =['ccv01_w2__suicd', 'ccv01_w2__remsn', 'ccv01_w2__raise', 'ccv01_w2
                  'phx01__drgchld', 'phx01__suic_phx', 'phx01__suicpar', 'phx01__suicsib', 'phx01__suicchld', 'phx01__wrsms', 'phx01__anorexia', 'sfhs01__sfhs04', 'sfhs01__sfhs05',
                   'sfhs01__sfhs06', 'sfhs01__sfhs07', 'ucq01__ucq010', 'ucq01__ucq020', 'ucq01__ucq080', 'ucq01__ucq110', 'ucq01__ucq120', 'ucq01__ucq140', 'ucq01__ucq160', 
                   'ucq01__ucq040', 'ucq01__ucq060', 'wpai01__wpai01', 'imput_anyanxiety']
+
+OVER_CONT_VARS = ['AGE:::interview_age','EDUC:::dm01_enroll__educat','HSHLD_INCOME:::dm01_w0__totincom','LAM_2_baseline:::wpai01__wpai_totalhrs','LAM_3_baseline:::wpai01__wpai02',
+                 'PSYHIS_MDD_AGE:::phx01__dage','PSYHIS_MDE_EP_DUR_MO:::phx01__episode_date','PSYHIS_MDE_NUM:::phx01__epino','QIDS_ATYPICAL_baseline:::', 'QIDS_ATYPICAL_week2:::',
+                 'QIDS_OVERL_SEVTY_baseline:::qids01_w0sr__qstot','QIDS_OVERL_SEVTY_week2:::qids01_w2sr__qstot','QLESQA_TOT_QLESQB_TOT_merged:::','imput_QIDS_SR_perc_change:::']
+
+OVER_BINARY_VARS = [':::imput_anyanxiety', 'MINI_AGRPHOBIA_TIME:::phx01__pd_ag', 'MINI_AN_BINGE_TIME:::phx01__anorexia',
+ 'MINI_APD_TIME:::phx01__pd_antis', 'MINI_GAD_TIME:::phx01__gad_phx', 'MINI_OCD_TIME:::phx01__ocd_phx', 
+ 'MINI_PD_DX:::phx01__pd_noag', 'MINI_PTSD_TIME:::phx01__psd', 'MINI_SOCL_PHOBIA_DX:::phx01__soc_phob', 
+ 'PSYHIS_FH:::phx01__dep', 'PSYHIS_MDD_PREV:::', 'MINI_ALCHL_ABUSE_TIME:::phx01__alcoh||1.0', 'MINI_BN_TIME:::phx01__bulimia||2/5',
+ 'MINI_SBSTNC_ABUSE_NONALCHL_TIME:::phx01__amphet||1.0']
+
+OVER_ORD_VARS = ['QIDS_SR_10_baseline:::qids01_w0sr__vcntr','QIDS_SR_10_week2:::qids01_w2sr__vcntr','QIDS_SR_11_baseline:::qids01_w0sr__vvwsf','QIDS_SR_11_week2:::qids01_w2sr__vvwsf',
+                'QIDS_SR_12_baseline:::qids01_w0sr__vsuic','QIDS_SR_12_week2:::qids01_w2sr__vsuic','QIDS_SR_13_baseline:::qids01_w0sr__vintr','QIDS_SR_13_week2:::qids01_w2sr__vintr',
+                'QIDS_SR_14_baseline:::qids01_w0sr__vengy','QIDS_SR_14_week2:::qids01_w2sr__vengy','QIDS_SR_15_baseline:::qids01_w0sr__vslow','QIDS_SR_15_week2:::qids01_w2sr__vslow',
+                'QIDS_SR_16_baseline:::qids01_w0sr__vagit','QIDS_SR_16_week2:::qids01_w2sr__vagit','QIDS_SR_1_baseline:::qids01_w0sr__vsoin','QIDS_SR_1_week2:::qids01_w2sr__vsoin',
+                'QIDS_SR_2_baseline:::qids01_w0sr__vmnin','QIDS_SR_2_week2:::qids01_w2sr__vmnin','QIDS_SR_3_baseline:::qids01_w0sr__vemin','QIDS_SR_3_week2:::qids01_w2sr__vemin',
+                'QIDS_SR_4_baseline:::qids01_w0sr__vhysm','QIDS_SR_4_week2:::qids01_w2sr__vhysm','QIDS_SR_5_baseline:::qids01_w0sr__vmdsd','QIDS_SR_5_week2:::qids01_w2sr__vmdsd',
+                'QIDS_SR_6_baseline:::qids01_w0sr__vapdc','QIDS_SR_6_week2:::qids01_w2sr__vapdc','QIDS_SR_7_baseline:::qids01_w0sr__vapin','QIDS_SR_7_week2:::qids01_w2sr__vapin',
+                'QIDS_SR_8_baseline:::qids01_w0sr__vwtdc','QIDS_SR_8_week2:::qids01_w2sr__vwtdc','QIDS_SR_9_baseline:::qids01_w0sr__vwtin','QIDS_SR_9_week2:::qids01_w2sr__vwtin',
+                'QLESQ_1A_10_baseline_QLESQ_1B_10_baseline_merged:::qlesq01__qlesq10','QLESQ_1A_11_baseline_QLESQ_1B_11_baseline_merged:::qlesq01__qlesq11','QLESQ_1A_12_baseline_QLESQ_1B_12_baseline_merged:::qlesq01__qlesq12',
+                'QLESQ_1A_13_baseline_QLESQ_1B_13_baseline_merged:::qlesq01__qlesq13','QLESQ_1A_14_baseline_QLESQ_1B_14_baseline_merged:::qlesq01__qlesq14',
+                'QLESQ_1A_16_baseline_QLESQ_1B_16_baseline_merged:::qlesq01__qlesq16','QLESQ_1A_1_baseline_QLESQ_1B_1_baseline_merged:::qlesq01__qlesq01',
+                'QLESQ_1A_2_baseline_QLESQ_1B_2_baseline_merged:::qlesq01__qlesq02','QLESQ_1A_3_baseline_QLESQ_1B_3_baseline_merged:::qlesq01__qlesq03',
+                'QLESQ_1A_4_baseline_QLESQ_1B_4_baseline_merged:::qlesq01__qlesq04','QLESQ_1A_5_baseline_QLESQ_1B_5_baseline_merged:::qlesq01__qlesq05',
+                'QLESQ_1A_6_baseline_QLESQ_1B_6_baseline_merged:::qlesq01__qlesq06','QLESQ_1A_7_baseline_QLESQ_1B_7_baseline_merged:::qlesq01__qlesq07',
+                'QLESQ_1A_8_baseline_QLESQ_1B_8_baseline_merged:::qlesq01__qlesq08','QLESQ_1A_9_baseline_QLESQ_1B_9_baseline_merged:::qlesq01__qlesq09',
+                'SDS_1_1_baseline:::wsas01__wsas01','SDS_2_1_baseline:::wsas01__wsas03','SDS_3_1_baseline:::wsas01__wsas02','imput_QIDS_SR_appetite_domain_week0:::',
+                'imput_QIDS_SR_appetite_domain_week2:::','imput_QIDS_SR_insomnia_week0:::','imput_QIDS_SR_insomnia_week2:::','imput_QIDS_SR_overeating_week0:::',
+                'imput_QIDS_SR_overeating_week2:::','imput_QIDS_SR_psychomot_domain_week0:::','imput_QIDS_SR_psychomot_domain_week2:::','imput_QIDS_SR_sleep_domain_week0:::',
+                'imput_QIDS_SR_sleep_domain_week2:::']
+
+OVER_CAT_VARS = ['EMPLOY_STATUS_1.0:::dm01_enroll__empl||3.0', 'EMPLOY_STATUS_2.0:::dm01_enroll__empl||1.0', 'EMPLOY_STATUS_5.0:::dm01_enroll__empl||2.0',
+ 'EMPLOY_STATUS_7.0:::dm01_enroll__empl||6.0', 'MRTL_STATUS_Divorced:::dm01_enroll__marital||5.0', 
+ 'MRTL_STATUS_Domestic Partnership:::dm01_enroll__marital||2.0', 'MRTL_STATUS_Married:::dm01_enroll__marital||3.0',
+  'MRTL_STATUS_Never Married:::dm01_enroll__marital||1.0', 'MRTL_STATUS_Separated:::dm01_enroll__marital||4.0',
+   'MRTL_STATUS_Widowed:::dm01_enroll__marital||6.0', 'SEX_female:::gender||F', 'SEX_male:::gender||M']
+
+OVER_CAT_DICT =  {'dm01_enroll__empl': 4, 'dm01_enroll__marital': 6, 'gender':2}
 
