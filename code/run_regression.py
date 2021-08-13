@@ -3,9 +3,10 @@
 Runs 1 run of the specified ML training and evaluation
 
 """
-from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix
+from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix, roc_auc_score
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, IsolationForest
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 from sklearn.preprocessing import PowerTransformer
 from scipy.stats import kurtosistest
@@ -55,7 +56,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
 
     # This dict will store all results across the runs
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
-                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[], 'avg_valid_resp_NPV':[],
+                'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_auc':[], 'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[], 'avg_valid_resp_NPV':[],
                  'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[], 'avg_valid_rem_NPV':[]}
 
     binned_run_scores = {'bin':[], 'valid_RMSE':[]} # can remove
@@ -66,7 +67,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
         kf = KFold(10, shuffle = True)
 
         scores = {'fold':[], 'model':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2': [],
-            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
+            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[], 'valid_resp_auc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
             'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[], 'rem_NPV':[]}
 
         binned_scores = {'bin':[], 'valid_resp_bal_acc':[], 'valid_rem_bal_acc':[]} # can probs remove
@@ -143,6 +144,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
             # Calculate Response Classification Accuracy
             scores['train_resp_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_results.pred_response)) 
             scores['valid_resp_bal_acc'].append(balanced_accuracy_score(v_results.actual_resp, v_results.pred_response))
+            scores['valid_resp_auc'].append(roc_auc_score(v_results.actual_resp, v_results.pred_response))
 
             tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ravel()
             scores['resp_specificity'].append(tn/(tn+fp)) 
@@ -205,6 +207,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
         
         run_scores['avg_train_resp_bal_acc'].append(results['train_resp_bal_acc'].mean())
         run_scores['avg_valid_resp_bal_acc'].append(results['valid_resp_bal_acc'].mean())
+        run_scores['avg_valid_resp_auc'].append(results['valid_resp_auc'].mean())
         run_scores['avg_valid_resp_sens'].append(results['resp_sensitivity'].mean())
         run_scores['avg_valid_resp_spec'].append(results['resp_specificity'].mean())
         run_scores['avg_valid_resp_prec'].append(results['resp_precision'].mean())
@@ -236,6 +239,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
     # Regression Related metrics
     f.write("Regression Model Results for: {}\n\n".format(result_filename))
     f.write("Model used: {}\n\n".format(model))
+    f.write("Number of runs: {}\n".format(runs))
     f.write("Average training RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_train_RMSE'].mean(), final_score_df['avg_train_RMSE'].std()))
     f.write("Average training R2 is {:.4f} with standard deviation of {:6f}.\n\n".format(final_score_df['avg_train_R2'].mean(), final_score_df['avg_train_R2'].std()))
     f.write("Average validation RMSE is {:.4f} with standard deviation of {:6f}.\n".format(final_score_df['avg_valid_RMSE'].mean(), final_score_df['avg_valid_RMSE'].std()))

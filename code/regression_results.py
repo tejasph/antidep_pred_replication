@@ -16,19 +16,19 @@ Change variables and experiment name using this script.
 # Instructions
 # There are a few variable options that can be used/altered in each experiment. See below for list of options:
 #
-regressor_options = ['rf', 'sgdReg', 'gbdt'] # which regressor model to use
+regressor_options = ['rf', 'sgdReg', 'gbdt', 'knn','svr_rbf'] # which regressor model to use
 X_path_options = ['X_train_norm_over', 'X_train_norm'] # whether to use overlapping features or full-set features
 y_proxy_options = ['score_change', 'final_score']  # what the target for the regressors will be
 
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_new_scaling4"
+        exp_name = "test_scaling_5"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ["sgdReg"]
-        X_paths = ["X_train_norm_over"]
+        regressors = ["rf","sgdReg"]
+        X_paths = ["X_train_norm"]
         y = "y_train"
         y_proxies = ["final_score"]
 
@@ -49,10 +49,6 @@ if __name__ == "__main__":
             raise Exception("Name already exists")
         else:
             os.mkdir(out_path + "/")
-
-
-    
-        
 
         exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[], 'valid_RMSE':[],
                             'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[],  'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
@@ -95,6 +91,13 @@ if __name__ == "__main__":
     #         for X_path in X_paths:
     #             for y_label in y_labels:
     #                 RunClassRun(classifier,X_path, y, y_label, "blank", runs)
+
+# On how to do ROC
+    # However, you could use a decision rule to assign that example to a class. 
+    # The obvious decision rule is to assign it to the more likely class:
+    #  the positive one if the probability is at least a half, and the negative one otherwise. 
+    #  By varying this decision rule (e.g., an example is in the positive class if P(class=+)>{0.25,0.5,0.75,etc},
+    #   you can turn the TP/FP knob and generate an ROC curve.
 
 
 

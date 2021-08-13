@@ -2,6 +2,7 @@
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import HalvingGridSearchCV, HalvingRandomSearchCV, RandomizedSearchCV
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import SGDRegressor
 from sklearn.svm import SVR
 import pandas as pd
@@ -44,13 +45,26 @@ def select_model_and_params(model_type):
             'subsample': [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         }
     elif model_type == "sgdReg":
-        model = SGDRegressor()
+        model = SGDRegressor(penalty = 'elasticnet', max_iter = 10000)
         params = {
             'loss':['squared_loss','huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'],
-            'penalty': ['l2', 'l1', 'elasticnet'],
+            'l1_ratio':[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 1.0],
             'alpha': [1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e0],
-            'max_iter':[10000],
             'epsilon': [0.1, 0.2,0.3]
+        }
+    
+    elif model_type == 'knn':
+        model = KNeighborsRegressor(metric = 'minkowski', njobs = -1)
+        params = {
+            'n_neighbors': np.arange(2,30),
+            'weights': ['uniform','distance'],
+            'p': [1,2, 3,4,5]
+        }
+
+    elif model_type == 'svr_rbf':
+        model = SVR(kernel = 'rbf', max_iter = 10000)
+        params = {
+            'C':[1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3]
         }
 
     
@@ -90,7 +104,7 @@ if __name__== "__main__":
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['rf','gbdt','sgdReg']
+    regressors = ['knn']
     y_proxies = ['score_change','final_score']
     X_types = ['X_train_norm', 'X_train_norm_over']
 

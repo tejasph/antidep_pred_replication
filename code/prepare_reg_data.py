@@ -11,6 +11,7 @@ Run from root of the repo
 ''' 
 
 import pandas as pd
+import numpy as np
 import datetime
 import os
 import sys
@@ -76,6 +77,7 @@ def prepare_data(X_path, name):
         X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
         X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
 
+    # Center Categorical one-hot encoded data
     for key, value in CAT_DICT.items():
         sub_vals = {"zero":-1/value, "one": 1-(1/value)}
         subset_feats = []
@@ -84,13 +86,26 @@ def prepare_data(X_path, name):
                 X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
                 X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
 
-    scaler = MinMaxScaler(feature_range = (-1,1))
-    X_train_cont_ord = pd.DataFrame(scaler.fit_transform(X_train[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_train.index)
-    X_test_cont_ord = pd.DataFrame(scaler.transform(X_test[CONT_VARS + ORD_VARS]), columns = CONT_VARS +  ORD_VARS, index = X_test.index)
+    # Center ordinal data by median
+    for var in ORD_VARS:
+        median = np.median(X_train[var])
+
+        X_train[var] = X_train[var].apply(lambda x: x- median)
+        X_test[var] = X_test[var].apply(lambda x: x- median)
+
+    # Bounds ordinal data within a certain range to be on comparables scale with other categories
+    minmax = MinMaxScaler(feature_range = (-1,1))
+    X_train_ord = pd.DataFrame(minmax.fit_transform(X_train[ORD_VARS]), columns = ORD_VARS, index = X_train.index)
+    X_test_ord = pd.DataFrame(minmax.transform(X_test[ORD_VARS]), columns = ORD_VARS, index = X_test.index)
+
+    # Centers continuous data using mean and std.
+    stand_scaler = StandardScaler()
+    X_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_train[CONT_VARS]), columns = CONT_VARS, index = X_train.index)
+    X_test_cont = pd.DataFrame(stand_scaler.transform(X_test[CONT_VARS]), columns = CONT_VARS, index = X_test.index)
 
     # potentially rename
-    X_train_norm = pd.concat([X_train_cont_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
-    X_test_norm = pd.concat([X_test_cont_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
+    X_train_norm = pd.concat([X_train_cont, X_train_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
+    X_test_norm = pd.concat([X_test_cont, X_test_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
 
     print(X_train_norm.head())
     
