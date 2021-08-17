@@ -1,7 +1,7 @@
 #Regression Results
 from run_regression import RunRegRun, evaluate_on_test
 from run_globals import REG_RESULTS_DIR
-from run_classification import RunClassRun
+# from run_classification import RunClassRun
 import pandas as pd
 import os
 
@@ -17,18 +17,18 @@ Change variables and experiment name using this script.
 # There are a few variable options that can be used/altered in each experiment. See below for list of options:
 #
 regressor_options = ['rf', 'sgdReg', 'gbdt', 'knn','svr_rbf'] # which regressor model to use
-X_path_options = ['X_train_norm_over', 'X_train_norm'] # whether to use overlapping features or full-set features
+X_path_options = ['X_train_norm_over', 'X_train_norm', "X_train_norm_select"] # whether to use overlapping features or full-set features
 y_proxy_options = ['score_change', 'final_score']  # what the target for the regressors will be
 
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_scaling_5"
+        exp_name = "test_feat_lasso_selection"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
         regressors = ["rf","sgdReg"]
-        X_paths = ["X_train_norm"]
+        X_paths = ["X_train_norm_select", "X_train_norm"]
         y = "y_train"
         y_proxies = ["final_score"]
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 for X_path in X_paths:
 
                     df_filename = "{}_{}_{}".format(regressor, X_path, y_proxy)
-                    run_results = RunRegRun(regressor, X_path, y, y_proxy, out_path,  runs)
+                    run_results = RunRegRun(regressor, X_path, y, y_proxy, out_path,   runs)
                     test_results = evaluate_on_test(regressor, X_path, y_proxy, out_path)
                     exp_summary['model'].append(regressor)
                     exp_summary['target'].append(y_proxy)

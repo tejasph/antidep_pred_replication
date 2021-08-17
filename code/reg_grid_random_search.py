@@ -17,6 +17,8 @@ def select_X(X_type):
         X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     elif X_type == "X_train_norm_over":
         X_train = pd.read_csv("data/modelling/X_train_norm_over.csv").set_index('subjectkey')
+    elif X_type == "X_train_norm_select":
+        X_train = pd.read_csv("data/modelling/X_train_norm_select.csv").set_index('subjectkey')
 
     return X_train
 
@@ -104,9 +106,9 @@ if __name__== "__main__":
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['knn']
-    y_proxies = ['score_change','final_score']
-    X_types = ['X_train_norm', 'X_train_norm_over']
+    regressors = ['rf', 'sgdReg']
+    y_proxies = ['final_score'] # don't need
+    X_types = ['X_train_norm_select']
 
     for reg in regressors:
         for y_proxy in y_proxies:

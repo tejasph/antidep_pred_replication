@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_scor
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, IsolationForest
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.feature_selection import RFECV
 from sklearn.svm import SVR
 from sklearn.preprocessing import PowerTransformer
 from scipy.stats import kurtosistest
@@ -59,8 +60,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
                 'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_auc':[], 'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[], 'avg_valid_resp_NPV':[],
                  'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[], 'avg_valid_rem_NPV':[]}
 
-    binned_run_scores = {'bin':[], 'valid_RMSE':[]} # can remove
-
     for r in range(runs):
         print(f"Run {r}")
         # Establish 10 fold crossvalidation splits
@@ -69,8 +68,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
         scores = {'fold':[], 'model':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2': [],
             'train_resp_bal_acc':[], 'valid_resp_bal_acc':[], 'valid_resp_auc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
             'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[], 'rem_NPV':[]}
-
-        binned_scores = {'bin':[], 'valid_resp_bal_acc':[], 'valid_rem_bal_acc':[]} # can probs remove
 
         fold = 1
         for train_index, valid_index in kf.split(X):
@@ -90,6 +87,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
             model_filename = "{}_{}_{}".format(regressor, X_train_path, y_proxy) # can use this to directly import the optimized param model
             model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
             model = pickle.load(open(model_path,'rb'))
+
 
             # Below is best performing model for overlapping features --> 70ish bal acc
             # model = RandomForestRegressor(max_features=0.33, max_samples=0.9,
@@ -163,14 +161,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
             scores['rem_NPV'].append(tn/(fn + tn))
             fold += 1
 
-            # Get binned scores
-            v_results['baseline_bins'] = pd.cut(v_results['baseline_score'], [5,10,15,20,27])
-
-            grouped_v_results = v_results.groupby('baseline_bins')
-            for target_bin, df in grouped_v_results:
-                binned_scores['bin'].append(str(target_bin))
-                binned_scores['valid_resp_bal_acc'].append(balanced_accuracy_score(df.actual_resp, df.pred_response))
-                binned_scores['valid_rem_bal_acc'].append(balanced_accuracy_score(df.true_rem, df.pred_remission))
 
         sns.set(style = "darkgrid")
         # All thx to python-graph-gallery.com
@@ -180,17 +170,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
         plt.plot([-25,10], [-25,10])
         plt.savefig(out_path + "/prediction_vs_actual.png", bbox_inches = 'tight')
         plt.close()
-
-        # Create a df with the 10 fold bin scores
-        bin_results = pd.DataFrame(binned_scores)
-        print(bin_results.head())
-        sns.boxplot(data = bin_results, x= 'bin', y = 'valid_resp_bal_acc', width = 0.5)
-        plt.savefig(out_path + "/binned_valid_resp_bal_acc.png", bbox_inches = 'tight')
-        plt.close()    
-
-        sns.boxplot(data = bin_results, x= 'bin', y = 'valid_rem_bal_acc', width = 0.5)
-        plt.savefig(out_path + "/binned_valid_rem_bal_acc.png", bbox_inches = 'tight')
-        plt.close()    
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)
@@ -223,14 +202,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
     # average the scores across the r runs and get standard deviations
     final_score_df = pd.DataFrame(run_scores)
     print(final_score_df.mean())
-    print(final_score_df.std())
-
-    # # Get Mean bin scores
-    # final_binned_score_df = pd.DataFrame(binned_run_scores)
-    # print(bin_results.head())
-    # sns.boxplot(data = final_binned_score_df, x= 'bin', y = 'valid_RMSE', width = 0.5)
-    # plt.savefig(out_path + "/binned_valid_RMSE_runs.png", bbox_inches = 'tight')
-    # plt.close()   
+    print(final_score_df.std()) 
 
 
     # Write text file, or output dataframes to appropriate folders
@@ -280,6 +252,9 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     elif X_train_type == "X_train_norm_over":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over.csv")
+    elif X_train_type == "X_train_norm_select":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_select.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_select.csv")
         
     y_train_path =os.path.join(REG_MODEL_DATA_DIR, "y_train.csv")
     y_test_path = os.path.join(REG_MODEL_DATA_DIR, "y_test.csv")
@@ -364,8 +339,6 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
 
     test_results_df = pd.DataFrame(test_run_scores)
     return test_results_df
-
-
 
 def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results = y_train.copy()

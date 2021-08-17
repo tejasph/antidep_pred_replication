@@ -107,9 +107,19 @@ def prepare_data(X_path, name):
     X_train_norm = pd.concat([X_train_cont, X_train_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
     X_test_norm = pd.concat([X_test_cont, X_test_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
 
-    print(X_train_norm.head())
     
-    #Below is from the original script
+
+    #Temporary variable drops d/t poor dists
+    potential_removals = ['dm01_enroll__resm','dm01_enroll__relat','dm01_enroll__frend','dm01_enroll__thous','dm01_w0__mempl','dm01_w0__massist','dm01_w0__munempl','dm01_w0__minc_other',
+ 'wpai01__wpai02','wpai01__wpai03','wpai01__wpai04','wpai01__wpai_totalhrs','wpai01__wpai_pctmissed','wpai01__wpai_pctworked','wpai01__wpai_pctwrkimp','phx01__epino','phx01__episode_date', 'ucq01__ucq030',
+                     'ucq01__ucq091','ucq01__ucq100','ucq01__ucq130','ucq01__ucq150','ucq01__ucq170','ucq01__ucq050','ucq01__ucq070']
+    # X_train_norm = X_train_norm.drop(columns = potential_removals)
+    # X_test_norm = X_test_norm.drop(columns = potential_removals)
+    print(X_train_norm.head())
+
+
+
+    #Below is from the original script#################################
     # Create normalized version of X_train
     # scaler = MinMaxScaler()
     # X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
@@ -139,7 +149,7 @@ def prepare_data(X_path, name):
     # X_train_stand_norm = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
     # X_test_stand_norm = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
 
-  
+    
     # Output csv files
     #X_train is now modified d/t to recent changes
     X_train.to_csv(out_path + "/X_train" + name + ".csv", index = True)
