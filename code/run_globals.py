@@ -19,7 +19,7 @@ RESULTS_DIR = r'C:\Users\Tejas\Documents\star_project\script_results'
 REG_PROCESSED_DATA = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data"
 
 # Output path for optimized models
-OPTIMIZED_MODELS = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\optimized_for_RMSE"
+OPTIMIZED_MODELS = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\results\RMSE_opt_models_Aug"
 
 # Path for modelling data (ie. X_train, y_train...etc)
 REG_MODEL_DATA_DIR = r"C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data\modelling"

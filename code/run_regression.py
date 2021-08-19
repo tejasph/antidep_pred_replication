@@ -3,7 +3,7 @@
 Runs 1 run of the specified ML training and evaluation
 
 """
-from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix, roc_auc_score
+from sklearn.metrics import mean_squared_error, balanced_accuracy_score, r2_score, confusion_matrix, roc_auc_score, roc_curve, auc
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, IsolationForest
 from sklearn.neighbors import KNeighborsRegressor
@@ -16,6 +16,7 @@ from run_globals import REG_MODEL_DATA_DIR, OPTIMIZED_MODELS
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+import shap
 
 import pandas as pd
 import numpy as np
@@ -135,6 +136,13 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_score, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_score))
 
+                fpr, tpr, thresholds = roc_curve(v_results.actual_resp, v_results.pred_score)
+                print(fpr)
+                print(tpr)
+                print(thresholds)
+                print(f"AUC: {auc(fpr, tpr)}")
+                scores['valid_resp_auc'].append(auc(fpr, tpr))
+
             # Calculate Regression Scores
             scores['fold'].append(fold)
             scores['model'].append(regressor)
@@ -142,7 +150,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
             # Calculate Response Classification Accuracy
             scores['train_resp_bal_acc'].append(balanced_accuracy_score(t_results.actual_resp, t_results.pred_response)) 
             scores['valid_resp_bal_acc'].append(balanced_accuracy_score(v_results.actual_resp, v_results.pred_response))
-            scores['valid_resp_auc'].append(roc_auc_score(v_results.actual_resp, v_results.pred_response))
+            
 
             tn, fp, fn, tp = confusion_matrix(v_results.actual_resp, v_results.pred_response).ravel()
             scores['resp_specificity'].append(tn/(tn+fp)) 
@@ -255,6 +263,9 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     elif X_train_type == "X_train_norm_select":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_select.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_select.csv")
+    elif X_train_type == "X_train_norm_over_select":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over_select.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over_select.csv")       
         
     y_train_path =os.path.join(REG_MODEL_DATA_DIR, "y_train.csv")
     y_test_path = os.path.join(REG_MODEL_DATA_DIR, "y_test.csv")
@@ -298,7 +309,7 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     for run in range(runs):
         # Train and Assess
         test_run_scores['run'].append(run)
-        test_run_scores['model'].append(regressor)
+        test_run_scores['model'].append(regressor + "_" + X_train_type)
 
         if y_proxy == "score_change":
             train_results, test_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
@@ -314,6 +325,7 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
             test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_score, squared = False))
             test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_score))
 
+          
         # Calculate Response Classification Accuracy
         test_run_scores['train_resp_bal_acc'].append(balanced_accuracy_score(train_results.actual_resp, train_results.pred_response))
         test_run_scores['test_resp_bal_acc'].append(balanced_accuracy_score(test_results.actual_resp, test_results.pred_response))

@@ -19,6 +19,8 @@ def select_X(X_type):
         X_train = pd.read_csv("data/modelling/X_train_norm_over.csv").set_index('subjectkey')
     elif X_type == "X_train_norm_select":
         X_train = pd.read_csv("data/modelling/X_train_norm_select.csv").set_index('subjectkey')
+    elif X_type == "X_train_norm_over_select":
+        X_train = pd.read_csv("data/modelling/X_train_norm_over_select.csv").set_index('subjectkey')
 
     return X_train
 
@@ -56,15 +58,15 @@ def select_model_and_params(model_type):
         }
     
     elif model_type == 'knn':
-        model = KNeighborsRegressor(metric = 'minkowski', njobs = -1)
+        model = KNeighborsRegressor(metric = 'minkowski', n_jobs = -1)
         params = {
-            'n_neighbors': np.arange(2,30),
-            'weights': ['uniform','distance'],
+            'n_neighbors': np.arange(25,100),
+            'weights': ['uniform'],
             'p': [1,2, 3,4,5]
         }
 
     elif model_type == 'svr_rbf':
-        model = SVR(kernel = 'rbf', max_iter = 10000)
+        model = SVR(kernel = 'rbf', max_iter = 500000)
         params = {
             'C':[1e-4, 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3]
         }
@@ -106,9 +108,9 @@ if __name__== "__main__":
     # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ['rf', 'sgdReg']
-    y_proxies = ['final_score'] # don't need
-    X_types = ['X_train_norm_select']
+    regressors = ["knn"]
+    y_proxies = ['final_score'] 
+    X_types = ['X_train_norm', 'X_train_norm_select', 'X_train_norm_over', 'X_train_norm_over_select']
 
     for reg in regressors:
         for y_proxy in y_proxies:
@@ -129,7 +131,7 @@ if __name__== "__main__":
                 f.write("Best estimator RMSE is: {:.4f}\n".format(best_score))
                 f.write("The best performing model is: {}".format(best_estimator))
 
-                pickle.dump(best_estimator, open("results/optimized_for_RMSE/" + filename + ".pkl", 'wb'))
+                pickle.dump(best_estimator, open("results/RMSE_opt_models_Aug/" + filename + ".pkl", 'wb'))
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)

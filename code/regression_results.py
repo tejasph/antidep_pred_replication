@@ -17,18 +17,20 @@ Change variables and experiment name using this script.
 # There are a few variable options that can be used/altered in each experiment. See below for list of options:
 #
 regressor_options = ['rf', 'sgdReg', 'gbdt', 'knn','svr_rbf'] # which regressor model to use
-X_path_options = ['X_train_norm_over', 'X_train_norm', "X_train_norm_select"] # whether to use overlapping features or full-set features
+X_path_options = ['X_train_norm_over', 'X_train_norm', 'X_train_norm_select', 'X_train_norm_over_select'] # whether to use overlapping features or full-set features
+
+X_path_mapping = {'X_train_norm_over':'Overlapping', 'X_train_norm':'All', 'X_train_norm_select':'All_RFE', 'X_train_norm_over_select':'Overlapping_RFE'}
 y_proxy_options = ['score_change', 'final_score']  # what the target for the regressors will be
 
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_feat_lasso_selection"
+        exp_name = "test_jj_auc2"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ["rf","sgdReg"]
-        X_paths = ["X_train_norm_select", "X_train_norm"]
+        regressors = ['sgdReg']
+        X_paths = ['X_train_norm_over', 'X_train_norm', 'X_train_norm_select', 'X_train_norm_over_select']
         y = "y_train"
         y_proxies = ["final_score"]
 
@@ -50,9 +52,9 @@ if __name__ == "__main__":
         else:
             os.mkdir(out_path + "/")
 
-        exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[], 'valid_RMSE':[],
-                            'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[],  'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
-
+        exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2':[], 
+                            'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[], 'valid_resp_auc':[],  'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
+        test_summaries = []
         for regressor in regressors:
             for y_proxy in y_proxies:
                 for X_path in X_paths:
@@ -60,11 +62,15 @@ if __name__ == "__main__":
                     df_filename = "{}_{}_{}".format(regressor, X_path, y_proxy)
                     run_results = RunRegRun(regressor, X_path, y, y_proxy, out_path,   runs)
                     test_results = evaluate_on_test(regressor, X_path, y_proxy, out_path)
+                    test_summaries.append(test_results)
                     exp_summary['model'].append(regressor)
                     exp_summary['target'].append(y_proxy)
-                    exp_summary['features'].append("All" if X_path == "X_train_norm" else "Overlapping")
+                    exp_summary['features'].append(X_path_mapping[X_path])
                     exp_summary['train_RMSE'].append(run_results['avg_train_RMSE'].mean())
+                    exp_summary['train_R2'].append(run_results['avg_train_R2'].mean())
                     exp_summary['valid_RMSE'].append(run_results['avg_valid_RMSE'].mean())
+                    exp_summary['valid_R2'].append(run_results['avg_valid_R2'].mean())
+                    exp_summary['valid_resp_auc'].append(run_results['avg_valid_resp_auc'].mean())
                     exp_summary['CV_train_resp_bal_acc'].append(run_results['avg_train_resp_bal_acc'].mean())
                     exp_summary['CV_valid_resp_bal_acc'].append(run_results['avg_valid_resp_bal_acc'].mean())
 
@@ -78,6 +84,10 @@ if __name__ == "__main__":
         exp_df = pd.DataFrame(exp_summary)
         print(exp_df)
         exp_df.to_csv(out_path + '/summary.csv', index = False)
+
+        test_summary_df = pd.concat(test_summaries, axis = 0).drop(columns = ['run'])
+        test_summary_df = test_summary_df.groupby('model').agg('mean')
+        test_summary_df.to_csv(out_path + '/test_summary.csv', index = True)
     
     # if True:
 
