@@ -136,15 +136,12 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_score, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_score))
 
-                fpr, tpr, thresholds = roc_curve(v_results.actual_resp, v_results.pred_score, pos_label = 0)
-                print(fpr)
-                print(tpr)
-                print(thresholds)
-                print(f"AUC: {auc(fpr, tpr)}")
-                scores['valid_resp_auc'].append(auc(fpr, tpr))
+                resp_fpr, resp_tpr, thresholds = roc_curve(v_results.actual_resp, v_results.pred_score, pos_label = 0)
+    
+                scores['valid_resp_auc'].append(auc(resp_fpr, resp_tpr))
 
                 rem_fpr, rem_tpr, rem_thresholds = roc_curve(v_results.true_rem, v_results.pred_score, pos_label = 0)
-                print(f"Rem AUC: {auc(rem_fpr, rem_tpr)}")
+       
                 scores['valid_rem_auc'].append(auc(rem_fpr, rem_tpr))
 
             # Calculate Regression Scores
@@ -255,8 +252,8 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     result_filename = "test_{}_{}_{}_{}".format(regressor, X_train_type, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
 
     test_run_scores = {'run':[], 'model':[], 'train_RMSE':[], 'train_R2':[], 'test_RMSE':[], 'test_R2':[],
-                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],'test_resp_NPV':[],
-                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[], 'test_rem_NPV':[]}
+                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_auc':[], 'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],'test_resp_NPV':[],
+                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[],'test_rem_auc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[], 'test_rem_NPV':[]}
 
     # Adding path to test data
     if X_train_type == "X_train_norm":
@@ -329,6 +326,14 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
             test_run_scores['train_R2'].append(r2_score(train_results.target, train_results.pred_score))
             test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_score, squared = False))
             test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_score))
+
+            resp_fpr, resp_tpr, thresholds = roc_curve(test_results.actual_resp, test_results.pred_score, pos_label = 0)
+
+            test_run_scores['test_resp_auc'].append(auc(resp_fpr, resp_tpr))
+
+            rem_fpr, rem_tpr, rem_thresholds = roc_curve(test_results.true_rem, test_results.pred_score, pos_label = 0)
+    
+            test_run_scores['test_rem_auc'].append(auc(rem_fpr, rem_tpr))
 
           
         # Calculate Response Classification Accuracy
