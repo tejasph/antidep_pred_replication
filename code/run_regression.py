@@ -59,7 +59,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
     # This dict will store all results across the runs
     run_scores = {'run':[], 'model':[], 'avg_train_RMSE':[], 'avg_train_R2':[], 'avg_valid_RMSE':[], 'avg_valid_R2':[],
                 'avg_train_resp_bal_acc':[], 'avg_valid_resp_bal_acc':[],'avg_valid_resp_auc':[], 'avg_valid_resp_sens':[], 'avg_valid_resp_spec':[], 'avg_valid_resp_prec':[], 'avg_valid_resp_NPV':[],
-                 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[], 'avg_valid_rem_NPV':[]}
+                 'avg_train_rem_bal_acc':[], 'avg_valid_rem_bal_acc':[],'avg_valid_rem_auc': [], 'avg_valid_rem_sens':[], 'avg_valid_rem_spec':[], 'avg_valid_rem_prec':[], 'avg_valid_rem_NPV':[]}
 
     for r in range(runs):
         print(f"Run {r}")
@@ -67,7 +67,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
         kf = KFold(10, shuffle = True)
 
         scores = {'fold':[], 'model':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2': [],
-            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[], 'valid_resp_auc':[],  'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
+            'train_resp_bal_acc':[], 'valid_resp_bal_acc':[], 'valid_resp_auc':[], 'valid_rem_auc':[], 'resp_specificity':[], 'resp_sensitivity':[], 'resp_precision':[], 'resp_NPV':[],
             'train_rem_bal_acc':[], 'valid_rem_bal_acc':[],  'rem_specificity':[], 'rem_sensitivity':[], 'rem_precision':[], 'rem_NPV':[]}
 
         fold = 1
@@ -136,12 +136,16 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_score, squared = False))
                 scores['valid_R2'].append(r2_score(v_results.target, v_results.pred_score))
 
-                fpr, tpr, thresholds = roc_curve(v_results.actual_resp, v_results.pred_score)
+                fpr, tpr, thresholds = roc_curve(v_results.actual_resp, v_results.pred_score, pos_label = 0)
                 print(fpr)
                 print(tpr)
                 print(thresholds)
                 print(f"AUC: {auc(fpr, tpr)}")
                 scores['valid_resp_auc'].append(auc(fpr, tpr))
+
+                rem_fpr, rem_tpr, rem_thresholds = roc_curve(v_results.true_rem, v_results.pred_score, pos_label = 0)
+                print(f"Rem AUC: {auc(rem_fpr, rem_tpr)}")
+                scores['valid_rem_auc'].append(auc(rem_fpr, rem_tpr))
 
             # Calculate Regression Scores
             scores['fold'].append(fold)
@@ -202,6 +206,7 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
 
         run_scores['avg_train_rem_bal_acc'].append(results['train_rem_bal_acc'].mean())
         run_scores['avg_valid_rem_bal_acc'].append(results['valid_rem_bal_acc'].mean())
+        run_scores['avg_valid_rem_auc'].append(results['valid_rem_auc'].mean())
         run_scores['avg_valid_rem_sens'].append(results['rem_sensitivity'].mean())
         run_scores['avg_valid_rem_spec'].append(results['rem_specificity'].mean())
         run_scores['avg_valid_rem_prec'].append(results['rem_precision'].mean())

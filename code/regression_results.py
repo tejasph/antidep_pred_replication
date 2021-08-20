@@ -25,11 +25,11 @@ y_proxy_options = ['score_change', 'final_score']  # what the target for the reg
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_jj_auc2"
+        exp_name = "test_jj_auc4"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ['sgdReg']
+        regressors = ['rf']
         X_paths = ['X_train_norm_over', 'X_train_norm', 'X_train_norm_select', 'X_train_norm_over_select']
         y = "y_train"
         y_proxies = ["final_score"]
@@ -53,7 +53,7 @@ if __name__ == "__main__":
             os.mkdir(out_path + "/")
 
         exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2':[], 
-                            'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[], 'valid_resp_auc':[],  'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
+                            'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[], 'valid_resp_auc':[], 'valid_rem_auc':[], 'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
         test_summaries = []
         for regressor in regressors:
             for y_proxy in y_proxies:
@@ -71,6 +71,7 @@ if __name__ == "__main__":
                     exp_summary['valid_RMSE'].append(run_results['avg_valid_RMSE'].mean())
                     exp_summary['valid_R2'].append(run_results['avg_valid_R2'].mean())
                     exp_summary['valid_resp_auc'].append(run_results['avg_valid_resp_auc'].mean())
+                    exp_summary['valid_rem_auc'].append(run_results['avg_valid_rem_auc'].mean())
                     exp_summary['CV_train_resp_bal_acc'].append(run_results['avg_train_resp_bal_acc'].mean())
                     exp_summary['CV_valid_resp_bal_acc'].append(run_results['avg_valid_resp_bal_acc'].mean())
 
