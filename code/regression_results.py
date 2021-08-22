@@ -25,12 +25,12 @@ y_proxy_options = ['score_change', 'final_score']  # what the target for the reg
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_jj_auc5"
+        exp_name = "16_full_run_with_AUC"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ['rf']
-        X_paths = ['X_train_norm_select']
+        regressors = ['rf', 'sgdReg', 'gbdt', 'knn','svr_rbf']
+        X_paths = ['X_train_norm_over', 'X_train_norm', 'X_train_norm_select', 'X_train_norm_over_select']
         y = "y_train"
         y_proxies = ["final_score"]
 

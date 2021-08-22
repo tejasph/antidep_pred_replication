@@ -49,6 +49,9 @@ def prepare_data(X_path, name):
     X = pd.read_csv(X_path)
     y = pd.read_csv(y_path)
 
+    # Get a copy that will be for external validation
+    X_ext_train = X.copy()
+
     # Split the data at a 8:2 ratio, with random_state
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=40)
     
@@ -69,6 +72,7 @@ def prepare_data(X_path, name):
     # Associate subjectkey as the index for easier tracking/manipulation
     X_train = X_train.set_index('subjectkey')
     X_test = X_test.set_index('subjectkey')
+    X_ext_train = X_ext_train.set_index('subjectkey')
 
 
     print("Centering and Scaling Data")
@@ -76,6 +80,7 @@ def prepare_data(X_path, name):
     for var in BINARY_VARS:
         X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
         X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
+        X_ext_train[var] = X_ext_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
 
     # Center Categorical one-hot encoded data
     for key, value in CAT_DICT.items():
@@ -85,27 +90,36 @@ def prepare_data(X_path, name):
             if (key + "||") in var:
                 X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
                 X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+                X_ext_train[var] = X_ext_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
 
     # Center ordinal data by median
     for var in ORD_VARS:
         median = np.median(X_train[var])
+        ext_median = np.median(X_ext_train[var])
 
         X_train[var] = X_train[var].apply(lambda x: x- median)
         X_test[var] = X_test[var].apply(lambda x: x- median)
+        X_ext_train[var] = X_ext_train[var].apply(lambda x: x- ext_median)
 
     # Bounds ordinal data within a certain range to be on comparables scale with other categories
     minmax = MinMaxScaler(feature_range = (-1,1))
     X_train_ord = pd.DataFrame(minmax.fit_transform(X_train[ORD_VARS]), columns = ORD_VARS, index = X_train.index)
     X_test_ord = pd.DataFrame(minmax.transform(X_test[ORD_VARS]), columns = ORD_VARS, index = X_test.index)
+    X_ext_train_ord = pd.DataFrame(minmax.fit_transform(X_ext_train[ORD_VARS]), columns = ORD_VARS, index = X_ext_train.index)
+
 
     # Centers continuous data using mean and std.
     stand_scaler = StandardScaler()
     X_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_train[CONT_VARS]), columns = CONT_VARS, index = X_train.index)
     X_test_cont = pd.DataFrame(stand_scaler.transform(X_test[CONT_VARS]), columns = CONT_VARS, index = X_test.index)
+    X_ext_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_ext_train[CONT_VARS]), columns = CONT_VARS, index = X_ext_train.index)
 
     # potentially rename
     X_train_norm = pd.concat([X_train_cont, X_train_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
     X_test_norm = pd.concat([X_test_cont, X_test_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
+
+    X_ext_train_processed = pd.concat([X_ext_train_cont, X_ext_train_ord, X_ext_train[BINARY_VARS], X_ext_train[CAT_VARS]], axis =1 )
+    print(X_ext_train_processed.shape)
 
     
 
@@ -154,6 +168,9 @@ def prepare_data(X_path, name):
     #X_train is now modified d/t to recent changes
     X_train.to_csv(out_path + "/X_train" + name + ".csv", index = True)
     X_train_norm.to_csv(out_path + "/X_train_norm" + name + ".csv", index = True)
+
+    if name == "_over": # only output the df if overlapping features are selected
+        X_ext_train_processed.to_csv(out_path + "/X_ext_train_processed.csv", index = True)
     # X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
     # X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
     y_train.to_csv(out_path + "/y_train" + ".csv", index = False) # y_train and y_test aren't affected by overlapping feats --> that's why no name variable used
