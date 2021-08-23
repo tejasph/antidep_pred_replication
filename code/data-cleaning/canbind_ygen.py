@@ -140,6 +140,7 @@ def ygen(root_dir, debug=False):
     # Back up proceesed file before ygeneration
     if debug: merged_df.to_csv(root_dir + "/merged-data_processed_ygen.csv")
     
+    canbind_y_mag = pd.DataFrame()
     # Replace missing "QIDS_RESP_WK8" values by manually checking criteria
     for i, row in merged_df.iterrows():
         
@@ -163,14 +164,32 @@ def ygen(root_dir, debug=False):
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 1
                 else:
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 0
+
+        # Get target_change and final_score targets
+        max_diff = 0 
+        for week_score in [week2_qids_sr, week4_qids_sr, week8_qids_sr]:
+            diff = week_score - baseline_qids_sr
+            if abs(diff) > abs(max_diff):
+                max_diff = diff     
+        
+        canbind_y_mag.loc[i, 'subjectkey'] = row['SUBJLABEL']
+        canbind_y_mag.loc[i,'baseline'] = baseline_qids_sr
+        canbind_y_mag.loc[i, 'target_change'] = max_diff
+        canbind_y_mag.loc[i, 'target_score'] = baseline_qids_sr + max_diff
+        
                         
-                
+    print(merged_df)          
     
     y_wk8_resp = merged_df[['SUBJLABEL','QIDS_RESP_WK8']]
     y_wk8_resp.to_csv(root_dir + "/y_wk8_resp_canbind.csv", index=False)
     
     y_wk8_rem = merged_df[['SUBJLABEL','QIDS_REM_WK8']]
     y_wk8_rem.to_csv(root_dir + "/y_wk8_rem_canbind.csv", index=False)
+
+    #temp
+    merged_df.to_csv(root_dir + "/merged_y.csv", index=False)
+
+    canbind_y_mag.to_csv(root_dir + "/canbind_y_mag.csv", index=False)
     
     # Save the version containing NaN values just for debugging, not otherwise used
     if debug: merged_df.to_csv(root_dir + "/canbind-clean-aggregated-data.with-id.contains-blanks-ygen.csv")
