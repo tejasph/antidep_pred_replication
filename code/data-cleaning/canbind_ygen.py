@@ -165,12 +165,14 @@ def ygen(root_dir, debug=False):
                 else:
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 0
 
-        # Get target_change and final_score targets
-        max_diff = 0 
-        for week_score in [week2_qids_sr, week4_qids_sr, week8_qids_sr]:
-            diff = week_score - baseline_qids_sr
-            if abs(diff) > abs(max_diff):
-                max_diff = diff     
+                # Get target_change and final_score targets  # temporary indentation
+                max_diff = 0 
+                for week_score in [week2_qids_sr, week4_qids_sr, week8_qids_sr]:
+                    diff = week_score - baseline_qids_sr
+                    if abs(diff) > abs(max_diff):
+                        max_diff = diff     
+            else:
+                max_diff = week8_qids_sr - baseline_qids_sr   # if responder label was based on a prexisting responder status in the raw data   3 this needs to be changed
         
         canbind_y_mag.loc[i, 'subjectkey'] = row['SUBJLABEL']
         canbind_y_mag.loc[i,'baseline'] = baseline_qids_sr

@@ -904,23 +904,34 @@ def generate_y(root_data_dir_path):
                         if subset.shape[0] == 0:
                             continue
 
-                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']  # take bottom point for end score
                         y_wk8_resp_magnitude_qids01.loc[i, "subjectkey"] = id
                         y_wk8_resp_magnitude_qids01.loc[i,"baseline_score"] = baseline
+                        
 
                         # Grab the later days_baseline entries
                         subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
+
+                        subset = subset[subset['qstot'].notna()]
+
+                        if subset.shape[0] == 0:
+                            continue
                         # y_wk8_resp_magnitude_qids01.loc[i, "target"] = 0  ---> can probably remove
                         
+                        # Grabs latest score for a subject
+                        end_score = subset.sort_values(by=['days_baseline'], ascending = False).iloc[0]['qstot']
+                        
+
                         # Establish a starting max_diff and then largest qstot magnitude change from baseline
-                        max_diff = 0
-                        for k, row in subset.iterrows():
-                            diff = row['qstot'] - baseline
-                            if abs(diff) > abs(max_diff):
-                                max_diff = diff
+                        # max_diff = 0
+                        # for k, row in subset.iterrows():
+                        #     diff = row['qstot'] - baseline
+                        #     if abs(diff) > abs(max_diff):
+                        #         max_diff = diff
+                        max_diff = end_score - baseline
                             
                         y_wk8_resp_magnitude_qids01.loc[i, "target_change"] = max_diff
-                        y_wk8_resp_magnitude_qids01.loc[i, "target_score"] = baseline + max_diff # get's us the the final score
+                        y_wk8_resp_magnitude_qids01.loc[i, "target_score"] = end_score # get's us the the final score
                         
                     i += 1
     
@@ -945,6 +956,11 @@ def generate_y(root_data_dir_path):
                     
                         # Grab the later days_baseline entries
                         subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
+                        # Added due to a bug where there is nan qstot at days_baseline = 0
+                        subset = subset[subset['qstot'].notna()]
+
+                        if subset.shape[0] == 0:
+                            continue
 
                         # Validity checks
                         if subset.shape[0] == 1:
@@ -955,14 +971,17 @@ def generate_y(root_data_dir_path):
                             temp_test['length_zero'] += 1
 
 
-
-
                         y_wk8_resp_qids01.loc[i, "target"] = 0
-                        for k, row in subset.iterrows():
-                            #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
-                            if row['qstot'] <= 0.5 * baseline:
-                                y_wk8_resp_qids01.loc[i, "target"] = 1
-                                break
+                        # for k, row in subset.iterrows():
+                        #     #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
+                        #     if row['qstot'] <= 0.5 * baseline:
+                        #         y_wk8_resp_qids01.loc[i, "target"] = 1
+                        #         break
+                        end_score = subset.sort_values(by=['days_baseline'], ascending=False).iloc[0]['qstot']
+                        
+                        if end_score <= 0.5*baseline:
+                            
+                            y_wk8_resp_qids01.loc[i, "target"] = 1
                     i += 1
                 
                 if vers == 'c': 
@@ -975,6 +994,8 @@ def generate_y(root_data_dir_path):
                     y_lvl2_rem_qids_sr = y_lvl2_rem_qids01
                     y_wk8_resp_qids_sr = y_wk8_resp_qids01
                     y_wk8_resp_mag_qids_sr = y_wk8_resp_magnitude_qids01
+                    print(y_wk8_resp_qids_sr.shape)
+                    print(y_wk8_resp_mag_qids_sr.shape)
                 else:
                     Exception()
                 print(temp_test)
@@ -991,21 +1012,28 @@ def generate_y(root_data_dir_path):
                 
                     # Assign 1 to all subjects who achieve remission within first 8 weeks, which is less than 77 days in their recording as sheets with weeks recorded have days baseline up to 77 given a possible long intro period
                     subset_c = group[(group['version_form'] == "Clinician") & (group['qstot'] <= 5) & (group['days_baseline'] <= 77)]
-                    subset_sr = group[(group['version_form'] == "Self Rating") & (group['qstot'] <= 5) & (group['days_baseline'] <= 77)]
+                    subset_sr = group[(group['version_form'] == "Self Rating") & (group['days_baseline'] <= 77)]
 
                     
+                    subset_sr = subset_sr[subset_sr['qstot'].notna()]
+
+                    if subset_sr.shape[0] == 0:
+                        continue
+
+                    sr_end_score = subset_sr.sort_values(by=['days_baseline'], ascending=False).iloc[0]['qstot']
+
                     if subset_c.shape[0] > 0:
                         y_wk8_rem_qids_c.loc[i, "target"] = 1
                     else:
                         y_wk8_rem_qids_c.loc[i, "target"] = 0
                         
-                    if subset_sr.shape[0] > 0:
+                    if sr_end_score <= 5:
                         y_wk8_rem_qids_sr.loc[i, "target"] = 1
                     else:
                         y_wk8_rem_qids_sr.loc[i, "target"] = 0
 
                     i += 1
-            
+            print(y_wk8_rem_qids_sr.shape)
     y_lvl2_rem_qids_c.to_csv(output_y_dir_path + "y_lvl2_rem_qids_c" + CSV_SUFFIX, index=False)
     y_lvl2_rem_qids_sr.to_csv(output_y_dir_path + "y_lvl2_rem_qids_sr" + CSV_SUFFIX, index=False)
 
