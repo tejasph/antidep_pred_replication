@@ -86,7 +86,7 @@ def select_target(y, y_proxy):
 def optimize_params(model, params, X, y, filename):
     
 
-    search = RandomizedSearchCV(model, params, cv = 10, scoring = 'neg_root_mean_squared_error', n_iter = 100, n_jobs = -1, verbose = 1)
+    search = RandomizedSearchCV(model, params, cv = 10, scoring = "neg_root_mean_squared_error", n_iter = 100, n_jobs = -1, verbose = 1)
     search.fit(X, y.to_numpy().ravel())
 
     print(search.best_score_)
@@ -105,12 +105,12 @@ if __name__== "__main__":
     runs = 50
 
 
-    # X_train = pd.read_csv("data/modelling/X_train_norm.csv").set_index('subjectkey')
+   
     y_train = pd.read_csv("data/modelling/y_train.csv").set_index('subjectkey')
 
-    regressors = ["knn"]
+    regressors = ["rf"]
     y_proxies = ['final_score'] 
-    X_types = ['X_train_norm', 'X_train_norm_select', 'X_train_norm_over', 'X_train_norm_over_select']
+    X_types = ['X_train_norm_select']
 
     for reg in regressors:
         for y_proxy in y_proxies:
@@ -127,11 +127,11 @@ if __name__== "__main__":
 
                 best_estimator, best_score = optimize_params(model, params, X_train, y_target, filename)
 
-                f = open(os.path.join("results/optimized_for_RMSE", filename + '.txt'), 'w')
-                f.write("Best estimator RMSE is: {:.4f}\n".format(best_score))
+                f = open(os.path.join("results/RMSE_opt_models_Aug_AT", filename + '.txt'), 'w')
+                f.write("Best estimator MAE is: {:.4f}\n".format(best_score))
                 f.write("The best performing model is: {}".format(best_estimator))
 
-                pickle.dump(best_estimator, open("results/RMSE_opt_models_Aug/" + filename + ".pkl", 'wb'))
+                pickle.dump(best_estimator, open("results/RMSE_opt_models_Aug_AT/" + filename + ".pkl", 'wb'))
 
                 print("Completed optimization after seconds: \n")
                 print(datetime.datetime.now() - startTime)

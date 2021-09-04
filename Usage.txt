@@ -8,7 +8,6 @@ Create Overlapping Data from processed data:
 
 C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/data-cleaning/generate_overlapping_features.py -sd data
 
-note: currently have to relabel index to "subjectkey" for next step
 
 Splitting/Prepping the data for modelling:
 
