@@ -29,7 +29,7 @@ The raw STAR*D and CAN-BIND data should be placed in separate folders within [da
 
 ### Run order
 1. Generate STAR*D dataset with [stard_preprocessing_manager.py](./code/data-cleaning/stard_preprocessing_manager.py)
-2. Generate initial CAN-BIND dataset with  [stard_preprocessing_manager.py](./code/data-cleaning/canbind_preprocessing_manager.py)
+2. Generate initial CAN-BIND dataset with  [canbind_preprocessing_manager.py](./code/data-cleaning/canbind_preprocessing_manager.py)
 3. Generate overlapping datasets with [generate_overlapping_features](./code/data-cleaning/generate_overlapping_features.py)
 
 ## Running Machine Learning Analysis
@@ -39,5 +39,8 @@ The raw STAR*D and CAN-BIND data should be placed in separate folders within [da
 dataset csv's will be passed along, minus the '.csv' ending. 
 
 ## Running Regression Aspect of the Project
+1. Generate STAR*D dataset with [stard_preprocessing_manager.py](./code/data-cleaning/stard_preprocessing_manager.py). The script writes the processed data to the same folder that contains the raw data
+    Usage example: `python antidep_pred_replication/code/data-cleaning/stard_preprocessing_manager.py STARD_Raw_Data_Used -a` 
+2. Generate initial CAN-BIND dataset with  [canbind_preprocessing_manager.py](./code/data-cleaning/canbind_preprocessing_manager.py)
 1. Run all steps in "Run Order" to generate the processed STARD and CAN-BIND data
 2. Prepare the data beforehand using `python code/prepare_reg_data.py` 

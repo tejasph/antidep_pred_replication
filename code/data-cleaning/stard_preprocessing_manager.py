@@ -896,7 +896,7 @@ def generate_y(root_data_dir_path):
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
                         # Grab the baseline entry
-                        subset = group[(group['version_form'] == version_form)]
+                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
 
                         # Added due to a bug where there is nan qstot at days_baseline = 0
                         subset = subset[subset['qstot'].notna()]
@@ -904,24 +904,16 @@ def generate_y(root_data_dir_path):
                         if subset.shape[0] == 0:
                             continue
 
-                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']  # take bottom point for end score
-                        y_wk8_resp_magnitude_qids01.loc[i, "subjectkey"] = id
-                        y_wk8_resp_magnitude_qids01.loc[i,"baseline_score"] = baseline
+                        sorted_subset = subset.sort_values(by=['days_baseline'], ascending = False)
+
+                        baseline = sorted_subset.iloc[-1]['qstot']  # take bottom point for end score
+
+                        end_score = sorted_subset.iloc[0]['qstot']
+                        end_day = sorted_subset.iloc[0]['days_baseline']                       
+
                         
-
-                        # Grab the later days_baseline entries
-                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
-
-                        subset = subset[subset['qstot'].notna()]
-
-                        if subset.shape[0] == 0:
-                            continue
-                        # y_wk8_resp_magnitude_qids01.loc[i, "target"] = 0  ---> can probably remove
-                        
-                        # Grabs latest score for a subject
-                        end_score = subset.sort_values(by=['days_baseline'], ascending = False).iloc[0]['qstot']
-                        
-
+                        if baseline < 6:
+                            ValueError('woh there was a baseline value less than 5!')
                         # Establish a starting max_diff and then largest qstot magnitude change from baseline
                         # max_diff = 0
                         # for k, row in subset.iterrows():
@@ -929,11 +921,15 @@ def generate_y(root_data_dir_path):
                         #     if abs(diff) > abs(max_diff):
                         #         max_diff = diff
                         max_diff = end_score - baseline
-                            
-                        y_wk8_resp_magnitude_qids01.loc[i, "target_change"] = max_diff
-                        y_wk8_resp_magnitude_qids01.loc[i, "target_score"] = end_score # get's us the the final score
+
+                        if end_day > 21:
+                            y_wk8_resp_magnitude_qids01.loc[i, "subjectkey"] = id
+                            y_wk8_resp_magnitude_qids01.loc[i,"baseline_score"] = baseline                            
+                            y_wk8_resp_magnitude_qids01.loc[i, "target_change"] = max_diff
+                            y_wk8_resp_magnitude_qids01.loc[i, "target_score"] = end_score # get's us the the final score
                         
                     i += 1
+                print(f"Shape of y_mag {y_wk8_resp_magnitude_qids01.shape}")
     
                 # Create CAN-BIND overlapping targets with QIDS-SR remission
                 temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0, "baseline_na":0}
@@ -941,47 +937,54 @@ def generate_y(root_data_dir_path):
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
                         # Grab the baseline entry
-                        subset = group[(group['version_form'] == version_form)]
+                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
 
                         # Added due to a bug where there is nan qstot at days_baseline = 0
                         subset = subset[subset['qstot'].notna()]
 
                         if subset.shape[0] == 0:
                             continue
-    
-                        baseline = subset.sort_values(by=['days_baseline'], ascending=True).iloc[0]['qstot']
+
+                        sorted_subset = subset.sort_values(by=['days_baseline'], ascending=False)
+                        
+                        baseline = sorted_subset.iloc[-1]['qstot']
+                        end_score = sorted_subset.iloc[0]['qstot']
+                        end_day = sorted_subset.iloc[0]['days_baseline']
+
                         if np.isnan(baseline):
                             temp_test['baseline_na'] += 1
-                        y_wk8_resp_qids01.loc[i, "subjectkey"] = id
-                    
-                        # Grab the later days_baseline entries
-                        subset = group[(group['version_form'] == version_form) & (group['days_baseline'] <= 77)]
-                        # Added due to a bug where there is nan qstot at days_baseline = 0
-                        subset = subset[subset['qstot'].notna()]
-
-                        if subset.shape[0] == 0:
-                            continue
-
-                        # Validity checks
-                        if subset.shape[0] == 1:
-                            temp_test['length_one'] += 1
-                            if subset.iloc[0]['days_baseline'] == 0:
-                                temp_test['days_baseline_zero'] += 1
-                        elif subset.shape[0] == 0:
-                            temp_test['length_zero'] += 1
-
-
-                        y_wk8_resp_qids01.loc[i, "target"] = 0
-                        # for k, row in subset.iterrows():
-                        #     #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
-                        #     if row['qstot'] <= 0.5 * baseline:
-                        #         y_wk8_resp_qids01.loc[i, "target"] = 1
-                        #         break
-                        end_score = subset.sort_values(by=['days_baseline'], ascending=False).iloc[0]['qstot']
                         
-                        if end_score <= 0.5*baseline:
+                        if end_day > 21:
+                            y_wk8_resp_qids01.loc[i, "subjectkey"] = id
+                        
+                            # Grab the later days_baseline entries
+                            # subset = group[(group['version_form'] == version_form) ]
+                            # Added due to a bug where there is nan qstot at days_baseline = 0
+                            # subset = subset[subset['qstot'].notna()]
+
+                            # if subset.shape[0] == 0:
+                            #     continue
+
+                            # Validity checks
+                            if subset.shape[0] == 1:
+                                temp_test['length_one'] += 1
+                                if subset.iloc[0]['days_baseline'] == 0:
+                                    temp_test['days_baseline_zero'] += 1
+                            elif subset.shape[0] == 0:
+                                temp_test['length_zero'] += 1
+
+
+                            y_wk8_resp_qids01.loc[i, "target"] = 0
+                            # for k, row in subset.iterrows():
+                            #     #If any of the depression scores at later days_baseline is half or less of baseline, then subject is TRD
+                            #     if row['qstot'] <= 0.5 * baseline:
+                            #         y_wk8_resp_qids01.loc[i, "target"] = 1
+                            #         break
                             
-                            y_wk8_resp_qids01.loc[i, "target"] = 1
+                            
+                            if end_score <= 0.5*baseline:
+                                
+                                y_wk8_resp_qids01.loc[i, "target"] = 1
                     i += 1
                 
                 if vers == 'c': 
@@ -1020,17 +1023,27 @@ def generate_y(root_data_dir_path):
                     if subset_sr.shape[0] == 0:
                         continue
 
-                    sr_end_score = subset_sr.sort_values(by=['days_baseline'], ascending=False).iloc[0]['qstot']
+                    sorted_subset_sr = subset_sr.sort_values(by=['days_baseline'], ascending=False)
+
+                    sr_end_score = sorted_subset_sr.iloc[0]['qstot']
+                    sr_baseline = sorted_subset_sr.iloc[-1]['qstot']
+                    sr_end_day = sorted_subset_sr.iloc[0]['days_baseline']
+                    
+
+                    if sr_baseline < 6:
+                        ValueError('woh there was a baseline value less than 5!')
+
 
                     if subset_c.shape[0] > 0:
                         y_wk8_rem_qids_c.loc[i, "target"] = 1
                     else:
                         y_wk8_rem_qids_c.loc[i, "target"] = 0
-                        
-                    if sr_end_score <= 5:
-                        y_wk8_rem_qids_sr.loc[i, "target"] = 1
-                    else:
-                        y_wk8_rem_qids_sr.loc[i, "target"] = 0
+
+                    if sr_end_day >21:    
+                        if sr_end_score <= 5:
+                            y_wk8_rem_qids_sr.loc[i, "target"] = 1
+                        else:
+                            y_wk8_rem_qids_sr.loc[i, "target"] = 0
 
                     i += 1
             print(y_wk8_rem_qids_sr.shape)
