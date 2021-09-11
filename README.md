@@ -41,6 +41,22 @@ dataset csv's will be passed along, minus the '.csv' ending.
 ## Running Regression Aspect of the Project
 1. Generate STAR*D dataset with [stard_preprocessing_manager.py](./code/data-cleaning/stard_preprocessing_manager.py). The script writes the processed data to the same folder that contains the raw data
     Usage example: `python antidep_pred_replication/code/data-cleaning/stard_preprocessing_manager.py STARD_Raw_Data_Used -a` 
-2. Generate initial CAN-BIND dataset with  [canbind_preprocessing_manager.py](./code/data-cleaning/canbind_preprocessing_manager.py)
+2. Generate initial CAN-BIND dataset with  [canbind_preprocessing_manager.py](./code/data-cleaning/canbind_preprocessing_manager.py). Running this also creates overlapping dataset.
+    Usage example: `C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python -v code/data-cleaning/canbind_preprocessing_manager.py`
+
+note: before running this, go into canbind_preprocessing_manager.py and alter pathData to a correct pathing for the raw data (see below)
+```
+    elif len(sys.argv) == 1:
+        pathData = r'C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data\canbind_raw_data'
+        aggregate_and_clean(pathData, verbose=False)
+        ygen(pathData)
+        impute(pathData)
+        convert_canbind_to_overlapping(pathData)
+```
+
+3. Create overlapping STARD dataset with [generate_overlapping_features.py](./code/data-cleaning/generate_overlapping_features.py).
+    Usage example: `C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/data-cleaning/generate_overlapping_features.py -sd data`
+
+    
 1. Run all steps in "Run Order" to generate the processed STARD and CAN-BIND data
 2. Prepare the data beforehand using `python code/prepare_reg_data.py` 
