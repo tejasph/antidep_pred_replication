@@ -145,39 +145,50 @@ def ygen(root_dir, debug=False):
     for i, row in merged_df.iterrows():
         
         baseline_qids_sr = row['QIDS_OVERL_SEVTY_baseline']
-        week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
+        # week2_qids_sr = row['QIDS_OVERL_SEVTY_week 2']
         week4_qids_sr = row['QIDS_OVERL_SEVTY_week 4']
         week8_qids_sr = row['QIDS_OVERL_SEVTY_week 8']
+
+        # Find LOCF, either week 8 or week 4
+        if not(np.isnan(week8_qids_sr)):
+            locf_qids_sr = week8_qids_sr
+        elif not(np.isnan(week4_qids_sr)):
+            locf_qids_sr = week4_qids_sr
+        else:
+            # If patient does not have a week 4 or 8 qids_sr, do not generate y, they will be dropped
+            continue
         
         # Make qids-sr remission at 8 weeks from scratch
-        if any(j <= 5 for j in [week2_qids_sr, week4_qids_sr, week8_qids_sr]):
+        if locf_qids_sr <= 5:
             merged_df.at[i, 'QIDS_REM_WK8'] = 1
         else:
-            merged_df.at[i, 'QIDS_REM_WK8'] = 0   
+            merged_df.at[i, 'QIDS_REM_WK8'] = 0  
             
         # Fill in any missing qids-sr response at 8 weeks
         if "QIDS_RESP_WK8" in row:
             if np.isnan(row["QIDS_RESP_WK8"]):
-                
-                
-                if any(i <= baseline_qids_sr*0.50 for i in [week2_qids_sr, week4_qids_sr, week8_qids_sr]):
+                if locf_qids_sr <= baseline_qids_sr*0.50:
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 1
                 else:
                     merged_df.at[i, 'QIDS_RESP_WK8'] = 0
-
-                # Get target_change and final_score targets  # temporary indentation
-                max_diff = 0 
-                for week_score in [week2_qids_sr, week4_qids_sr, week8_qids_sr]:
-                    diff = week_score - baseline_qids_sr
-                    if abs(diff) > abs(max_diff):
-                        max_diff = diff     
             else:
-                max_diff = week8_qids_sr - baseline_qids_sr   # if responder label was based on a prexisting responder status in the raw data   3 this needs to be changed
+                if locf_qids_sr <= baseline_qids_sr*0.50:
+                    assert merged_df.at[i, 'QIDS_RESP_WK8'] == 1, "Found an error when manually checking QIDS_RESP_WK8"
+                else:
+                    assert merged_df.at[i, 'QIDS_RESP_WK8'] == 0, "Found an error when manually checking QIDS_RESP_WK8"
+
+        # Get target_change and final_score targets
+        diff = locf_qids_sr - baseline_qids_sr
+        # for week_score in [week2_qids_sr, week4_qids_sr, week8_qids_sr]:
+        #     diff = week_score - baseline_qids_sr
+        #     if abs(diff) > abs(max_diff):
+        #         max_diff = diff     
+
         
         canbind_y_mag.loc[i, 'subjectkey'] = row['SUBJLABEL']
         canbind_y_mag.loc[i,'baseline'] = baseline_qids_sr
-        canbind_y_mag.loc[i, 'target_change'] = max_diff
-        canbind_y_mag.loc[i, 'target_score'] = baseline_qids_sr + max_diff
+        canbind_y_mag.loc[i, 'target_change'] = diff
+        canbind_y_mag.loc[i, 'target_score'] = locf_qids_sr
         
                         
     print(merged_df)          
