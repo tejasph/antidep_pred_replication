@@ -1,8 +1,22 @@
-Processing the data:
+Processing the STARD data:
 
 C:\Users\Tejas\Documents\star_project>python antidep_pred_replication/code/data-cleaning/stard_preprocessing_manager.py STARD_Raw_Data_Used -a
 
-note: processed datasets are generated within the STARD_Raw_Data_Used folder (suggest moving the processed data into your antidep_pred_replication repo or change path)
+note: processed datasets are generated within the STARD_Raw_Data_Used folder (suggest moving the processed data into antidep_pred_replication/data repo or change path)
+
+Processing the CANBIND data:
+
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python -v code/data-cleaning/canbind_preprocessing_manager.py
+
+note: before running this, go into canbind_preprocessing_manager.py and alter pathData to a correct pathing for the raw data (see below)
+
+    elif len(sys.argv) == 1:
+        pathData = r'C:\Users\Tejas\Documents\star_project\antidep_pred_replication\data\canbind_raw_data'
+        aggregate_and_clean(pathData, verbose=False)
+        ygen(pathData)
+        impute(pathData)
+        convert_canbind_to_overlapping(pathData)
+
 
 Create Overlapping Data from processed data:
 
