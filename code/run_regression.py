@@ -48,8 +48,8 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
     y = y.drop(columns = ['target_change', 'target_score']) 
 
     
-    y_response = pd.read_csv('data/BY_labels/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
-    y_remission = pd.read_csv('data/BY_labels/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
+    y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
+    y_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
     
 
     # Alter Column name to avoid mixup
@@ -277,8 +277,8 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     X_test = pd.read_csv(X_test_path).set_index('subjectkey')
     y_train = pd.read_csv(y_train_path).set_index('subjectkey')
     y_test = pd.read_csv(y_test_path).set_index('subjectkey')
-    y_response = pd.read_csv('data/BY_labels/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
-    y_remission = pd.read_csv('data/BY_labels/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
+    y_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
+    y_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
     
 
     # Alter Column name to avoid mixup

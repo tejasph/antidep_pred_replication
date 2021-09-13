@@ -25,7 +25,7 @@ y_proxy_options = ['score_change', 'final_score']  # what the target for the reg
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_AT_Sept3"
+        exp_name = "test_AT_Sept5"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10

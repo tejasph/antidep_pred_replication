@@ -41,8 +41,7 @@ def center_and_scale(train, test, overlap):
     for var in BINARY_VARS:
         train[var] = train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
         test[var] = test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-        # X_ext_train[var] = X_ext_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-        # X_ext_test[var] = X_ext_test[var].apply(lambda x: -0.5 if x == 0 else 0.5)
+
 
     # Center Categorical one-hot encoded data
     for key, value in CAT_DICT.items():
@@ -52,29 +51,28 @@ def center_and_scale(train, test, overlap):
             if (key + "||") in var:
                 train[var] = train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
                 test[var] = test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
-                # ext_train[var] = ext_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
+
 
     # Center ordinal data by median
     for var in ORD_VARS:
         median = np.median(train[var])
-        # ext_median = np.median(X_ext_train[var])
 
         train[var] = train[var].apply(lambda x: x- median)
         test[var] = test[var].apply(lambda x: x- median)
-        # X_ext_train[var] = X_ext_train[var].apply(lambda x: x- ext_median)
+
         
     # Bounds ordinal data within a certain range to be on comparables scale with other categories
     minmax = MinMaxScaler(feature_range = (-1,1))
     train_ord = pd.DataFrame(minmax.fit_transform(train[ORD_VARS]), columns = ORD_VARS, index = train.index)
     test_ord = pd.DataFrame(minmax.transform(test[ORD_VARS]), columns = ORD_VARS, index = test.index)
-    # X_ext_train_ord = pd.DataFrame(minmax.fit_transform(X_ext_train[ORD_VARS]), columns = ORD_VARS, index = X_ext_train.index)
+
 
 
     # Centers continuous data using mean and std.
     stand_scaler = StandardScaler()
     train_cont = pd.DataFrame(stand_scaler.fit_transform(train[CONT_VARS]), columns = CONT_VARS, index = train.index)
     test_cont = pd.DataFrame(stand_scaler.transform(test[CONT_VARS]), columns = CONT_VARS, index = test.index)
-    # X_ext_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_ext_train[CONT_VARS]), columns = CONT_VARS, index = X_ext_train.index)
+
 
     train_final = pd.concat([train_cont, train_ord, train[BINARY_VARS], train[CAT_VARS]], axis =1 )
     test_final = pd.concat([test_cont, test_ord, test[BINARY_VARS], test[CAT_VARS]], axis = 1)
@@ -162,55 +160,6 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
     X_test_over = X_test_over.set_index('subjectkey')
     X_ext_train = X_ext_train.set_index('subjectkey')
     X_ext_test = X_ext_test.set_index('subjectkey')
-
-############################################Original
-    # print("Centering and Scaling Data")
-    # # Center Binary Variables
-    # for var in BINARY_VARS:
-    #     X_train[var] = X_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-    #     X_test[var] = X_test[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-    #     X_ext_train[var] = X_ext_train[var].apply(lambda x:-0.5 if x == 0 else 0.5)
-    #     # X_ext_test[var] = X_ext_test[var].apply(lambda x: -0.5 if x == 0 else 0.5)
-
-    # # Center Categorical one-hot encoded data
-    # for key, value in CAT_DICT.items():
-    #     sub_vals = {"zero":-1/value, "one": 1-(1/value)}
-    #     subset_feats = []
-    #     for var in CAT_VARS:
-    #         if (key + "||") in var:
-    #             X_train[var] = X_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
-    #             X_test[var] = X_test[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
-    #             X_ext_train[var] = X_ext_train[var].apply(lambda x:sub_vals["zero"] if x == 0 else sub_vals["one"])
-
-    # # Center ordinal data by median
-    # for var in ORD_VARS:
-    #     median = np.median(X_train[var])
-    #     ext_median = np.median(X_ext_train[var])
-
-    #     X_train[var] = X_train[var].apply(lambda x: x- median)
-    #     X_test[var] = X_test[var].apply(lambda x: x- median)
-    #     X_ext_train[var] = X_ext_train[var].apply(lambda x: x- ext_median)
-
-    # # Bounds ordinal data within a certain range to be on comparables scale with other categories
-    # minmax = MinMaxScaler(feature_range = (-1,1))
-    # X_train_ord = pd.DataFrame(minmax.fit_transform(X_train[ORD_VARS]), columns = ORD_VARS, index = X_train.index)
-    # X_test_ord = pd.DataFrame(minmax.transform(X_test[ORD_VARS]), columns = ORD_VARS, index = X_test.index)
-    # X_ext_train_ord = pd.DataFrame(minmax.fit_transform(X_ext_train[ORD_VARS]), columns = ORD_VARS, index = X_ext_train.index)
-
-
-    # # Centers continuous data using mean and std.
-    # stand_scaler = StandardScaler()
-    # X_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_train[CONT_VARS]), columns = CONT_VARS, index = X_train.index)
-    # X_test_cont = pd.DataFrame(stand_scaler.transform(X_test[CONT_VARS]), columns = CONT_VARS, index = X_test.index)
-    # X_ext_train_cont = pd.DataFrame(stand_scaler.fit_transform(X_ext_train[CONT_VARS]), columns = CONT_VARS, index = X_ext_train.index)
-
-    # # potentially rename
-    # X_train_norm = pd.concat([X_train_cont, X_train_ord, X_train[BINARY_VARS], X_train[CAT_VARS]], axis =1 )
-    # X_test_norm = pd.concat([X_test_cont, X_test_ord, X_test[BINARY_VARS], X_test[CAT_VARS]], axis = 1)
-
-    # X_ext_train_processed = pd.concat([X_ext_train_cont, X_ext_train_ord, X_ext_train[BINARY_VARS], X_ext_train[CAT_VARS]], axis =1 )
-    # print(X_ext_train_processed.shape)
-#############################################End Original
     
 
     #Temporary variable drops d/t poor dists
@@ -223,35 +172,7 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
 
 
 
-    #Below is from the original script#################################
-    # Create normalized version of X_train
-    # scaler = MinMaxScaler()
-    # X_train_norm = pd.DataFrame(scaler.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    # X_test_norm = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns, index = X_test.index)
-
-    # # Crude way of determining categorical variables
-    # cat_cols = []
-    # num_cols = []
-    # for col in X_train.columns:
-    #     val_nums = len(X_train[col].unique())
-    #     if val_nums <= 2:
-    #         cat_cols.append(col)
-    #     else:
-    #         num_cols.append(col)  
-
-    # # Create standardized version of X_train and X_test
-    # num_transformer = Pipeline([('standardize', StandardScaler())])
-    # ct = ColumnTransformer([('stand', num_transformer, num_cols)], remainder = 'passthrough')
-
-    # X_train_stand = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    # X_test_stand = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
-
-    # # Create standardized/normalized version of X_train and X_test
-    # num_transformer = Pipeline([('standardize', StandardScaler()),('normalize',MinMaxScaler())])
-    # ct = ColumnTransformer([('stand_norm', num_transformer, num_cols)], remainder = 'passthrough')
-    
-    # X_train_stand_norm = pd.DataFrame(ct.fit_transform(X_train), columns = X_train.columns, index = X_train.index)
-    # X_test_stand_norm = pd.DataFrame(ct.transform(X_test), columns = X_test.columns, index = X_test.index)
+ 
 
     X_train_final, X_test_final = center_and_scale(X_train, X_test, overlap = False)
     X_train_over_final, X_test_over_final = center_and_scale(X_train_over, X_test_over, overlap = True)
@@ -272,21 +193,9 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
     X_ext_train_over_final.to_csv(out_path + "/STARD_train_ext_over.csv", index = True)
     X_ext_test_over_final.to_csv(out_path + "/CANBIND_test_ext_over.csv", index = True)
 
-    # Output csv files
-    #X_train is now modified d/t to recent changes
-    # X_train.to_csv(out_path + "/X_train" + name + ".csv", index = True)
-    # X_train_norm.to_csv(out_path + "/X_train_norm" + name + ".csv", index = True)
 
-    # if name == "_over": # only output the df if overlapping features are selected
-    #     X_ext_train_processed.to_csv(out_path + "/X_ext_train_processed.csv", index = True)
-    # X_train_stand.to_csv(out_path + "/X_train_stand" + name + ".csv" , index = True)
-    # X_train_stand_norm.to_csv(out_path + "/X_train_stand_norm" + name + ".csv", index = True)
     y_train.to_csv(out_path + "/y_train" + ".csv", index = False) # y_train and y_test aren't affected by overlapping feats --> that's why no name variable used
 
-    # X_test.to_csv(out_path + "/X_test" +name + ".csv", index = False)
-    # X_test_norm.to_csv(out_path + "/X_test_norm" + name + ".csv", index = True)
-    # X_test_stand.to_csv(out_path + "/X_test_stand" + name + ".csv", index = True)
-    # X_test_stand_norm.to_csv(out_path + "/X_test_stand_norm" + name + ".csv", index = True)
     y_test.to_csv(out_path + "/y_test" + ".csv", index = False) 
 
     print(f"Finished data prep in {datetime.datetime.now() - startTime}")
@@ -295,13 +204,7 @@ if __name__ == "__main__":
     print(f'STARD_X_path: {sys.argv[1]}')
     print(f'STARD_y_mag path: {sys.argv[2]}')
     print(f'CANBIND X Path: {sys.argv[3]}')
-    
-    # if sys.argv[1] == "-over":
-    #     name = "_over"
-    # elif sys.argv[1] == "-all":
-    #     name = ""
-    # else:
-    #     print("option not typed correctly")
+
 
     # Need a check on this
     prepare_data(sys.argv[1], sys.argv[2], sys.argv[3])

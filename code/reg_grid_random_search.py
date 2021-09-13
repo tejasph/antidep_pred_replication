@@ -110,7 +110,7 @@ if __name__== "__main__":
 
     regressors = ["rf", "gbdt", "sgdReg", "knn"]
     y_proxies = ['final_score'] 
-    X_types = ['X_train','X_train_over']
+    X_types = ['X_train_over']
 
     for reg in regressors:
         for y_proxy in y_proxies:
