@@ -117,8 +117,21 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
     # Split the data at a 8:2 ratio, with random_state
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=40)
 
+    # Get same indices for overlapping dataset
     X_train_over = X_over.query('subjectkey in @X_train.subjectkey')
     X_test_over = X_over.query('subjectkey in @X_test.subjectkey')
+
+    # Ensure everything has a consistent order
+    X_train = X_train.sort_values(by ='subjectkey')
+    X_train_over = X_train_over.sort_values(by ='subjectkey')
+    y_train = y_train.sort_values(by = 'subjectkey')
+    print(X_train.subjectkey)
+    print(X_train_over.subjectkey)
+    print(y_train.subjectkey)
+
+    X_test = X_test.sort_values(by ='subjectkey')
+    X_test_over = X_test_over.sort_values(by ='subjectkey')
+    y_test = y_test.sort_values(by = 'subjectkey')
     
     print(f"X_train shape is {X_train.shape}")
     print(f"y_train shape is {y_train.shape}")
@@ -139,6 +152,8 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
     # checks that all subject ids match between X and y
     assert X_train.subjectkey.compare(y_train.subjectkey).shape[0] == 0
     assert X_test.subjectkey.compare(y_test.subjectkey).shape[0] == 0
+    assert X_train_over.subjectkey.compare(y_train.subjectkey).shape[0] == 0
+    assert X_test_over.subjectkey.compare(y_test.subjectkey).shape[0] == 0
 
     # Associate subjectkey as the index for easier tracking/manipulation
     X_train = X_train.set_index('subjectkey')
@@ -244,6 +259,9 @@ def prepare_data(X_path,y_stard_mag, X_ext_path):
 
     X_train.to_csv(out_path + "/X_train_orig.csv", index = True)
     X_test.to_csv(out_path + "/X_test_orig.csv", index = True)
+
+    X_train_over.to_csv(out_path + "/X_train_over_orig.csv", index = True)
+    X_test_over.to_csv(out_path + "/X_test_over_orig.csv", index = True)
 
     X_train_final.to_csv(out_path + "/X_train.csv", index = True)
     X_test_final.to_csv(out_path + "/X_test.csv", index = True)

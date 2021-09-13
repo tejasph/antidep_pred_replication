@@ -256,16 +256,16 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
                  'train_rem_bal_acc':[], 'test_rem_bal_acc':[],'test_rem_auc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[], 'test_rem_NPV':[]}
 
     # Adding path to test data
-    if X_train_type == "X_train_norm":
-        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm.csv")
-        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm.csv")
-    elif X_train_type == "X_train_norm_over":
-        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over.csv")
-        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over.csv")
-    elif X_train_type == "X_train_norm_select":
+    if X_train_type == "X_train":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test.csv")
+    elif X_train_type == "X_train_over":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over.csv")
+    elif X_train_type == "X_train_select":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_select.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_select.csv")
-    elif X_train_type == "X_train_norm_over_select":
+    elif X_train_type == "X_train_over_select":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over_select.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over_select.csv")       
         

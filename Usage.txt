@@ -25,8 +25,8 @@ C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/data-
 
 Splitting/Prepping the data for modelling:
 
-C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -all data/X_tillwk4_qids_sr__final.csv 
-C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py -over data/X_train_stard_extval.csv
+
+C:\Users\Tejas\Documents\star_project\antidep_pred_replication>python code/prepare_reg_data.py data/X_tillwk4_qids_sr__final.csv y_wk8_resp_mag_qids_sr__final.csv data/canbind_raw_data/X_test_cb_extval.csv
 
 Grid Search:
 

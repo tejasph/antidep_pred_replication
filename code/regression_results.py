@@ -17,20 +17,20 @@ Change variables and experiment name using this script.
 # There are a few variable options that can be used/altered in each experiment. See below for list of options:
 #
 regressor_options = ['rf', 'sgdReg', 'gbdt', 'knn','svr_rbf'] # which regressor model to use
-X_path_options = ['X_train_norm_over', 'X_train_norm', 'X_train_norm_select', 'X_train_norm_over_select'] # whether to use overlapping features or full-set features
+X_path_options = ['X_train_over', 'X_train_norm', 'X_train_select', 'X_train_over_select', 'X_train'] # whether to use overlapping features or full-set features
 
-X_path_mapping = {'X_train_norm_over':'Overlapping', 'X_train_norm':'All', 'X_train_norm_select':'All_RFE', 'X_train_norm_over_select':'Overlapping_RFE'}
+X_path_mapping = {'X_train_over':'Overlapping', 'X_train':'All', 'X_train_select':'All_RFE', 'X_train_over_select':'Overlapping_RFE'}
 y_proxy_options = ['score_change', 'final_score']  # what the target for the regressors will be
 
 if __name__ == "__main__":
 
     if True:
-        exp_name = "test_AT_models_labels_rfe"
+        exp_name = "test_AT_Sept3"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ['rf']
-        X_paths = ['X_train_norm_select', "X_train_norm"]
+        regressors = ['gbdt']
+        X_paths = ['X_train','X_train_over']
         y = "y_train"
         y_proxies = ["final_score"]
 
