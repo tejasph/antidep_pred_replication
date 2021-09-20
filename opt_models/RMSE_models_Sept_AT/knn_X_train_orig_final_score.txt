@@ -1,0 +1,2 @@
+Best estimator MAE is: -5.1077
+The best performing model is: KNeighborsRegressor(n_jobs=-1, n_neighbors=35, p=1)

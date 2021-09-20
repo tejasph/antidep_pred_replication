@@ -908,12 +908,14 @@ def generate_y(root_data_dir_path):
 
                         baseline = sorted_subset.iloc[-1]['qstot']  # take bottom point for end score
 
+
                         end_score = sorted_subset.iloc[0]['qstot']
                         end_day = sorted_subset.iloc[0]['days_baseline']                       
 
                         
                         if baseline < 6:
                             ValueError('woh there was a baseline value less than 5!')
+                            continue
                         # Establish a starting max_diff and then largest qstot magnitude change from baseline
                         # max_diff = 0
                         # for k, row in subset.iterrows():
@@ -932,7 +934,7 @@ def generate_y(root_data_dir_path):
                 print(f"Shape of y_mag {y_wk8_resp_magnitude_qids01.shape}")
     
                 # Create CAN-BIND overlapping targets with QIDS-SR remission
-                temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0, "baseline_na":0}
+                temp_test = {'length_zero':0, 'length_one': 0, "days_baseline_zero": 0, "baseline_na":0,'invalid_baseline':0}
                 i = 0
                 for id, group in scale_df.groupby(['subjectkey']):
                     if id in over21_df['subjectkey'].values: # Only generate y if this subject stayed in study for 4 weeks             
@@ -953,6 +955,10 @@ def generate_y(root_data_dir_path):
 
                         if np.isnan(baseline):
                             temp_test['baseline_na'] += 1
+
+                        if baseline <6:
+                            temp_test['invalid_baseline'] += 1
+                            continue
                         
                         if end_day > 21:
                             y_wk8_resp_qids01.loc[i, "subjectkey"] = id
@@ -1032,6 +1038,7 @@ def generate_y(root_data_dir_path):
 
                     if sr_baseline < 6:
                         ValueError('woh there was a baseline value less than 5!')
+                        continue
 
 
                     if subset_c.shape[0] > 0:

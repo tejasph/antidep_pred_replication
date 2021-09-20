@@ -103,16 +103,6 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
                 
                 t_results, v_results = assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path)
 
-                # All thx to python-graph-gallery.com
-                fig, axs = plt.subplots(2,2, figsize = (7,7))
-                sns.histplot(data = v_results, x = 'pred_change', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
-                sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
-                sns.histplot(data = t_results, x = 'pred_change', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
-                sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
-                plt.legend()
-                plt.savefig(out_path + "/prediction_plots.png", bbox_inches = 'tight')
-                plt.close()
-
                 scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_change, squared = False))
                 scores['train_R2'].append(r2_score(t_results.target, t_results.pred_change))
                 scores['valid_RMSE'].append(mean_squared_error(v_results.target,v_results.pred_change, squared = False))
@@ -122,14 +112,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
 
                 t_results, v_results = assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path)
 
-                fig, axs = plt.subplots(2,2, figsize = (7,7))
-                sns.histplot(data = v_results, x = 'pred_score', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
-                sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
-                sns.histplot(data = t_results, x = 'pred_score', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
-                sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
-                plt.legend()
-                plt.savefig(out_path + "/prediction_plots.png", bbox_inches = 'tight')
-                plt.close()
+                # fig, axs = plt.subplots(2,2, figsize = (7,7))
+                # sns.histplot(data = v_results, x = 'pred_score', ax = axs[0,0], kde = True,  color = "red", label = "Validation")
+                # sns.histplot(data = v_results, x = 'target',ax = axs[0,1], kde = True,color = "red", label = "Validation")
+                # sns.histplot(data = t_results, x = 'pred_score', ax = axs[1,0], kde = True ,color = "blue", label = "Training", alpha = 0.5)
+                # sns.histplot(data = t_results, x = 'target', ax = axs[1,1], kde = True,  color = "blue", label = "Training")
+                # plt.legend()
+                # plt.savefig(out_path + "/prediction_plots.png", bbox_inches = 'tight')
+                # plt.close()
 
                 scores['train_RMSE'].append(mean_squared_error(t_results.target, t_results.pred_score, squared = False))
                 scores['train_R2'].append(r2_score(t_results.target, t_results.pred_score))
@@ -171,14 +161,14 @@ def RunRegRun(regressor, X_train_path, y_train_path, y_proxy, out_path, runs):
             fold += 1
 
 
-        sns.set(style = "darkgrid")
+        # sns.set(style = "darkgrid")
         # All thx to python-graph-gallery.com
         t_results['correct_resp'] = np.where(t_results['pred_response'] == t_results['actual_resp'], 1, 0)
         print(t_results.head())
-        sns.scatterplot(data = t_results, x = 'target', y = 'pred_change', hue = 'correct_resp', alpha = 0.3)
-        plt.plot([-25,10], [-25,10])
-        plt.savefig(out_path + "/prediction_vs_actual.png", bbox_inches = 'tight')
-        plt.close()
+        # sns.scatterplot(data = t_results, x = 'target', y = 'pred_change', hue = 'correct_resp', alpha = 0.3)
+        # plt.plot([-25,10], [-25,10])
+        # plt.savefig(out_path + "/prediction_vs_actual.png", bbox_inches = 'tight')
+        # plt.close()
 
         # Avg the scores across the 10 folds
         results = pd.DataFrame(scores)
@@ -262,6 +252,12 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     elif X_train_type == "X_train_over":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over.csv")
+    elif X_train_type == "X_train_orig":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_orig.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_orig.csv")
+    elif X_train_type == "X_train_over_orig":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over_orig.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over_orig.csv")        
     elif X_train_type == "X_train_select":
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_select.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_select.csv")
@@ -391,15 +387,15 @@ def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     valid_results['pred_remission'] = np.where(valid_results['pred_score'] <= 5, 1.0, 0.0)
     
     #Temporary exploratory analysis
-    sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
-    plt.plot([0,25],[0,0])
-    plt.savefig(out_path + "/baseline_vs_target.png", bbox_inches = 'tight')
-    plt.close()
+    # sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'actual_resp')
+    # plt.plot([0,25],[0,0])
+    # plt.savefig(out_path + "/baseline_vs_target.png", bbox_inches = 'tight')
+    # plt.close()
 
-    sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
-    plt.plot([0,25],[0,0])
-    plt.savefig(out_path + "/baseline_vs_target_pred.png", bbox_inches = 'tight')
-    plt.close()
+    # sns.scatterplot(data = valid_results, x = 'baseline_score', y = 'target', hue = 'pred_response')
+    # plt.plot([0,25],[0,0])
+    # plt.savefig(out_path + "/baseline_vs_target_pred.png", bbox_inches = 'tight')
+    # plt.close()
 
     return train_results, valid_results
 

@@ -58,7 +58,7 @@ def RunFeatSelection(selection_method, X_train_path, y_train_path):
             # ranks = pd.DataFrame(rfe_model.ranking_, index = X.columns, columns = ['Rank'])
 
     print(np.mean(n_feat_list))
-    ranks.to_csv("results/feat_ranks_over_RMSE_AT.csv", index = True)
+    ranks.to_csv("results/feat_ranks_over_RMSE_AT_2950.csv", index = True)
         # X.iloc[:,rfe_model.get_support(indices = True)].to_csv("data/modelling/X_train_norm_select.csv", index = True)
         # X_test.iloc[:,rfe_model.get_support(indices = True)].to_csv("data/modelling/X_test_norm_select.csv", index = True)
 

@@ -1,0 +1,4 @@
+Best estimator MAE is: -4.3524
+The best performing model is: SGDRegressor(alpha=0.1, epsilon=0.2, l1_ratio=0.6,
+             loss='squared_epsilon_insensitive', max_iter=10000,
+             penalty='elasticnet')

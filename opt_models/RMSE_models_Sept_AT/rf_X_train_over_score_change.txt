@@ -1,0 +1,3 @@
+Best estimator MAE is: -4.3292
+The best performing model is: RandomForestRegressor(bootstrap=False, max_depth=80, max_features=0.33,
+                      min_samples_leaf=12, min_samples_split=6, n_jobs=-1)
