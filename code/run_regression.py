@@ -259,11 +259,11 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
         X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over_orig.csv")
         X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over_orig.csv")        
     elif X_train_type == "X_train_select":
-        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_select.csv")
-        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_select.csv")
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_select.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_select.csv")
     elif X_train_type == "X_train_over_select":
-        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_norm_over_select.csv")
-        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_norm_over_select.csv")       
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over_select.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over_select.csv")       
         
     y_train_path =os.path.join(REG_MODEL_DATA_DIR, "y_train.csv")
     y_test_path = os.path.join(REG_MODEL_DATA_DIR, "y_test.csv")
@@ -358,6 +358,123 @@ def evaluate_on_test(regressor, X_train_type, y_proxy, out_path, runs = 10):
     test_results_df = pd.DataFrame(test_run_scores)
     return test_results_df
 
+
+def external_validation(regressor, X_train_type, y_proxy, out_path, runs = 10):
+    print("Predicting on unseen data...")
+    result_filename = "test_{}_{}_{}_{}".format(regressor, X_train_type, y_proxy, datetime.datetime.now().strftime("%Y%m%d-%H%M"))
+
+    test_run_scores = {'run':[], 'model':[], 'train_RMSE':[], 'train_R2':[], 'test_RMSE':[], 'test_R2':[],
+                'train_resp_bal_acc':[], 'test_resp_bal_acc':[],'test_resp_auc':[], 'test_resp_sens':[], 'test_resp_spec':[], 'test_resp_prec':[],'test_resp_NPV':[],
+                 'train_rem_bal_acc':[], 'test_rem_bal_acc':[],'test_rem_auc':[], 'test_rem_sens':[], 'test_rem_spec':[], 'test_rem_prec':[], 'test_rem_NPV':[]}
+
+    # Adding path to test data
+
+    if X_train_type == "X_train_over":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "STARD_train_ext_over.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "CANBIND_test_ext_over.csv")
+    elif X_train_type == "X_train_over_select":
+        X_train_path = os.path.join(REG_MODEL_DATA_DIR, "X_train_over_select.csv")
+        X_test_path = os.path.join(REG_MODEL_DATA_DIR, "X_test_over_select.csv")       
+
+        
+    y_train_path =os.path.join(REG_MODEL_DATA_DIR, "y_wk8_resp_mag_qids_sr__final.csv")
+    y_test_path = os.path.join(REG_MODEL_DATA_DIR, "canbind_y_mag.csv")
+
+    # Read in the Data
+    X_train = pd.read_csv(X_train_path).set_index('subjectkey')
+    X_test = pd.read_csv(X_test_path).set_index('subjectkey')
+    y_train = pd.read_csv(y_train_path).set_index('subjectkey')
+    y_test = pd.read_csv(y_test_path).set_index('subjectkey')
+    STARD_response = pd.read_csv('data/y_wk8_resp_qids_sr__final.csv').set_index('subjectkey') #  might want to make this a variable
+    STARD_remission = pd.read_csv('data/y_wk8_rem_qids_sr__final.csv').set_index('subjectkey')
+    CANBIND_response = pd.read_csv('data/canbind_raw_data/y_wk8_resp_canbind.csv').set_index('subjectkey')
+    CANBIND_remission = pd.read_csv('data/canbind_raw_data/y_wk8_rem_canbind.csv').set_index('subjectkey')
+
+    # Alter Column name to avoid mixup
+    STARD_response.columns = ['actual_resp']
+    STARD_remission.columns = ['true_rem']
+    CANBIND_response.columns = ['actual_resp']
+    CANBIND_remission.columns = ['true_rem']
+
+    # Prep the y labels (y -refers to entire training data) 
+    if y_proxy == "score_change":
+        y_train['target'] = y_train['target_change']
+        y_test['target'] = y_test['target_change']
+    elif y_proxy == 'final_score':
+        y_train['target'] = y_train['target_score']
+        y_test['target'] = y_test['target_score']
+    else: raise Exception("Invalid proxy y selection")   
+
+    y_train = y_train.drop(columns = ['target_change','target_score'])
+    y_test = y_test.drop(columns = ['target_change', 'target_score'])
+    
+    y_train = y_train.join(STARD_response)
+    y_train = y_train.join(STARD_remission)
+
+    y_test = y_test.join(CANBIND_response)
+    y_test = y_test.join(CANBIND_remission)
+
+    # Load Model
+    model_filename = "{}_{}_{}".format(regressor, X_train_type, y_proxy) # can use this to directly import the optimized param model
+    model_path = os.path.join(OPTIMIZED_MODELS, model_filename + ".pkl")
+    model = pickle.load(open(model_path,'rb'))
+
+    for run in range(runs):
+        # Train and Assess
+        test_run_scores['run'].append(run)
+        test_run_scores['model'].append(regressor + "_" + X_train_type)
+
+        if y_proxy == "score_change":
+            train_results, test_results = assess_on_score_change(model, X_train, y_train, X_test, y_test, out_path)
+            test_run_scores['train_RMSE'].append(mean_squared_error(train_results.target, train_results.pred_change, squared = False))
+            test_run_scores['train_R2'].append(r2_score(train_results.target, train_results.pred_change))
+            test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_change, squared = False))
+            test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_change))
+
+        elif  y_proxy == "final_score":
+            train_results, test_results = assess_on_final_score(model, X_train, y_train, X_test, y_test, out_path)
+            test_run_scores['train_RMSE'].append(mean_squared_error(train_results.target, train_results.pred_score, squared = False))
+            test_run_scores['train_R2'].append(r2_score(train_results.target, train_results.pred_score))
+            test_run_scores['test_RMSE'].append(mean_squared_error(test_results.target, test_results.pred_score, squared = False))
+            test_run_scores['test_R2'].append(r2_score(test_results.target, test_results.pred_score))
+
+            resp_fpr, resp_tpr, thresholds = roc_curve(test_results.actual_resp, test_results.pred_score, pos_label = 0)
+
+            test_run_scores['test_resp_auc'].append(auc(resp_fpr, resp_tpr))
+
+            rem_fpr, rem_tpr, rem_thresholds = roc_curve(test_results.true_rem, test_results.pred_score, pos_label = 0)
+    
+            test_run_scores['test_rem_auc'].append(auc(rem_fpr, rem_tpr))
+
+          
+        # Calculate Response Classification Accuracy
+        test_run_scores['train_resp_bal_acc'].append(balanced_accuracy_score(train_results.actual_resp, train_results.pred_response))
+        test_run_scores['test_resp_bal_acc'].append(balanced_accuracy_score(test_results.actual_resp, test_results.pred_response))
+
+        tn, fp, fn, tp = confusion_matrix(test_results.actual_resp, test_results.pred_response).ravel()
+        test_run_scores['test_resp_spec'].append(tn/(tn+fp)) 
+        test_run_scores['test_resp_sens'].append(tp/(tp+fn))
+        test_run_scores['test_resp_prec'].append(tp/(tp+fp))
+        test_run_scores['test_resp_NPV'].append(tn/(fn + tn))
+
+        # Calculate Remission Classification Accuracy 
+        train_rem_bal_acc = balanced_accuracy_score(train_results.true_rem, train_results.pred_remission)
+        test_rem_bal_acc = balanced_accuracy_score(test_results.true_rem, test_results.pred_remission)
+
+        test_run_scores['train_rem_bal_acc'].append(balanced_accuracy_score(train_results.true_rem, train_results.pred_remission))
+        test_run_scores['test_rem_bal_acc'].append(balanced_accuracy_score(test_results.true_rem, test_results.pred_remission))
+        
+        tn, fp, fn, tp = confusion_matrix(test_results.true_rem, test_results.pred_remission).ravel()
+        test_run_scores['test_rem_spec'].append(tn/(tn+fp)) 
+        test_run_scores['test_rem_sens'].append(tp/(tp+fn))
+        test_run_scores['test_rem_prec'].append(tp/(tp+fp))
+        test_run_scores['test_rem_NPV'].append(tn/(fn + tn))
+
+    test_results_df = pd.DataFrame(test_run_scores)
+    return test_results_df
+
+
+
 def assess_on_score_change(model, X_train, y_train, X_valid, y_valid, out_path):
     train_results = y_train.copy()
     valid_results = y_valid.copy()
@@ -412,11 +529,11 @@ def assess_on_final_score(model, X_train, y_train, X_valid, y_valid, out_path):
 
     # Calculate predicted score change
     train_results['pred_change'] = train_results['pred_score'] - train_results['baseline_score']
-    valid_results['pred_change'] = valid_results['pred_score'] - valid_results['baseline_score']
+    valid_results['pred_change'] = valid_results['pred_score'] - valid_results['baseline']
 
     # Calculate response percentage (calculated in similar manner to train_on_score_change())
     train_results['response_pct'] = train_results['pred_change']/train_results['baseline_score']
-    valid_results['response_pct'] = valid_results['pred_change']/valid_results['baseline_score']
+    valid_results['response_pct'] = valid_results['pred_change']/valid_results['baseline']
 
     # Determine whether model predictions are established as response or not (note: response_pct is calculated slightly differently as assess_model())
     train_results['pred_response'] = np.where(train_results['response_pct'] <= -.50, 1.0, 0.0)

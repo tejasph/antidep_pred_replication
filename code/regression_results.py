@@ -1,5 +1,5 @@
 #Regression Results
-from run_regression import RunRegRun, evaluate_on_test
+from run_regression import RunRegRun, evaluate_on_test, external_validation
 from run_globals import REG_RESULTS_DIR
 # from run_classification import RunClassRun
 import pandas as pd
@@ -24,13 +24,81 @@ y_proxy_options = ['score_change', 'final_score']  # what the target for the reg
 
 if __name__ == "__main__":
 
+#     if True:
+#         exp_name = "troubleshooting_MAE"
+#         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
+
+#         runs = 10
+#         regressors = ['rf']
+#         X_paths = ['X_train_over']
+#         y = "y_train"
+#         y_proxies = ["final_score"]
+
+#         if all(option in regressor_options for option in regressors):
+#             print("Validated Regressor Options")
+#         else: raise Exception(f"Invalid regressor option. Valid options are {regressor_options}")
+
+#         if all(option in X_path_options for option in X_paths):
+#             print("Validated X_path")
+#         else: raise Exception(f"Invalid X_path option. Valid options are {X_path_options}")
+
+#         if all(option in y_proxy_options for option in y_proxies):
+#             print("Validated y_proxy")
+#         else: raise Exception(f"Invalid y_proxy option. Valid options are {y_proxy_options}")
+
+#         # Makes sure not to overwrite any files
+#         if os.path.isdir(out_path):
+#             raise Exception("Name already exists")
+#         else:
+#             os.mkdir(out_path + "/")
+
+#         exp_summary = {'model':[],'target':[], 'features':[], 'train_RMSE':[],'train_R2':[], 'valid_RMSE':[], 'valid_R2':[], 
+#                             'CV_train_resp_bal_acc':[], 'CV_valid_resp_bal_acc':[], 'valid_resp_auc':[], 'valid_rem_auc':[], 'CV_train_rem_bal_acc':[], 'CV_valid_rem_bal_acc':[] }
+#         test_summaries = []
+#         for regressor in regressors:
+#             for y_proxy in y_proxies:
+#                 for X_path in X_paths:
+
+#                     df_filename = "{}_{}_{}".format(regressor, X_path, y_proxy)
+#                     run_results = RunRegRun(regressor, X_path, y, y_proxy, out_path,   runs)
+#                     test_results = evaluate_on_test(regressor, X_path, y_proxy, out_path)
+#                     test_summaries.append(test_results)
+#                     exp_summary['model'].append(regressor)
+#                     exp_summary['target'].append(y_proxy)
+#                     exp_summary['features'].append(X_path_mapping[X_path])
+#                     exp_summary['train_RMSE'].append(run_results['avg_train_RMSE'].mean())
+#                     exp_summary['train_R2'].append(run_results['avg_train_R2'].mean())
+#                     exp_summary['valid_RMSE'].append(run_results['avg_valid_RMSE'].mean())
+#                     exp_summary['valid_R2'].append(run_results['avg_valid_R2'].mean())
+#                     exp_summary['valid_resp_auc'].append(run_results['avg_valid_resp_auc'].mean())
+#                     exp_summary['valid_rem_auc'].append(run_results['avg_valid_rem_auc'].mean())
+#                     exp_summary['CV_train_resp_bal_acc'].append(run_results['avg_train_resp_bal_acc'].mean())
+#                     exp_summary['CV_valid_resp_bal_acc'].append(run_results['avg_valid_resp_bal_acc'].mean())
+
+#                     exp_summary['CV_train_rem_bal_acc'].append(run_results['avg_train_rem_bal_acc'].mean())
+#                     exp_summary['CV_valid_rem_bal_acc'].append(run_results['avg_valid_rem_bal_acc'].mean())
+
+
+#                     run_results.to_csv(out_path + '/' + df_filename + ".csv", index = False)
+#                     test_results.to_csv(out_path + '/test_'+ df_filename + ".csv", index = False)
+        
+#         exp_df = pd.DataFrame(exp_summary)
+#         print(exp_df)
+#         exp_df.to_csv(out_path + '/summary.csv', index = False)
+
+#         test_summary_df = pd.concat(test_summaries, axis = 0).drop(columns = ['run'])
+#         test_summary_df = test_summary_df.groupby('model').agg('mean')
+#         test_summary_df.to_csv(out_path + '/test_summary.csv', index = True)
+    
+    # External Validation
+
     if True:
-        exp_name = "test_2950"
+        exp_name = "ext_" + "troubleshooting_MAE"
         out_path = os.path.join(REG_RESULTS_DIR, exp_name)
 
         runs = 10
-        regressors = ['rf','gbdt']
-        X_paths = ['X_train', 'X_train_over']
+        regressors = ['rf']
+        X_paths = ['X_train_over']
         y = "y_train"
         y_proxies = ["final_score"]
 
@@ -60,37 +128,17 @@ if __name__ == "__main__":
                 for X_path in X_paths:
 
                     df_filename = "{}_{}_{}".format(regressor, X_path, y_proxy)
-                    run_results = RunRegRun(regressor, X_path, y, y_proxy, out_path,   runs)
-                    test_results = evaluate_on_test(regressor, X_path, y_proxy, out_path)
+                    test_results = external_validation(regressor, X_path, y_proxy, out_path)
                     test_summaries.append(test_results)
-                    exp_summary['model'].append(regressor)
-                    exp_summary['target'].append(y_proxy)
-                    exp_summary['features'].append(X_path_mapping[X_path])
-                    exp_summary['train_RMSE'].append(run_results['avg_train_RMSE'].mean())
-                    exp_summary['train_R2'].append(run_results['avg_train_R2'].mean())
-                    exp_summary['valid_RMSE'].append(run_results['avg_valid_RMSE'].mean())
-                    exp_summary['valid_R2'].append(run_results['avg_valid_R2'].mean())
-                    exp_summary['valid_resp_auc'].append(run_results['avg_valid_resp_auc'].mean())
-                    exp_summary['valid_rem_auc'].append(run_results['avg_valid_rem_auc'].mean())
-                    exp_summary['CV_train_resp_bal_acc'].append(run_results['avg_train_resp_bal_acc'].mean())
-                    exp_summary['CV_valid_resp_bal_acc'].append(run_results['avg_valid_resp_bal_acc'].mean())
 
-                    exp_summary['CV_train_rem_bal_acc'].append(run_results['avg_train_rem_bal_acc'].mean())
-                    exp_summary['CV_valid_rem_bal_acc'].append(run_results['avg_valid_rem_bal_acc'].mean())
-
-
-                    run_results.to_csv(out_path + '/' + df_filename + ".csv", index = False)
                     test_results.to_csv(out_path + '/test_'+ df_filename + ".csv", index = False)
         
-        exp_df = pd.DataFrame(exp_summary)
-        print(exp_df)
-        exp_df.to_csv(out_path + '/summary.csv', index = False)
 
         test_summary_df = pd.concat(test_summaries, axis = 0).drop(columns = ['run'])
         test_summary_df = test_summary_df.groupby('model').agg('mean')
-        test_summary_df.to_csv(out_path + '/test_summary.csv', index = True)
+        test_summary_df.to_csv(out_path + '/ext_test_summary.csv', index = True)
     
-    # if True:
+
 
     #     runs = 1
     #     classifiers = ["rf"]
